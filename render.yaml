@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: arkane-zone
+    runtime: python
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn arkane_zone.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: SECRET_KEY
+        sync: false          # se configura manualmente en el panel de Render
+      - key: DEBUG
+        value: "False"
+      - key: DATABASE_URL
+        sync: false          # se configura manualmente en el panel de Render
+      - key: ALLOWED_HOSTS
+        sync: false          # se configura manualmente (ej: arkane-zone.onrender.com)
+      - key: RENDER_EXTERNAL_HOSTNAME
+        fromService:
+          type: web
+          name: arkane-zone
+          property: host
