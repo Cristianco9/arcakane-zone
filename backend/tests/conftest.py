@@ -1,9 +1,16 @@
 """Fixtures compartidos para toda la suite de pruebas."""
+import uuid
+
 import pytest
 from decimal import Decimal
 
 from catalogo.models import Categoria, Genero, OfertaVideojuego, Plataforma, Videojuego
 from cuentas.models import Rol, Usuario
+from inventario.models import (
+    MotivoMovimientoInventario,
+    MovimientoInventarioOfertaVideojuego,
+    TipoMovimientoInventario,
+)
 from pedidos.models import DetallePedido, Pedido
 
 
@@ -114,3 +121,51 @@ def pedido_con_item(db, usuario_cliente, oferta):
         precio_unitario=oferta.precio_vigente,
     )
     return pedido
+
+
+# ── Inventario (AZ-S1-14) ──────────────────────────────────────────────────────
+
+
+@pytest.fixture
+def tipo_entrada(db):
+    """Tipo de movimiento de entrada (get_or_create: tolera la semilla 0002)."""
+    return TipoMovimientoInventario.objects.get_or_create(
+        codigo="ENTRADA",
+        defaults={"nombre": "Entrada", "naturaleza": "entrada"},
+    )[0]
+
+
+@pytest.fixture
+def tipo_salida(db):
+    return TipoMovimientoInventario.objects.get_or_create(
+        codigo="SALIDA",
+        defaults={"nombre": "Salida", "naturaleza": "salida"},
+    )[0]
+
+
+@pytest.fixture
+def tipo_ajuste(db):
+    return TipoMovimientoInventario.objects.get_or_create(
+        codigo="AJUSTE",
+        defaults={"nombre": "Ajuste", "naturaleza": "ajuste"},
+    )[0]
+
+
+@pytest.fixture
+def motivo_venta(db):
+    return MotivoMovimientoInventario.objects.get_or_create(
+        codigo="VENTA", defaults={"nombre": "Venta"}
+    )[0]
+
+
+@pytest.fixture
+def movimiento_entrada(oferta, tipo_entrada):
+    """Movimiento válido del ledger sobre la oferta con stock 10."""
+    return MovimientoInventarioOfertaVideojuego.objects.create(
+        oferta=oferta,
+        tipo_movimiento=tipo_entrada,
+        cantidad=5,
+        saldo_anterior=10,
+        saldo_posterior=15,
+        clave_idempotencia=f"test-entrada-{uuid.uuid4()}",
+    )
