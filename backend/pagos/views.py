@@ -19,7 +19,7 @@ def checkout(request, pedido_id):
             messages.error(request, error)
         return redirect("pedidos:carrito")
 
-    detalles = pedido.detalles.select_related("videojuego").all()
+    detalles = pedido.detalles.select_related("oferta__videojuego", "oferta__plataforma").all()
     return render(request, "pagos/checkout.html", {"pedido": pedido, "detalles": detalles})
 
 

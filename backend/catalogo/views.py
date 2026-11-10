@@ -1,11 +1,13 @@
 from django.shortcuts import get_object_or_404, render
 
-from .models import Categoria, Genero, Plataforma, Videojuego
+from .models import Categoria, Genero, OfertaVideojuego, Plataforma, Videojuego
 
 
 def lista_videojuegos(request):
-    videojuegos = Videojuego.objects.filter(activo=True).select_related(
-        "categoria", "plataforma", "genero"
+    ofertas = (
+        OfertaVideojuego.objects.publicadas()
+        .filter(videojuego__activo=True)
+        .select_related("videojuego", "plataforma", "videojuego__categoria", "videojuego__genero")
     )
     categorias = Categoria.objects.filter(activo=True)
     plataformas = Plataforma.objects.filter(activo=True)
@@ -18,16 +20,16 @@ def lista_videojuegos(request):
     busqueda = request.GET.get("q", "").strip()
 
     if categoria_id:
-        videojuegos = videojuegos.filter(categoria_id=categoria_id)
+        ofertas = ofertas.filter(videojuego__categoria_id=categoria_id)
     if plataforma_id:
-        videojuegos = videojuegos.filter(plataforma_id=plataforma_id)
+        ofertas = ofertas.filter(plataforma_id=plataforma_id)
     if genero_id:
-        videojuegos = videojuegos.filter(genero_id=genero_id)
+        ofertas = ofertas.filter(videojuego__genero_id=genero_id)
     if busqueda:
-        videojuegos = videojuegos.filter(titulo__icontains=busqueda)
+        ofertas = ofertas.filter(videojuego__titulo__icontains=busqueda)
 
     contexto = {
-        "videojuegos": videojuegos,
+        "ofertas": ofertas,
         "categorias": categorias,
         "plataformas": plataformas,
         "generos": generos,
@@ -37,4 +39,13 @@ def lista_videojuegos(request):
 
 def detalle_videojuego(request, pk):
     videojuego = get_object_or_404(Videojuego, pk=pk, activo=True)
-    return render(request, "catalogo/detalle.html", {"videojuego": videojuego})
+    ofertas = (
+        videojuego.ofertas.publicadas()
+        .select_related("plataforma")
+        .order_by("precio_vigente")
+    )
+    return render(
+        request,
+        "catalogo/detalle.html",
+        {"videojuego": videojuego, "ofertas": ofertas},
+    )

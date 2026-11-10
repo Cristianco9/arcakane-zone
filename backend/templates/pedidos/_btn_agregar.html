@@ -1,8 +1,8 @@
 {% if user.is_authenticated %}
   {% if disponible %}
   <form method="post"
-    action="{% url 'pedidos:agregar_al_carrito' videojuego_id %}"
-    hx-post="{% url 'pedidos:agregar_al_carrito' videojuego_id %}"
+    action="{% url 'pedidos:agregar_al_carrito' oferta_id %}"
+    hx-post="{% url 'pedidos:agregar_al_carrito' oferta_id %}"
     hx-target="#carrito-zona"
     hx-swap="innerHTML"
     hx-push-url="{% url 'pedidos:carrito' %}">

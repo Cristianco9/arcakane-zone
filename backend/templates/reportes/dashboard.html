@@ -83,9 +83,9 @@
       </div>
       {% if agotados %}
       <ul class="space-y-1 text-sm text-gray-300 max-h-48 overflow-y-auto">
-        {% for vj in agotados %}
+        {% for o in agotados %}
         <li class="flex justify-between">
-          <span>{{ vj.titulo }}</span>
+          <span>{{ o.videojuego.titulo }} <span class="text-gray-600">({{ o.plataforma }})</span></span>
           <span class="text-red-500 font-mono font-bold">0</span>
         </li>
         {% endfor %}
@@ -106,10 +106,10 @@
       </div>
       {% if bajo_stock %}
       <ul class="space-y-1 text-sm text-gray-300 max-h-48 overflow-y-auto">
-        {% for vj in bajo_stock %}
+        {% for o in bajo_stock %}
         <li class="flex justify-between">
-          <span>{{ vj.titulo }}</span>
-          <span class="text-yellow-400 font-mono font-bold">{{ vj.stock }}</span>
+          <span>{{ o.videojuego.titulo }} <span class="text-gray-600">({{ o.plataforma }})</span></span>
+          <span class="text-yellow-400 font-mono font-bold">{{ o.stock }}</span>
         </li>
         {% endfor %}
       </ul>

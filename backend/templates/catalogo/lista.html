@@ -35,33 +35,33 @@
   <a href="{% url 'catalogo:lista' %}" class="text-gray-400 hover:text-white text-sm py-1.5">Limpiar</a>
 </form>
 
-<!-- Grid de videojuegos -->
-{% if videojuegos %}
+<!-- Grid de ofertas -->
+{% if ofertas %}
 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-  {% for vj in videojuegos %}
+  {% for o in ofertas %}
   <div class="bg-gray-900 rounded-xl border border-gray-800 hover:border-purple-600 transition overflow-hidden flex flex-col">
-    {% if vj.portada %}
-    <img src="{{ vj.portada.url }}" alt="{{ vj.titulo }}" class="w-full h-48 object-cover" />
+    {% if o.videojuego.portada %}
+    <img src="{{ o.videojuego.portada.url }}" alt="{{ o.videojuego.titulo }}" class="w-full h-48 object-cover" />
     {% else %}
     <div class="w-full h-48 bg-gray-800 flex items-center justify-center text-gray-600 text-4xl">🎮</div>
     {% endif %}
     <div class="p-4 flex flex-col flex-1">
-      <h2 class="font-semibold text-white text-sm mb-1">{{ vj.titulo }}</h2>
-      <p class="text-xs text-gray-400 mb-1">{{ vj.plataforma }} · {{ vj.genero }}</p>
-      <p class="text-purple-400 font-bold text-lg mt-auto">{{ vj.precio|cop }}</p>
-      {% if vj.disponible %}
-        <p class="text-xs text-green-400 mb-2">Stock: {{ vj.stock }}</p>
+      <h2 class="font-semibold text-white text-sm mb-1">{{ o.videojuego.titulo }}</h2>
+      <p class="text-xs text-gray-400 mb-1">{{ o.plataforma }} · {{ o.videojuego.genero }}</p>
+      <p class="text-purple-400 font-bold text-lg mt-auto">{{ o.precio_vigente|cop }}</p>
+      {% if o.disponible %}
+        <p class="text-xs text-green-400 mb-2">Stock: {{ o.stock }}</p>
       {% else %}
         <p class="text-xs text-red-400 mb-2">Sin stock</p>
       {% endif %}
       <div class="flex gap-2 mt-2">
-        <a href="{% url 'catalogo:detalle' vj.pk %}"
+        <a href="{% url 'catalogo:detalle' o.videojuego.pk %}"
           class="flex-1 block text-center bg-gray-700 hover:bg-gray-600 text-white text-xs py-1.5 rounded transition">
           Ver detalle
         </a>
-        {% if user.is_authenticated and vj.disponible %}
-        <form method="post" action="{% url 'pedidos:agregar_al_carrito' vj.pk %}"
-          hx-post="{% url 'pedidos:agregar_al_carrito' vj.pk %}"
+        {% if user.is_authenticated and o.disponible %}
+        <form method="post" action="{% url 'pedidos:agregar_al_carrito' o.pk %}"
+          hx-post="{% url 'pedidos:agregar_al_carrito' o.pk %}"
           hx-target="#toast-carrito"
           hx-swap="innerHTML"
           hx-on::after-request="setTimeout(() => document.getElementById('toast-carrito').innerHTML = '', 3000)">
