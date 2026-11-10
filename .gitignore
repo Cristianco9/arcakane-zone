@@ -1,6 +1,7 @@
 # Variables de entorno — NUNCA subir al repositorio
 .env
 .env.*
+!.env.example
 
 # Entorno virtual
 venv/
@@ -39,3 +40,16 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Frontend (Next.js)
+node_modules/
+.next/
+out/
+.turbo/
+.vercel/
+*.tsbuildinfo
+
+# Pruebas de frontend
+coverage/
+playwright-report/
+test-results/
