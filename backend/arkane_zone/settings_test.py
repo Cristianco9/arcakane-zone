@@ -6,6 +6,12 @@ DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
         "NAME": ":memory:",
+        # BEGIN IMMEDIATE en cada transacción: los escritores serializan
+        # sobre el lock de la BD compartida en memoria (cache=shared), lo
+        # que hace deterministas los tests de concurrencia con hilos del
+        # libro mayor (AZ-S1-14). Sin esto, la escalada read→write de las
+        # transacciones DEFERRED de SQLite produce "database is locked".
+        "OPTIONS": {"transaction_mode": "IMMEDIATE"},
     }
 }
 
