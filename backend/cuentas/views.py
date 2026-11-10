@@ -1,41 +1,75 @@
-from django.contrib import messages
-from django.contrib.auth import login, update_session_auth_hash
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render
+from rest_framework import status
+from rest_framework.authtoken.models import Token
+from rest_framework.generics import RetrieveUpdateAPIView
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from .forms import CambioPasswordForm, PerfilForm, RegistroForm
-
-
-def registro(request):
-    if request.user.is_authenticated:
-        return redirect("/")
-    form = RegistroForm(request.POST or None)
-    if request.method == "POST" and form.is_valid():
-        usuario = form.save()
-        login(request, usuario)
-        messages.success(request, "¡Cuenta creada exitosamente!")
-        return redirect("/")
-    return render(request, "cuentas/registro.html", {"form": form})
+from .serializers import (
+    CambioPasswordSerializer,
+    LoginSerializer,
+    RegistroSerializer,
+    UsuarioSerializer,
+)
 
 
-@login_required
-def perfil(request):
-    """HU4: ver y editar datos personales del usuario autenticado."""
-    form = PerfilForm(request.POST or None, instance=request.user)
-    if request.method == "POST" and form.is_valid():
-        form.save()
-        messages.success(request, "Perfil actualizado correctamente.")
-        return redirect("cuentas:perfil")
-    return render(request, "cuentas/perfil.html", {"form": form})
+class RegistroView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = RegistroSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        usuario = serializer.save()
+        token, _ = Token.objects.get_or_create(user=usuario)
+        return Response(
+            {
+                "token": token.key,
+                "user": UsuarioSerializer(usuario, context={"request": request}).data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
 
-@login_required
-def cambiar_password(request):
-    """HU3: cambio de contraseña para usuario autenticado."""
-    form = CambioPasswordForm(user=request.user, data=request.POST or None)
-    if request.method == "POST" and form.is_valid():
-        form.save()
-        update_session_auth_hash(request, form.user)
-        messages.success(request, "Contraseña actualizada correctamente.")
-        return redirect("cuentas:perfil")
-    return render(request, "cuentas/cambiar_password.html", {"form": form})
+class LoginView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data, context={"request": request})
+        serializer.is_valid(raise_exception=True)
+        usuario = serializer.validated_data["user"]
+        token, _ = Token.objects.get_or_create(user=usuario)
+        return Response(
+            {
+                "token": token.key,
+                "user": UsuarioSerializer(usuario, context={"request": request}).data,
+            }
+        )
+
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if request.auth:
+            request.auth.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class MeView(RetrieveUpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = UsuarioSerializer
+
+    def get_object(self):
+        return self.request.user
+
+
+class CambioPasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = CambioPasswordSerializer(
+            data=request.data, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({"detail": "Contraseña actualizada correctamente."})

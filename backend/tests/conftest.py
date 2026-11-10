@@ -2,6 +2,9 @@
 import pytest
 from decimal import Decimal
 
+from rest_framework.authtoken.models import Token
+from rest_framework.test import APIClient
+
 from catalogo.models import Categoria, Genero, Plataforma, Videojuego
 from cuentas.models import Rol, Usuario
 from pedidos.models import DetallePedido, Pedido
@@ -42,6 +45,29 @@ def usuario_admin(db, rol_admin):
         is_staff=True,
     )
     return u
+
+
+# ── Clientes de API ──────────────────────────────────────────────────────────
+
+@pytest.fixture
+def api_client():
+    return APIClient()
+
+
+@pytest.fixture
+def api_cliente(usuario_cliente):
+    client = APIClient()
+    token, _ = Token.objects.get_or_create(user=usuario_cliente)
+    client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+    return client
+
+
+@pytest.fixture
+def api_admin(usuario_admin):
+    client = APIClient()
+    token, _ = Token.objects.get_or_create(user=usuario_admin)
+    client.credentials(HTTP_AUTHORIZATION=f"Token {token.key}")
+    return client
 
 
 # ── Catálogo ─────────────────────────────────────────────────────────────────

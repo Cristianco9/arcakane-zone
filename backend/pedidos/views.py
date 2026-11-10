@@ -1,9 +1,17 @@
-from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.db.models import Count
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404
+from rest_framework import status
+from rest_framework.generics import ListAPIView, RetrieveAPIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from .models import DetallePedido, Pedido
+from .models import Pedido
+from .serializers import (
+    ActualizarItemSerializer,
+    AgregarItemSerializer,
+    PedidoSerializer,
+)
 from .services import (
     actualizar_cantidad,
     agregar_o_incrementar,
@@ -13,129 +21,115 @@ from .services import (
 )
 
 
-def _es_htmx(request) -> bool:
-    return request.headers.get("HX-Request") == "true"
+def _serializar_pedido(pedido, request):
+    return PedidoSerializer(pedido, context={"request": request}).data
 
 
-def _render_carrito_zona(request, mensaje="", exito=True):
-    pedido = get_or_create_carrito(request.user)
-    detalles = pedido.detalles.select_related("videojuego").all()
-    return render(request, "pedidos/_carrito_contenido.html", {
-        "pedido": pedido,
-        "detalles": detalles,
-        "mensaje": mensaje,
-        "exito": exito,
-    })
+class CarritoView(APIView):
+    """Devuelve el carrito (pedido pendiente) del usuario autenticado."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        pedido = get_or_create_carrito(request.user)
+        return Response(_serializar_pedido(pedido, request))
 
 
-# ── Carrito ────────────────────────────────────────────────────────────────
+class AgregarItemView(APIView):
+    permission_classes = [IsAuthenticated]
 
-@login_required
-def carrito(request):
-    pedido = get_or_create_carrito(request.user)
-    detalles = pedido.detalles.select_related("videojuego").all()
-    return render(request, "pedidos/carrito.html", {"pedido": pedido, "detalles": detalles})
+    def post(self, request):
+        serializer = AgregarItemSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
+        exito, mensaje = agregar_o_incrementar(
+            request.user,
+            serializer.validated_data["videojuego_id"],
+            serializer.validated_data["cantidad"],
+        )
+        if not exito:
+            return Response(
+                {"detail": mensaje}, status=status.HTTP_400_BAD_REQUEST
+            )
 
-@login_required
-def agregar_al_carrito(request, videojuego_id):
-    if request.method != "POST":
-        return redirect("catalogo:lista")
-
-    exito, mensaje = agregar_o_incrementar(request.user, videojuego_id)
-
-    if _es_htmx(request):
-        hx_target = request.headers.get("HX-Target", "")
-        if hx_target == "toast-carrito":
-            return render(request, "pedidos/_toast.html", {"mensaje": mensaje, "exito": exito})
-        if hx_target == "toast-detalle":
-            pedido = get_or_create_carrito(request.user) if exito else None
-            return render(request, "pedidos/_detalle_toast.html", {
-                "mensaje": mensaje,
-                "exito": exito,
-                "pedido": pedido,
-            })
-        return _render_carrito_zona(request, mensaje, exito)
-
-    if exito:
-        messages.success(request, mensaje)
-    else:
-        messages.error(request, mensaje)
-    return redirect("pedidos:carrito")
+        pedido = get_or_create_carrito(request.user)
+        return Response(
+            {"detail": mensaje, "pedido": _serializar_pedido(pedido, request)},
+            status=status.HTTP_201_CREATED,
+        )
 
 
-@login_required
-def actualizar_item(request, detalle_id):
-    if request.method != "POST":
-        return redirect("pedidos:carrito")
+class ItemCarritoView(APIView):
+    permission_classes = [IsAuthenticated]
 
-    cantidad = int(request.POST.get("cantidad", 1))
-    exito, mensaje = actualizar_cantidad(request.user, detalle_id, cantidad)
+    def patch(self, request, detalle_id):
+        serializer = ActualizarItemSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
 
-    if _es_htmx(request):
-        return _render_carrito_zona(request, mensaje, exito)
+        exito, mensaje = actualizar_cantidad(
+            request.user, detalle_id, serializer.validated_data["cantidad"]
+        )
+        if not exito:
+            return Response(
+                {"detail": mensaje}, status=status.HTTP_400_BAD_REQUEST
+            )
 
-    if exito:
-        messages.success(request, mensaje)
-    else:
-        messages.error(request, mensaje)
-    return redirect("pedidos:carrito")
+        pedido = get_or_create_carrito(request.user)
+        return Response(
+            {"detail": mensaje, "pedido": _serializar_pedido(pedido, request)}
+        )
 
+    def delete(self, request, detalle_id):
+        exito, mensaje = quitar_item(request.user, detalle_id)
+        if not exito:
+            return Response(
+                {"detail": mensaje}, status=status.HTTP_404_NOT_FOUND
+            )
 
-@login_required
-def quitar_del_carrito(request, detalle_id):
-    if request.method != "POST":
-        return redirect("pedidos:carrito")
-
-    exito, mensaje = quitar_item(request.user, detalle_id)
-
-    if _es_htmx(request):
-        return _render_carrito_zona(request, mensaje, exito)
-
-    if exito:
-        messages.success(request, mensaje)
-    else:
-        messages.error(request, mensaje)
-    return redirect("pedidos:carrito")
+        pedido = get_or_create_carrito(request.user)
+        return Response(
+            {"detail": mensaje, "pedido": _serializar_pedido(pedido, request)}
+        )
 
 
-# ── Pedidos ────────────────────────────────────────────────────────────────
+class PedidoListView(ListAPIView):
+    """Historial de pedidos del cliente, sin carritos vacíos."""
 
-@login_required
-def mis_pedidos(request):
-    """
-    HU17/HU18: muestra TODOS los pedidos del cliente (todos los estados).
-    El pedido activo en carrito aparece como 'Pendiente'.
-    """
-    pedidos = (
-        Pedido.objects.filter(cliente=request.user)
-        .annotate(num_detalles=Count("detalles"))
-        .exclude(num_detalles=0)
-        .prefetch_related("detalles__videojuego")
-        .order_by("-creado_en")
-    )
-    return render(request, "pedidos/mis_pedidos.html", {"pedidos": pedidos})
+    permission_classes = [IsAuthenticated]
+    serializer_class = PedidoSerializer
+
+    def get_queryset(self):
+        return (
+            Pedido.objects.filter(cliente=self.request.user)
+            .annotate(num_detalles=Count("detalles"))
+            .exclude(num_detalles=0)
+            .prefetch_related("detalles__videojuego")
+            .order_by("-creado_en")
+        )
 
 
-@login_required
-def detalle_pedido(request, pk):
-    """HU18: detalle completo de un pedido del cliente."""
-    pedido = get_object_or_404(Pedido, pk=pk, cliente=request.user)
-    detalles = pedido.detalles.select_related("videojuego").all()
-    return render(request, "pedidos/detalle.html", {"pedido": pedido, "detalles": detalles})
+class PedidoDetailView(RetrieveAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = PedidoSerializer
+
+    def get_queryset(self):
+        return Pedido.objects.filter(cliente=self.request.user).prefetch_related(
+            "detalles__videojuego"
+        )
 
 
-@login_required
-def cancelar_pedido_view(request, pk):
-    """HU19: cancela un pedido pendiente del cliente."""
-    if request.method != "POST":
-        return redirect("pedidos:mis_pedidos")
+class CancelarPedidoView(APIView):
+    permission_classes = [IsAuthenticated]
 
-    pedido = get_object_or_404(Pedido, pk=pk, cliente=request.user)
-    exito, mensaje = cancelar_pedido(pedido)
+    def post(self, request, pk):
+        pedido = get_object_or_404(Pedido, pk=pk, cliente=request.user)
+        exito, mensaje = cancelar_pedido(pedido)
+        if not exito:
+            return Response(
+                {"detail": mensaje}, status=status.HTTP_400_BAD_REQUEST
+            )
 
-    if exito:
-        messages.success(request, mensaje)
-    else:
-        messages.error(request, mensaje)
-    return redirect("pedidos:mis_pedidos")
+        pedido.refresh_from_db()
+        return Response(
+            {"detail": mensaje, "pedido": _serializar_pedido(pedido, request)}
+        )

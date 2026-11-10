@@ -5,7 +5,9 @@ from . import views
 app_name = "cuentas"
 
 urlpatterns = [
-    path("registro/", views.registro, name="registro"),
-    path("perfil/", views.perfil, name="perfil"),
-    path("perfil/cambiar-password/", views.cambiar_password, name="cambiar_password"),
+    path("register/", views.RegistroView.as_view(), name="register"),
+    path("login/", views.LoginView.as_view(), name="login"),
+    path("logout/", views.LogoutView.as_view(), name="logout"),
+    path("me/", views.MeView.as_view(), name="me"),
+    path("change-password/", views.CambioPasswordView.as_view(), name="change-password"),
 ]

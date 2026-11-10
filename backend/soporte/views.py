@@ -1,41 +1,65 @@
-from django.contrib import messages
-from django.shortcuts import redirect, render
+from rest_framework import mixins, status, viewsets
+from rest_framework.permissions import AllowAny, IsAdminUser
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-from .forms import ContactoForm, MayorInformacionForm
-
-
-def contacto(request):
-    """HU32: formulario de contacto general."""
-    form = ContactoForm(request.POST or None)
-    if request.method == "POST" and form.is_valid():
-        obj = form.save(commit=False)
-        if request.user.is_authenticated:
-            obj.usuario = request.user
-            if not obj.nombre:
-                obj.nombre = request.user.get_full_name() or request.user.username
-            if not obj.email:
-                obj.email = request.user.email
-        obj.save()
-        messages.success(request, "Tu mensaje fue enviado. Te responderemos pronto.")
-        return redirect("soporte:contacto")
-    return render(request, "soporte/contacto.html", {"form": form})
+from .models import Contacto
+from .serializers import (
+    ContactoAdminSerializer,
+    ContactoSerializer,
+    MayorInformacionSerializer,
+)
 
 
-def mayor_informacion(request):
+class ContactoCreateView(APIView):
+    """HU32: formulario de contacto general (público)."""
+
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = ContactoSerializer(
+            data=request.data, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        contacto = serializer.save()
+        return Response(
+            {
+                "detail": "Tu mensaje fue enviado. Te responderemos pronto.",
+                "contacto": ContactoSerializer(contacto).data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
+
+
+class MayorInformacionView(APIView):
     """HU33: el visitante deja sus datos para recibir información."""
-    form = MayorInformacionForm(request.POST or None)
-    if request.method == "POST" and form.is_valid():
-        obj = form.save(commit=False)
-        obj.asunto = "Solicitud de información"
-        obj.mensaje = ""
-        if request.user.is_authenticated:
-            obj.usuario = request.user
-        obj.save()
-        messages.success(request, "¡Gracias! Nos pondremos en contacto contigo pronto.")
-        return redirect("soporte:mayor_informacion")
-    return render(request, "soporte/mayor_informacion.html", {"form": form})
+
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = MayorInformacionSerializer(
+            data=request.data, context={"request": request}
+        )
+        serializer.is_valid(raise_exception=True)
+        contacto = serializer.save()
+        return Response(
+            {
+                "detail": "¡Gracias! Nos pondremos en contacto contigo pronto.",
+                "contacto": ContactoAdminSerializer(contacto).data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
 
-def ayuda(request):
-    """HU34: página de ayuda con secciones de uso del sistema."""
-    return render(request, "soporte/ayuda.html")
+class ContactoViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,
+    viewsets.GenericViewSet,
+):
+    """Bandeja de contactos para staff; permite marcar como atendido."""
+
+    queryset = Contacto.objects.select_related("usuario").all()
+    serializer_class = ContactoAdminSerializer
+    permission_classes = [IsAdminUser]
+    http_method_names = ["get", "patch", "head", "options"]

@@ -4,27 +4,27 @@ Sistema de gestión para una tienda de videojuegos. El proyecto está organizado
 
 | Carpeta | Aplicación | Estado |
 |---|---|---|
-| [`backend/`](backend/README.md) | Aplicación Django 5.2 (dominio, administración y base de datos; API JSON planificada) | Funcional |
+| [`backend/`](backend/README.md) | API REST en Django 5.2 + Django REST Framework | Funcional |
 | [`frontend/`](frontend/README.md) | Aplicación Next.js (interfaz de usuario) | Pendiente de implementación |
 
-> **Nota de transición:** hoy el backend sigue sirviendo la interfaz con Django Templates + HTMX para no romper la aplicación existente. Cuando se implemente el frontend en Next.js, esa interfaz se reemplazará por una API JSON. La carpeta `backend/templates/` es, por tanto, temporal.
+El backend es **exclusivamente una API JSON**: no contiene plantillas, archivos estáticos, HTMX, Tailwind ni panel administrativo de Django. Toda la interfaz de usuario vivirá en la aplicación Next.js.
 
 ## Estructura del repositorio
 
 ```text
 arcakane-zone/
-├── backend/                 # Aplicación Django
-│   ├── arkane_zone/         # Configuración del proyecto (settings, urls, wsgi/asgi)
-│   ├── catalogo/            # Catálogo de videojuegos
-│   ├── cuentas/             # Usuarios, roles y autenticación
+├── backend/                 # API Django (sin frontend)
+│   ├── arkane_zone/         # Configuración: settings, urls, permisos, health
+│   ├── catalogo/            # Catálogo de videojuegos (API)
+│   ├── cuentas/             # Usuarios, roles y autenticación por token
 │   ├── pedidos/             # Carrito, pedidos y cancelación
 │   ├── pagos/               # Pago simulado y ventas
-│   ├── reportes/            # Dashboard y reportes
-│   ├── soporte/             # Contacto y ayuda
-│   ├── templates/           # Interfaz Django temporal (se reemplazará con Next.js)
+│   ├── reportes/            # Reportes JSON para staff
+│   ├── soporte/             # Contacto y solicitudes de información
 │   ├── tests/               # Suite de pruebas con pytest
 │   ├── manage.py
 │   ├── requirements.txt
+│   ├── requirements-dev.txt
 │   ├── pytest.ini
 │   ├── build.sh
 │   └── .env.example
@@ -40,14 +40,15 @@ arcakane-zone/
 
 | Capa | Tecnología |
 |---|---|
-| Backend | Python 3.12, Django 5.2, django-environ, django-unfold |
+| Backend | Python 3.12, Django 5.2, Django REST Framework 3.18 |
+| Autenticación | TokenAuthentication de DRF (`Authorization: Token <token>`) |
 | Base de datos | PostgreSQL (`psycopg2`) vía `DATABASE_URL`; SQLite para pruebas |
-| Servidor / estáticos | Gunicorn, WhiteNoise |
+| Servidor | Gunicorn |
 | Almacenamiento de medios | Sistema de archivos local o S3 compatible (`boto3`, `django-storages`) |
-| Frontend actual | Django Templates, Tailwind CSS (CDN), HTMX 2.0.4 |
-| Frontend objetivo | Next.js (pendiente) |
+| CORS | `django-cors-headers` para el origen de Next.js |
 | Pruebas | Pytest + pytest-django |
 | Despliegue | Render (`render.yaml`, `build.sh`) |
+| Frontend objetivo | Next.js (pendiente) |
 
 ## Inicio rápido
 
@@ -61,46 +62,55 @@ pip install -r requirements.txt
 cp .env.example .env             # completar SECRET_KEY y DATABASE_URL
 python manage.py migrate
 python manage.py seed_catalogo
-python manage.py createsuperuser
 python manage.py runserver
 ```
 
-La aplicación queda disponible en `http://127.0.0.1:8000/` y el admin en `http://127.0.0.1:8000/admin/`.
+La API queda disponible en `http://127.0.0.1:8000/api/v1/` y el health check en `http://127.0.0.1:8000/api/health/`.
 
-Instrucciones detalladas, variables de entorno, pruebas y despliegue: [`backend/README.md`](backend/README.md).
+Instrucciones detalladas, variables de entorno, endpoints, ejemplos y despliegue: [`backend/README.md`](backend/README.md).
 
 ### Frontend
 
-La aplicación Next.js todavía no existe. La carpeta [`frontend/`](frontend/README.md) contiene la propuesta de estructura, convenciones y pasos de integración para el siguiente issue.
+La aplicación Next.js todavía no existe. La carpeta [`frontend/`](frontend/README.md) contiene el estado, la estructura propuesta y el contrato de API que consumirá.
 
 ## Arquitectura
 
 ```mermaid
 flowchart LR
-  B[Navegador] -->|HTTPS| R[Render]
-  R --> G[Gunicorn]
-  G --> D[Django 5.2]
-  D --> A[Apps de dominio]
-  A --> T[Templates / HTMX<br/>temporal]
-  A --> DB[(PostgreSQL)]
-  A --> M[(Medios: disco o S3)]
-  F[Next.js<br/>pendiente] -.->|API JSON<br/>pendiente| D
+  F[Next.js<br/>pendiente] -->|HTTPS + Token| A[API Django REST]
+  A --> D[Apps de dominio]
+  D --> DB[(PostgreSQL)]
+  D --> M[(Medios: disco o S3)]
 ```
 
-El backend concentra las reglas de negocio, el modelo de datos, la autenticación, el panel administrativo y la lógica de pedidos/pagos. El frontend futuro consumirá esa lógica a través de una API; la estrategia de autenticación y el contrato de la API se definirán antes de implementar Next.js.
+El backend concentra el modelo de datos, las reglas de negocio, la autenticación y la lógica de catálogo, carrito, pedidos, pagos, reportes y soporte. El frontend consumirá esa lógica únicamente a través de la API JSON.
+
+## Endpoints principales
+
+| Prefijo | Descripción |
+|---|---|
+| `/api/health/` | Health check para Render |
+| `/api/v1/auth/` | Registro, login, logout, perfil y cambio de contraseña |
+| `/api/v1/catalogo/` | Videojuegos, categorías, plataformas y géneros |
+| `/api/v1/pedidos/` | Carrito, historial, detalle y cancelación |
+| `/api/v1/pagos/` | Checkout y pago simulado |
+| `/api/v1/reportes/` | Dashboard y reportes (solo staff) |
+| `/api/v1/soporte/` | Contacto, solicitud de información y bandeja de contactos |
 
 ## Despliegue
 
 El servicio se despliega en **Render** usando el blueprint [`render.yaml`](render.yaml):
 
 - `rootDir: backend` — Render ejecuta el build y el start dentro de `backend/`.
-- Build: `./build.sh` (instala dependencias, ejecuta `collectstatic` y `migrate`).
+- Build: `./build.sh` (instala dependencias y ejecuta `migrate`).
 - Start: Gunicorn con 2 workers y timeout de 120 s.
-- Estáticos: WhiteNoise.
-- Variables sensibles (`SECRET_KEY`, `DATABASE_URL`, `ALLOWED_HOSTS`): se configuran manualmente en el panel de Render, nunca en el repositorio.
+- Health check: `/api/health/`.
+- Variables sensibles (`SECRET_KEY`, `DATABASE_URL`, `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`): se configuran manualmente en el panel de Render, nunca en el repositorio.
 
 ## Documentación
 
+- [API del backend](backend/README.md)
+- [Frontend Next.js (pendiente)](frontend/README.md)
 - [Auditoría inicial del repositorio](docs/audit/INITIAL-AUDIT.md)
 - [Plan del Sprint 1](docs/sprints/SPRINT-1.md)
 - [Diagrama de clases](docs/Diagrama%20de%20clases.drawio.png)
@@ -109,9 +119,10 @@ El servicio se despliega en **Render** usando el blueprint [`render.yaml`](rende
 ## Convenciones
 
 - No subir archivos `.env` ni credenciales. Usar `backend/.env.example` como plantilla.
+- El backend no debe contener HTML, templates, CSS ni lógica de presentación.
+- Las reglas de negocio viven en el backend; el frontend no debe duplicarlas.
 - Los cambios de infraestructura, modelo de datos o configuración de producción deben revisarse con el equipo.
-- Las pruebas del backend se ejecutan con `pytest`; ver las limitaciones actuales en [`backend/README.md`](backend/README.md).
-- Los hallazgos y decisiones del Sprint 1 se documentan en `docs/`.
+- Las pruebas del backend se ejecutan con `pytest`; ver [`backend/README.md`](backend/README.md).
 
 ## Rama de trabajo
 
