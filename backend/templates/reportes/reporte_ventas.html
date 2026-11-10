@@ -62,7 +62,7 @@
         <td class="px-4 py-3 text-gray-400">{{ venta.registrada_en|date:"d/m/Y H:i" }}</td>
         <td class="px-4 py-3 text-gray-400">
           {% for d in venta.pedido.detalles.all %}
-            <span class="inline-block text-xs bg-gray-800 rounded px-1.5 py-0.5 mr-1 mb-0.5">{{ d.videojuego.titulo }} ×{{ d.cantidad }}</span>
+            <span class="inline-block text-xs bg-gray-800 rounded px-1.5 py-0.5 mr-1 mb-0.5">{{ d.titulo_snapshot }} ×{{ d.cantidad }}</span>
           {% empty %}—{% endfor %}
         </td>
         <td class="px-4 py-3 text-right font-bold text-purple-300">{{ venta.total|cop }}</td>

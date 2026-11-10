@@ -1,7 +1,7 @@
 from django.conf import settings
 from django.db import models
 
-from catalogo.models import Videojuego
+from catalogo.models import OfertaVideojuego
 
 
 class Pedido(models.Model):
@@ -39,20 +39,48 @@ class Pedido(models.Model):
 
 
 class DetallePedido(models.Model):
-    pedido = models.ForeignKey(Pedido, on_delete=models.CASCADE, related_name="detalles")
-    videojuego = models.ForeignKey(
-        Videojuego, on_delete=models.PROTECT, related_name="detalles_pedido"
+    """
+    Línea de pedido que referencia la oferta adquirida.
+
+    El detalle congela el precio unitario cobrado y un snapshot del
+    título y la plataforma al momento de la compra: los detalles
+    históricos no cambian aunque el catálogo se modifique después.
+    """
+
+    pedido = models.ForeignKey(
+        Pedido, on_delete=models.CASCADE, related_name="detalles"
+    )
+    oferta = models.ForeignKey(
+        OfertaVideojuego,
+        on_delete=models.PROTECT,
+        related_name="detalles_pedido",
     )
     cantidad = models.PositiveIntegerField(default=1)
     precio_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+    titulo_snapshot = models.CharField(max_length=200)
+    plataforma_snapshot = models.CharField(max_length=100)
 
     class Meta:
         verbose_name = "Detalle de pedido"
         verbose_name_plural = "Detalles de pedido"
-        unique_together = [("pedido", "videojuego")]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["pedido", "oferta"],
+                name="pedidos_detallepedido_pedido_oferta_unicos",
+            ),
+        ]
 
     def __str__(self):
-        return f"{self.cantidad}x {self.videojuego} (Pedido #{self.pedido_id})"
+        return f"{self.cantidad}x {self.titulo_snapshot} (Pedido #{self.pedido_id})"
+
+    def save(self, *args, **kwargs):
+        """Congela el snapshot del título/plataforma solo al crear la línea."""
+        if self._state.adding:
+            if not self.titulo_snapshot:
+                self.titulo_snapshot = self.oferta.videojuego.titulo
+            if not self.plataforma_snapshot:
+                self.plataforma_snapshot = self.oferta.plataforma.nombre
+        super().save(*args, **kwargs)
 
     @property
     def subtotal(self):

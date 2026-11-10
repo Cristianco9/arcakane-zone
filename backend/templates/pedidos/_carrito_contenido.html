@@ -20,7 +20,10 @@
     <tbody class="divide-y divide-gray-800">
       {% for detalle in detalles %}
       <tr>
-        <td class="px-4 py-3 font-medium">{{ detalle.videojuego.titulo }}</td>
+        <td class="px-4 py-3 font-medium">
+          {{ detalle.oferta.videojuego.titulo }}
+          <p class="text-xs text-gray-500 font-normal">{{ detalle.oferta.plataforma }}</p>
+        </td>
 
         <!-- Controles de cantidad con HTMX -->
         <td class="px-4 py-3">

@@ -75,7 +75,7 @@
 </form>
 
 <!-- Resultado -->
-<p class="text-sm text-gray-400 mb-3">{{ videojuegos|length }} resultado{{ videojuegos|length|pluralize:"s" }}</p>
+<p class="text-sm text-gray-400 mb-3">{{ ofertas|length }} resultado{{ ofertas|length|pluralize:"s" }}</p>
 
 <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
   <table class="w-full text-sm">
@@ -92,28 +92,28 @@
       </tr>
     </thead>
     <tbody class="divide-y divide-gray-800">
-      {% for vj in videojuegos %}
+      {% for o in ofertas %}
       <tr class="hover:bg-gray-800 transition">
-        <td class="px-4 py-3 font-medium text-gray-100">{{ vj.titulo }}</td>
-        <td class="px-4 py-3 text-gray-400">{{ vj.categoria }}</td>
-        <td class="px-4 py-3 text-gray-400">{{ vj.genero }}</td>
-        <td class="px-4 py-3 text-gray-400">{{ vj.plataforma }}</td>
-        <td class="px-4 py-3 text-right text-purple-300 font-semibold">{{ vj.precio|cop }}</td>
+        <td class="px-4 py-3 font-medium text-gray-100">{{ o.videojuego.titulo }}</td>
+        <td class="px-4 py-3 text-gray-400">{{ o.videojuego.categoria }}</td>
+        <td class="px-4 py-3 text-gray-400">{{ o.videojuego.genero }}</td>
+        <td class="px-4 py-3 text-gray-400">{{ o.plataforma }}</td>
+        <td class="px-4 py-3 text-right text-purple-300 font-semibold">{{ o.precio_vigente|cop }}</td>
         <td class="px-4 py-3 text-center font-mono
-          {% if vj.stock == 0 %}text-red-400
-          {% elif vj.stock <= 5 %}text-yellow-400
+          {% if o.stock == 0 %}text-red-400
+          {% elif o.stock <= 5 %}text-yellow-400
           {% else %}text-green-400{% endif %}">
-          {{ vj.stock }}
+          {{ o.stock }}
         </td>
         <td class="px-4 py-3 text-center">
-          {% if vj.activo %}
+          {% if o.videojuego.activo %}
             <span class="text-xs bg-green-900 text-green-300 px-2 py-0.5 rounded-full">Activo</span>
           {% else %}
             <span class="text-xs bg-gray-700 text-gray-400 px-2 py-0.5 rounded-full">Inactivo</span>
           {% endif %}
         </td>
         <td class="px-4 py-3 text-center">
-          {% if vj.disponible %}
+          {% if o.disponible %}
             <span class="text-green-400">✓</span>
           {% else %}
             <span class="text-red-500">✗</span>

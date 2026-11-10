@@ -19,7 +19,9 @@ def _es_htmx(request) -> bool:
 
 def _render_carrito_zona(request, mensaje="", exito=True):
     pedido = get_or_create_carrito(request.user)
-    detalles = pedido.detalles.select_related("videojuego").all()
+    detalles = pedido.detalles.select_related(
+        "oferta__videojuego", "oferta__plataforma"
+    ).all()
     return render(request, "pedidos/_carrito_contenido.html", {
         "pedido": pedido,
         "detalles": detalles,
@@ -33,16 +35,18 @@ def _render_carrito_zona(request, mensaje="", exito=True):
 @login_required
 def carrito(request):
     pedido = get_or_create_carrito(request.user)
-    detalles = pedido.detalles.select_related("videojuego").all()
+    detalles = pedido.detalles.select_related(
+        "oferta__videojuego", "oferta__plataforma"
+    ).all()
     return render(request, "pedidos/carrito.html", {"pedido": pedido, "detalles": detalles})
 
 
 @login_required
-def agregar_al_carrito(request, videojuego_id):
+def agregar_al_carrito(request, oferta_id):
     if request.method != "POST":
         return redirect("catalogo:lista")
 
-    exito, mensaje = agregar_o_incrementar(request.user, videojuego_id)
+    exito, mensaje = agregar_o_incrementar(request.user, oferta_id)
 
     if _es_htmx(request):
         hx_target = request.headers.get("HX-Target", "")
@@ -111,7 +115,7 @@ def mis_pedidos(request):
         Pedido.objects.filter(cliente=request.user)
         .annotate(num_detalles=Count("detalles"))
         .exclude(num_detalles=0)
-        .prefetch_related("detalles__videojuego")
+        .prefetch_related("detalles")
         .order_by("-creado_en")
     )
     return render(request, "pedidos/mis_pedidos.html", {"pedidos": pedidos})
@@ -121,7 +125,7 @@ def mis_pedidos(request):
 def detalle_pedido(request, pk):
     """HU18: detalle completo de un pedido del cliente."""
     pedido = get_object_or_404(Pedido, pk=pk, cliente=request.user)
-    detalles = pedido.detalles.select_related("videojuego").all()
+    detalles = pedido.detalles.all()
     return render(request, "pedidos/detalle.html", {"pedido": pedido, "detalles": detalles})
 
 

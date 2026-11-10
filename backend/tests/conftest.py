@@ -2,7 +2,7 @@
 import pytest
 from decimal import Decimal
 
-from catalogo.models import Categoria, Genero, Plataforma, Videojuego
+from catalogo.models import Categoria, Genero, OfertaVideojuego, Plataforma, Videojuego
 from cuentas.models import Rol, Usuario
 from pedidos.models import DetallePedido, Pedido
 
@@ -57,45 +57,60 @@ def plataforma(db):
 
 
 @pytest.fixture
+def plataforma_alternativa(db):
+    return Plataforma.objects.create(nombre="PlayStation 5")
+
+
+@pytest.fixture
 def genero(db):
     return Genero.objects.create(nombre="RPG")
 
 
 @pytest.fixture
-def videojuego(db, categoria, plataforma, genero):
+def videojuego(db, categoria, genero):
     return Videojuego.objects.create(
         titulo="Juego Alpha",
-        precio=Decimal("80000"),
-        stock=10,
         activo=True,
         categoria=categoria,
-        plataforma=plataforma,
         genero=genero,
     )
 
 
 @pytest.fixture
-def videojuego_agotado(db, categoria, plataforma, genero):
-    return Videojuego.objects.create(
-        titulo="Juego Agotado",
-        precio=Decimal("60000"),
-        stock=0,
-        activo=True,
-        categoria=categoria,
+def oferta(db, videojuego, plataforma):
+    """Oferta publicada con stock: la unidad vendible por defecto."""
+    return OfertaVideojuego.objects.create(
+        videojuego=videojuego,
         plataforma=plataforma,
-        genero=genero,
+        precio_vigente=Decimal("80000"),
+        stock=10,
+        sku="AZ-0001-001",
+        estado_publicacion=OfertaVideojuego.EstadoPublicacion.PUBLICADO,
+    )
+
+
+@pytest.fixture
+def oferta_agotada(db, videojuego, plataforma):
+    """Oferta publicada pero sin stock."""
+    return OfertaVideojuego.objects.create(
+        videojuego=videojuego,
+        plataforma=plataforma,
+        precio_vigente=Decimal("60000"),
+        stock=0,
+        sku="AZ-0002-001",
+        estado_publicacion=OfertaVideojuego.EstadoPublicacion.PUBLICADO,
     )
 
 
 # ── Pedido con un ítem ────────────────────────────────────────────────────────
 
 @pytest.fixture
-def pedido_con_item(db, usuario_cliente, videojuego):
+def pedido_con_item(db, usuario_cliente, oferta):
     pedido = Pedido.objects.create(cliente=usuario_cliente, estado=Pedido.Estado.PENDIENTE)
     DetallePedido.objects.create(
         pedido=pedido,
-        videojuego=videojuego,
+        oferta=oferta,
         cantidad=2,
-        precio_unitario=videojuego.precio,
+        precio_unitario=oferta.precio_vigente,
     )
     return pedido

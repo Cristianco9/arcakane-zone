@@ -35,8 +35,8 @@
         {% for d in detalles %}
         <tr>
           <td class="px-4 py-3 font-medium">
-            {{ d.videojuego.titulo }}
-            <p class="text-xs text-gray-500 font-normal">{{ d.videojuego.plataforma }}</p>
+            {{ d.titulo_snapshot }}
+            <p class="text-xs text-gray-500 font-normal">{{ d.plataforma_snapshot }}</p>
           </td>
           <td class="px-4 py-3 text-center">{{ d.cantidad }}</td>
           <td class="px-4 py-3 text-right text-gray-400">{{ d.precio_unitario|cop }}</td>

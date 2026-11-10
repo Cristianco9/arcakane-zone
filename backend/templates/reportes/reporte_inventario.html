@@ -14,7 +14,7 @@
   <a href="{% url 'reportes:inventario' %}?filtro=todos"
      class="bg-gray-900 border {% if filtro == 'todos' %}border-purple-600{% else %}border-gray-800{% endif %} rounded-xl p-4 text-center hover:border-purple-600 transition">
     <p class="text-xs text-gray-400 mb-1">Todos</p>
-    <p class="text-xl font-bold text-gray-200">{{ videojuegos|length }}</p>
+    <p class="text-xl font-bold text-gray-200">{{ ofertas|length }}</p>
   </a>
   <a href="{% url 'reportes:inventario' %}?filtro=agotados"
      class="bg-gray-900 border {% if filtro == 'agotados' %}border-red-600{% else %}border-gray-800{% endif %} rounded-xl p-4 text-center hover:border-red-600 transition">
@@ -26,9 +26,9 @@
     <p class="text-xs text-gray-400 mb-1">Bajo stock (≤{{ umbral }})</p>
     <p class="text-xl font-bold text-yellow-400">{{ total_bajo_stock }}</p>
   </a>
-  <a href="{% url 'reportes:inventario' %}?filtro=inactivos"
-     class="bg-gray-900 border {% if filtro == 'inactivos' %}border-gray-500{% else %}border-gray-800{% endif %} rounded-xl p-4 text-center hover:border-gray-500 transition">
-    <p class="text-xs text-gray-400 mb-1">Inactivos</p>
+  <a href="{% url 'reportes:inventario' %}?filtro=inactivas"
+     class="bg-gray-900 border {% if filtro == 'inactivas' %}border-gray-500{% else %}border-gray-800{% endif %} rounded-xl p-4 text-center hover:border-gray-500 transition">
+    <p class="text-xs text-gray-400 mb-1">No publicadas</p>
     <p class="text-xl font-bold text-gray-400">—</p>
   </a>
 </div>
@@ -52,9 +52,9 @@
      class="px-3 py-1.5 rounded-lg border {% if filtro == 'agotados' %}border-red-600 bg-red-900 text-white{% else %}border-gray-700 text-gray-400 hover:border-gray-500{% endif %} transition">
     Agotados
   </a>
-  <a href="?filtro=inactivos"
-     class="px-3 py-1.5 rounded-lg border {% if filtro == 'inactivos' %}border-gray-500 bg-gray-800 text-white{% else %}border-gray-700 text-gray-400 hover:border-gray-500{% endif %} transition">
-    Inactivos
+  <a href="?filtro=inactivas"
+     class="px-3 py-1.5 rounded-lg border {% if filtro == 'inactivas' %}border-gray-500 bg-gray-800 text-white{% else %}border-gray-700 text-gray-400 hover:border-gray-500{% endif %} transition">
+    No publicadas
   </a>
 </div>
 
@@ -72,28 +72,30 @@
       </tr>
     </thead>
     <tbody class="divide-y divide-gray-800">
-      {% for vj in videojuegos %}
+      {% for o in ofertas %}
       <tr class="hover:bg-gray-800 transition
-        {% if vj.stock == 0 and vj.activo %}bg-red-950/30
-        {% elif vj.stock <= umbral and vj.stock > 0 and vj.activo %}bg-yellow-950/30{% endif %}">
-        <td class="px-4 py-3 font-medium text-gray-100">{{ vj.titulo }}</td>
-        <td class="px-4 py-3 text-gray-400">{{ vj.categoria }}</td>
-        <td class="px-4 py-3 text-gray-400">{{ vj.plataforma }}</td>
+        {% if o.stock == 0 and o.esta_publicada %}bg-red-950/30
+        {% elif o.stock <= umbral and o.stock > 0 and o.esta_publicada %}bg-yellow-950/30{% endif %}">
+        <td class="px-4 py-3 font-medium text-gray-100">{{ o.videojuego.titulo }}</td>
+        <td class="px-4 py-3 text-gray-400">{{ o.videojuego.categoria }}</td>
+        <td class="px-4 py-3 text-gray-400">{{ o.plataforma }}</td>
         <td class="px-4 py-3 text-center font-mono font-bold
-          {% if vj.stock == 0 %}text-red-400
-          {% elif vj.stock <= umbral %}text-yellow-400
+          {% if o.stock == 0 %}text-red-400
+          {% elif o.stock <= umbral %}text-yellow-400
           {% else %}text-green-400{% endif %}">
-          {{ vj.stock }}
+          {{ o.stock }}
         </td>
         <td class="px-4 py-3 text-center">
-          {% if vj.activo %}
-            <span class="text-xs bg-green-900 text-green-300 px-2 py-0.5 rounded-full">Activo</span>
+          {% if o.esta_publicada %}
+            <span class="text-xs bg-green-900 text-green-300 px-2 py-0.5 rounded-full">Publicada</span>
+          {% elif o.estado_publicacion == 'borrador' %}
+            <span class="text-xs bg-yellow-900 text-yellow-300 px-2 py-0.5 rounded-full">Borrador</span>
           {% else %}
-            <span class="text-xs bg-gray-700 text-gray-400 px-2 py-0.5 rounded-full">Inactivo</span>
+            <span class="text-xs bg-gray-700 text-gray-400 px-2 py-0.5 rounded-full">Retirada</span>
           {% endif %}
         </td>
         <td class="px-4 py-3 text-center">
-          {% if vj.disponible %}
+          {% if o.disponible %}
             <span class="text-green-400 text-base">✓</span>
           {% else %}
             <span class="text-red-500 text-base">✗</span>

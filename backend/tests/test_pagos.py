@@ -4,7 +4,6 @@ Pruebas del pago simulado:
   - Rechazado: estado sigue pendiente, stock sin cambios, Venta NO generada
   - No se puede pagar un pedido ya pagado
 """
-from decimal import Decimal
 from unittest.mock import patch
 
 import pytest
@@ -25,15 +24,15 @@ def test_pago_aprobado_cambia_estado_a_pagado(pedido_con_item):
 
 
 @pytest.mark.django_db
-def test_pago_aprobado_descuenta_stock(pedido_con_item, videojuego):
-    stock_inicial = videojuego.stock
+def test_pago_aprobado_descuenta_stock(pedido_con_item, oferta):
+    stock_inicial = oferta.stock
     cantidad_pedida = pedido_con_item.detalles.first().cantidad
 
     with patch("pagos.services.random.random", return_value=0.0):
         procesar_pago_simulado(pedido_con_item)
 
-    videojuego.refresh_from_db()
-    assert videojuego.stock == stock_inicial - cantidad_pedida
+    oferta.refresh_from_db()
+    assert oferta.stock == stock_inicial - cantidad_pedida
 
 
 @pytest.mark.django_db
@@ -57,14 +56,14 @@ def test_pago_rechazado_no_cambia_estado(pedido_con_item):
 
 
 @pytest.mark.django_db
-def test_pago_rechazado_no_descuenta_stock(pedido_con_item, videojuego):
-    stock_inicial = videojuego.stock
+def test_pago_rechazado_no_descuenta_stock(pedido_con_item, oferta):
+    stock_inicial = oferta.stock
 
     with patch("pagos.services.random.random", return_value=0.95):
         procesar_pago_simulado(pedido_con_item)
 
-    videojuego.refresh_from_db()
-    assert videojuego.stock == stock_inicial
+    oferta.refresh_from_db()
+    assert oferta.stock == stock_inicial
 
 
 @pytest.mark.django_db
