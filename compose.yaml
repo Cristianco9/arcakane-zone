@@ -1,0 +1,157 @@
+name: ${COMPOSE_PROJECT_NAME:-arkane-zone}
+
+# Stack de desarrollo. Para producción usa además compose.prod.yaml:
+#   docker compose -f compose.yaml -f compose.prod.yaml up -d --build
+#
+# Todos los valores variables se leen del archivo .env de la raíz.
+# No hay credenciales ni puertos sensibles escritos directamente aquí.
+
+services:
+  db:
+    image: postgres:16.4-alpine
+    container_name: ${COMPOSE_PROJECT_NAME:-arkane-zone}-db
+    restart: unless-stopped
+    command: ["postgres", "-p", "${POSTGRES_PORT:-5432}"]
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      PGDATA: /var/lib/postgresql/data/pgdata
+      TZ: ${TZ:-America/Bogota}
+    ports:
+      - "${POSTGRES_PUBLISHED_PORT:-5432}:${POSTGRES_PORT:-5432}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - arkane_net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -h 127.0.0.1 -p ${POSTGRES_PORT:-5432} -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\"",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 15s
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: runtime
+    image: ${COMPOSE_PROJECT_NAME:-arkane-zone}-backend:${IMAGE_TAG:-local}
+    container_name: ${COMPOSE_PROJECT_NAME:-arkane-zone}-backend
+    restart: unless-stopped
+    command:
+      ["python", "manage.py", "runserver", "0.0.0.0:${BACKEND_PORT:-8000}"]
+    environment:
+      SECRET_KEY: ${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY is required}
+      DEBUG: ${DJANGO_DEBUG:-True}
+      ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:?DJANGO_ALLOWED_HOSTS is required}
+      CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_HOST: ${POSTGRES_HOST:-db}
+      POSTGRES_PORT: ${POSTGRES_PORT:-5432}
+      SECURE_SSL_REDIRECT: ${SECURE_SSL_REDIRECT:-False}
+      USE_X_FORWARDED_HOST: ${USE_X_FORWARDED_HOST:-False}
+      RUN_MIGRATIONS: ${RUN_MIGRATIONS:-true}
+      COLLECTSTATIC: ${COLLECTSTATIC:-true}
+      SEED_CATALOGO: ${SEED_CATALOGO:-false}
+      TZ: ${TZ:-America/Bogota}
+    ports:
+      - "${BACKEND_PUBLISHED_PORT:-8000}:${BACKEND_PORT:-8000}"
+    volumes:
+      - backend_media:/app/media
+      - backend_static:/app/staticfiles
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - arkane_net
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:${BACKEND_PORT:-8000}/', timeout=5)",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    image: ${COMPOSE_PROJECT_NAME:-arkane-zone}-frontend:${IMAGE_TAG:-local}
+    container_name: ${COMPOSE_PROJECT_NAME:-arkane-zone}-frontend
+    restart: unless-stopped
+    environment:
+      FRONTEND_PORT: ${FRONTEND_PORT:-8080}
+      VITE_DEV_PROXY_TARGET: http://${BACKEND_HOST:-backend}:${BACKEND_PORT:-8000}
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
+      TZ: ${TZ:-America/Bogota}
+    ports:
+      - "${FRONTEND_PUBLISHED_PORT:-5173}:${FRONTEND_PORT:-8080}"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - arkane_net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://127.0.0.1:${FRONTEND_PORT:-8080}/ >/dev/null || exit 1",
+        ]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  pgadmin:
+    image: dpage/pgadmin4:8.14
+    container_name: ${COMPOSE_PROJECT_NAME:-arkane-zone}-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:?PGADMIN_DEFAULT_EMAIL is required}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:?PGADMIN_DEFAULT_PASSWORD is required}
+      PGADMIN_LISTEN_PORT: ${PGADMIN_PORT:-80}
+      PGADMIN_CONFIG_SERVER_MODE: "True"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+      TZ: ${TZ:-America/Bogota}
+    ports:
+      - "${PGADMIN_PUBLISHED_PORT:-5050}:${PGADMIN_PORT:-80}"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - arkane_net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://localhost:${PGADMIN_PORT:-80}/misc/ping >/dev/null || exit 1",
+        ]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+networks:
+  arkane_net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+  backend_media:
+  backend_static:

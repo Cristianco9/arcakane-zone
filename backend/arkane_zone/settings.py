@@ -8,7 +8,7 @@ environ.Env.read_env(BASE_DIR / ".env")
 
 SECRET_KEY = env("SECRET_KEY")
 DEBUG = env("DEBUG")
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1"])
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1", "backend"])
 
 # Render expone el hostname del servicio en esta variable; lo agregamos automáticamente.
 RENDER_EXTERNAL_HOSTNAME = env("RENDER_EXTERNAL_HOSTNAME", default=None)
@@ -68,7 +68,20 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "arkane_zone.wsgi.application"
 
-_db_config = env.db("DATABASE_URL")
+_database_url = env("DATABASE_URL", default="")
+if _database_url:
+    _db_config = env.db_url_config(_database_url)
+else:
+    # En Docker Compose la configuración se pasa como variables POSTGRES_*.
+    # Así se evita tener que URL-encodear contraseñas dentro de DATABASE_URL.
+    _db_config = {
+        "ENGINE": "django.db.backends.postgresql",
+        "NAME": env("POSTGRES_DB"),
+        "USER": env("POSTGRES_USER"),
+        "PASSWORD": env("POSTGRES_PASSWORD"),
+        "HOST": env("POSTGRES_HOST", default="db"),
+        "PORT": env("POSTGRES_PORT", default="5432"),
+    }
 _db_config["CONN_MAX_AGE"] = 0
 DATABASES = {"default": _db_config}
 
@@ -87,7 +100,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = "/static/"
-STATICFILES_DIRS = [BASE_DIR / "static"]
+STATICFILES_DIRS = [BASE_DIR / "static"] if (BASE_DIR / "static").exists() else []
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # WhiteNoise: sirve estáticos comprimidos y con caché en producción.
@@ -140,14 +153,25 @@ DEFAULT_FROM_EMAIL = "Arkane Zone <noreply@arkanezone.co>"
 # CSRF: permite peticiones desde el dominio de Render en producción.
 CSRF_TRUSTED_ORIGINS = env.list(
     "CSRF_TRUSTED_ORIGINS",
-    default=["http://localhost:8000", "http://127.0.0.1:8000"],
+    default=[
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
 )
 if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
 
-# Seguridad adicional en producción (no aplica en local con DEBUG=True)
+# Detrás de un proxy inverso (Nginx, Render, etc.) que termina TLS.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = env.bool("USE_X_FORWARDED_HOST", default=False)
+
+# Seguridad adicional en producción (no aplica en local con DEBUG=True).
+# En Docker el healthcheck interno viaja por HTTP, por eso SECURE_SSL_REDIRECT
+# se puede desactivar dentro del contenedor cuando TLS termina en el proxy.
 if not DEBUG:
-    SECURE_SSL_REDIRECT = True
+    SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=True)
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = 31536000

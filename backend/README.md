@@ -2,7 +2,34 @@
 
 Aplicación backend del sistema Arkane Zone. Contiene el modelo de datos, las reglas de negocio, la autenticación, el panel administrativo y la lógica de catálogo, carrito, pedidos, pagos, reportes y soporte.
 
-> **Estado actual:** el backend sigue sirviendo la interfaz con Django Templates + HTMX. La separación definitiva se completará cuando el frontend en Next.js consuma una API JSON. Hoy las rutas existentes devuelven HTML; **todavía no existe una API REST/JSON formal**.
+> **Estado actual:** el backend sigue sirviendo la interfaz con Django Templates + HTMX. La separación definitiva se completará cuando el frontend consuma una API JSON. Hoy las rutas existentes devuelven HTML; **todavía no existe una API REST/JSON formal**.
+
+## Docker
+
+El backend forma parte del stack Docker Compose definido en la raíz del repositorio. Para levantar todo (PostgreSQL, backend, frontend y pgAdmin):
+
+```bash
+cp .env.example .env      # en la raíz del repositorio
+# editar secretos
+docker compose up -d --build
+```
+
+La guía completa —variables, puertos, migraciones, superusuario, logs, respaldos y diferencias entre desarrollo y producción— está en el [README principal](../README.md).
+
+Archivos relevantes de esta carpeta:
+
+- `Dockerfile`: imagen de producción basada en `python:3.12.9-slim`, usuario no privilegiado y Gunicorn por defecto.
+- `.dockerignore`: excluye `.env`, `.venv`, pruebas, medios y estáticos locales del contexto de build.
+- `docker/entrypoint.sh`: espera a PostgreSQL, aplica migraciones, recolecta estáticos y opcionalmente ejecuta `seed_catalogo`.
+
+Comandos habituales dentro del contenedor:
+
+```bash
+docker compose exec backend python manage.py migrate
+docker compose exec backend python manage.py createsuperuser
+docker compose exec backend python manage.py seed_catalogo
+docker compose exec backend python manage.py shell
+```
 
 ## Estructura
 
@@ -21,6 +48,10 @@ backend/
 ├── requirements.txt
 ├── pytest.ini
 ├── build.sh              # Build de Render
+├── Dockerfile            # Imagen para Docker Compose
+├── .dockerignore
+├── docker/
+│   └── entrypoint.sh     # Espera DB, migra, recolecta estáticos y arranca
 └── .env.example
 ```
 
@@ -52,10 +83,17 @@ cp .env.example .env
 | Variable | Obligatoria | Descripción |
 |---|---|---|
 | `SECRET_KEY` | Sí | Clave secreta de Django. No debe compartirse ni versionarse. |
-| `DATABASE_URL` | Sí | URL de conexión PostgreSQL, por ejemplo `postgres://usuario:clave@host:5432/db`. |
+| `DATABASE_URL` | Condicional | URL de conexión PostgreSQL, por ejemplo `postgres://usuario:clave@host:5432/db`. Si no se define, se usan las variables `POSTGRES_*`. |
+| `POSTGRES_DB` | Condicional | Nombre de la base de datos cuando se usa el fallback de Docker Compose. |
+| `POSTGRES_USER` | Condicional | Usuario de PostgreSQL cuando se usa el fallback de Docker Compose. |
+| `POSTGRES_PASSWORD` | Condicional | Contraseña de PostgreSQL cuando se usa el fallback de Docker Compose. |
+| `POSTGRES_HOST` | No | Host de PostgreSQL; por defecto `db` en Docker. |
+| `POSTGRES_PORT` | No | Puerto de PostgreSQL; por defecto `5432`. |
 | `DEBUG` | No | `True` en desarrollo; por defecto `False`. |
-| `ALLOWED_HOSTS` | No | Lista separada por comas. Por defecto `localhost,127.0.0.1`. |
+| `ALLOWED_HOSTS` | No | Lista separada por comas. Por defecto `localhost,127.0.0.1,backend`. |
 | `CSRF_TRUSTED_ORIGINS` | No | Orígenes permitidos para CSRF. En Render se agrega automáticamente el host público. |
+| `SECURE_SSL_REDIRECT` | No | Fuerza HTTPS cuando `DEBUG=False`; por defecto `True`. En Docker se pone `False` porque TLS termina en el proxy. |
+| `USE_X_FORWARDED_HOST` | No | Usa `X-Forwarded-Host` detrás de un proxy; por defecto `False`. |
 | `RENDER_EXTERNAL_HOSTNAME` | No | La define Render; se agrega a `ALLOWED_HOSTS` y `CSRF_TRUSTED_ORIGINS`. |
 | `AWS_ACCESS_KEY_ID` | No | Si se define, activa almacenamiento S3 para medios. |
 | `AWS_SECRET_ACCESS_KEY` | No | Credencial S3. |
@@ -105,7 +143,7 @@ pip install pytest pytest-django
 SECRET_KEY=test-key DATABASE_URL=sqlite:///db.sqlite3 DEBUG=True pytest
 ```
 
-Estado verificado de la suite: **29 pruebas**, todas pasan con `DEBUG=True`.
+Estado verificado de la suite: **47 pruebas**, todas pasan con `DEBUG=True`.
 
 > **Limitación conocida:** `settings_test.py` hereda `settings.py`; con `DEBUG=False` se activa `SECURE_SSL_REDIRECT` y 14 pruebas de autorización fallan por recibir un `301` en lugar de `302`. Además, `pytest` y `pytest-django` no están en `requirements.txt`. Ambas cosas están registradas como hallazgos del Sprint 1 y deben corregirse en un issue posterior.
 
@@ -147,18 +185,18 @@ El blueprint está en la raíz del repositorio: [`../render.yaml`](../render.yam
 
 - **Medios:** si no se configuran las variables `AWS_*`, las portadas y fotos se guardan en el sistema de archivos local de Render, que es efímero. Además, `/media/` solo se sirve con `DEBUG=True`. Para producción se debe configurar S3/Supabase Storage o aceptar explícitamente la limitación.
 - **Correo:** `EMAIL_BACKEND` está fijado al backend de consola. El reseteo de contraseña no envía correos reales y los enlaces quedan en los logs. Configurar SMTP antes de habilitar recuperación de contraseña en producción.
-- **Proxy HTTPS:** al estar detrás del proxy de Render, se debe validar `SECURE_PROXY_SSL_HEADER` para evitar redirecciones SSL incorrectas.
+- **Proxy HTTPS:** `SECURE_PROXY_SSL_HEADER` está configurado para confiar en `X-Forwarded-Proto`. En Docker, `SECURE_SSL_REDIRECT` se desactiva dentro del contenedor porque TLS termina en el proxy inverso; el healthcheck interno usa HTTP.
 - **Migraciones:** actualmente se ejecutan durante el build. Evaluar un `preDeployCommand` antes de un despliegue con más de una instancia.
 - **Validación:** ejecutar `python manage.py check --deploy` antes de cada despliegue.
 
-## Transición a Next.js
+## Transición al frontend separado
 
 Cuando se implemente el frontend:
 
 1. Definir el contrato de la API (endpoints, serialización y errores).
 2. Elegir la estrategia de autenticación (sesión/cookies o tokens) y configurar CORS/CSRF.
 3. Exponer endpoints JSON para catálogo, carrito, pedidos, pagos, reportes y soporte.
-4. Reemplazar gradualmente `backend/templates/` por las vistas de Next.js.
+4. Reemplazar gradualmente `backend/templates/` por las vistas del frontend.
 5. Mantener `/admin/` en Django para la administración interna.
 
 Hasta que ese trabajo exista, este backend debe seguir funcionando como aplicación Django completa.

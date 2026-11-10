@@ -1,0 +1,51 @@
+# Override de producción. Se combina con compose.yaml:
+#   docker compose -f compose.yaml -f compose.prod.yaml up -d --build
+#
+# Requisitos antes de usarlo:
+#   - DJANGO_DEBUG=False en .env
+#   - secretos fuertes y reales en .env (o Docker secrets, ver README)
+#   - DJANGO_ALLOWED_HOSTS con el dominio público
+#   - TLS terminado en un proxy inverso externo (SECURE_SSL_REDIRECT=False
+#     dentro del contenedor para que el healthcheck HTTP funcione)
+
+services:
+  db:
+    restart: always
+
+  backend:
+    restart: always
+    command:
+      [
+        "gunicorn",
+        "arkane_zone.wsgi:application",
+        "--bind",
+        "0.0.0.0:${BACKEND_PORT:-8000}",
+        "--workers",
+        "${BACKEND_WORKERS:-2}",
+        "--timeout",
+        "${BACKEND_TIMEOUT:-120}",
+        "--access-logfile",
+        "-",
+        "--error-logfile",
+        "-",
+      ]
+    environment:
+      DEBUG: "False"
+      SECURE_SSL_REDIRECT: ${SECURE_SSL_REDIRECT:-False}
+
+  frontend:
+    restart: always
+    build:
+      target: production
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
+    environment:
+      BACKEND_HOST: ${BACKEND_HOST:-backend}
+      BACKEND_PORT: ${BACKEND_PORT:-8000}
+      FRONTEND_PORT: ${FRONTEND_PORT:-8080}
+
+  pgadmin:
+    restart: always
+    environment:
+      # En producción pgAdmin exige una master password adicional.
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "True"
