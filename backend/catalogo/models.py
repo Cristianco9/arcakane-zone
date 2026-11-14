@@ -53,11 +53,19 @@ class Videojuego(models.Model):
     descripcion = models.TextField(blank=True)
     portada = models.ImageField(upload_to="portadas/", null=True, blank=True)
     fecha_lanzamiento = models.DateField(null=True, blank=True)
-    categoria = models.ForeignKey(
-        Categoria, on_delete=models.PROTECT, related_name="videojuegos"
+    # Un título puede pertenecer a varias categorías y géneros. El vínculo se
+    # materializa en las tablas puente VideojuegoCategoria / VideojuegoGenero.
+    categorias = models.ManyToManyField(
+        Categoria,
+        through="VideojuegoCategoria",
+        related_name="videojuegos",
+        blank=True,
     )
-    genero = models.ForeignKey(
-        Genero, on_delete=models.PROTECT, related_name="videojuegos"
+    generos = models.ManyToManyField(
+        Genero,
+        through="VideojuegoGenero",
+        related_name="videojuegos",
+        blank=True,
     )
     activo = models.BooleanField(default=True)
     creado_en = models.DateTimeField(auto_now_add=True)
@@ -67,18 +75,6 @@ class Videojuego(models.Model):
         verbose_name = "Videojuego"
         verbose_name_plural = "Videojuegos"
         ordering = ["titulo"]
-        indexes = [
-            # Listados de catálogo filtrados por categoría y vigencia.
-            models.Index(
-                fields=["categoria", "activo"],
-                name="catalogo_vj_cat_activo_idx",
-            ),
-            # Listados de catálogo filtrados por género y vigencia.
-            models.Index(
-                fields=["genero", "activo"],
-                name="catalogo_vj_gen_activo_idx",
-            ),
-        ]
 
     def __str__(self):
         return self.titulo
@@ -87,6 +83,81 @@ class Videojuego(models.Model):
     def disponible(self) -> bool:
         """Un título es vendible si alguna de sus ofertas está publicada y con stock."""
         return self.ofertas.vendibles().exists()
+
+
+class VideojuegoCategoria(models.Model):
+    """
+    Asociación explícita entre un videojuego y una categoría del catálogo.
+
+    Regla de negocio: un videojuego puede tener varias categorías y una
+    categoría agrupa varios videojuegos, pero la pareja
+    (videojuego, categoría) no puede repetirse. La base de datos lo garantiza
+    con un UniqueConstraint, no solo la aplicación.
+    """
+
+    videojuego = models.ForeignKey(
+        Videojuego, on_delete=models.CASCADE, related_name="vinculos_categoria"
+    )
+    categoria = models.ForeignKey(
+        Categoria, on_delete=models.PROTECT, related_name="vinculos_videojuego"
+    )
+
+    class Meta:
+        verbose_name = "Categoría del videojuego"
+        verbose_name_plural = "Categorías del videojuego"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["videojuego", "categoria"],
+                name="catalogo_videojuegocategoria_videojuego_categoria_unicos",
+            ),
+        ]
+        indexes = [
+            # Listado de videojuegos por categoría (consulta inversa del M2M).
+            models.Index(
+                fields=["categoria", "videojuego"],
+                name="catalogo_vjc_categoria_idx",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.videojuego.titulo} · {self.categoria.nombre}"
+
+
+class VideojuegoGenero(models.Model):
+    """
+    Asociación explícita entre un videojuego y un género del catálogo.
+
+    Regla de negocio: un videojuego puede tener varios géneros y un género
+    agrupa varios videojuegos, pero la pareja (videojuego, género) no puede
+    repetirse. La base de datos lo garantiza con un UniqueConstraint.
+    """
+
+    videojuego = models.ForeignKey(
+        Videojuego, on_delete=models.CASCADE, related_name="vinculos_genero"
+    )
+    genero = models.ForeignKey(
+        Genero, on_delete=models.PROTECT, related_name="vinculos_videojuego"
+    )
+
+    class Meta:
+        verbose_name = "Género del videojuego"
+        verbose_name_plural = "Géneros del videojuego"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["videojuego", "genero"],
+                name="catalogo_videojuegogenero_videojuego_genero_unicos",
+            ),
+        ]
+        indexes = [
+            # Listado de videojuegos por género (consulta inversa del M2M).
+            models.Index(
+                fields=["genero", "videojuego"],
+                name="catalogo_vjg_genero_idx",
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.videojuego.titulo} · {self.genero.nombre}"
 
 
 class OfertaVideojuegoQuerySet(models.QuerySet):
