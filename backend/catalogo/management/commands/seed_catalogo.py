@@ -2,7 +2,15 @@ from datetime import date
 
 from django.core.management.base import BaseCommand
 
-from catalogo.models import Categoria, Genero, OfertaVideojuego, Plataforma, Videojuego
+from catalogo.models import (
+    Categoria,
+    Genero,
+    OfertaVideojuego,
+    Plataforma,
+    Videojuego,
+    VideojuegoCategoria,
+    VideojuegoGenero,
+)
 from cuentas.models import Rol
 
 
@@ -260,12 +268,20 @@ class Command(BaseCommand):
                 defaults={
                     "descripcion": datos["descripcion"],
                     "fecha_lanzamiento": datos["fecha_lanzamiento"],
-                    "categoria": datos["categoria"],
-                    "genero": datos["genero"],
                 },
             )
             if nuevo:
                 juegos_creados += 1
+
+            # Asociación inicial en las tablas puente. Se mantiene una sola
+            # categoría y un solo género por juego para no alterar los datos
+            # esperados por el resto del sistema.
+            VideojuegoCategoria.objects.get_or_create(
+                videojuego=videojuego, categoria=datos["categoria"]
+            )
+            VideojuegoGenero.objects.get_or_create(
+                videojuego=videojuego, genero=datos["genero"]
+            )
 
             for oferta in datos["ofertas"]:
                 plataforma = plt[oferta["plataforma"]]
