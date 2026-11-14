@@ -4,7 +4,15 @@ import uuid
 import pytest
 from decimal import Decimal
 
-from catalogo.models import Categoria, Genero, OfertaVideojuego, Plataforma, Videojuego
+from catalogo.models import (
+    Categoria,
+    Genero,
+    OfertaVideojuego,
+    Plataforma,
+    Videojuego,
+    VideojuegoCategoria,
+    VideojuegoGenero,
+)
 from cuentas.models import Rol, Usuario
 from inventario.models import (
     MotivoMovimientoInventario,
@@ -75,12 +83,10 @@ def genero(db):
 
 @pytest.fixture
 def videojuego(db, categoria, genero):
-    return Videojuego.objects.create(
-        titulo="Juego Alpha",
-        activo=True,
-        categoria=categoria,
-        genero=genero,
-    )
+    juego = Videojuego.objects.create(titulo="Juego Alpha", activo=True)
+    VideojuegoCategoria.objects.create(videojuego=juego, categoria=categoria)
+    VideojuegoGenero.objects.create(videojuego=juego, genero=genero)
+    return juego
 
 
 @pytest.fixture

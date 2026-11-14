@@ -125,16 +125,16 @@ def test_venta_total_cero_es_valido(pedido_con_item):
 
 @pytest.mark.django_db
 def test_indices_nuevos_existen_en_la_base_de_datos():
-    """La migración crea los índices de consulta planificados (AZ-S1-15)."""
+    """Las migraciones crean los índices de consulta planificados (AZ-S1-15/16)."""
     esperados = {
         "catalogo_ofertavideojuego": {
             "catalogo_oferta_est_stock_idx",
             "catalogo_oferta_plat_est_idx",
         },
-        "catalogo_videojuego": {
-            "catalogo_vj_cat_activo_idx",
-            "catalogo_vj_gen_activo_idx",
-        },
+        # Las tablas puente sustituyen los índices de Videojuego(categoria|genero, activo),
+        # que dejan de existir al retirar las FKs directas.
+        "catalogo_videojuegocategoria": {"catalogo_vjc_categoria_idx"},
+        "catalogo_videojuegogenero": {"catalogo_vjg_genero_idx"},
         "pedidos_pedido": {"pedidos_pedido_cli_fecha_idx"},
         "pagos_venta": {"pagos_venta_registrada_idx"},
     }
@@ -145,3 +145,14 @@ def test_indices_nuevos_existen_en_la_base_de_datos():
             assert nombres <= set(indices), (
                 f"Faltan índices en {tabla}: {nombres - set(indices)}"
             )
+
+        indices_videojuego = set(
+            connection.introspection.get_constraints(cursor, "catalogo_videojuego")
+        )
+        obsoletos = {
+            "catalogo_vj_cat_activo_idx",
+            "catalogo_vj_gen_activo_idx",
+        }
+        assert not (obsoletos & indices_videojuego), (
+            f"Los índices de AZ-S1-15 deben retirarse: {obsoletos & indices_videojuego}"
+        )

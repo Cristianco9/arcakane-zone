@@ -17,6 +17,8 @@ from catalogo.models import (
     OfertaVideojuego,
     Plataforma,
     Videojuego,
+    VideojuegoCategoria,
+    VideojuegoGenero,
 )
 from pedidos.models import DetallePedido, Pedido
 
@@ -170,9 +172,9 @@ def test_migraciones_desde_cero_aplican_limpio(usuario_cliente):
     categoria = Categoria.objects.create(nombre="Acción")
     genero = Genero.objects.create(nombre="RPG")
     plataforma = Plataforma.objects.create(nombre="PC")
-    videojuego = Videojuego.objects.create(
-        titulo="Juego Desde Cero", categoria=categoria, genero=genero
-    )
+    videojuego = Videojuego.objects.create(titulo="Juego Desde Cero")
+    VideojuegoCategoria.objects.create(videojuego=videojuego, categoria=categoria)
+    VideojuegoGenero.objects.create(videojuego=videojuego, genero=genero)
     oferta = OfertaVideojuego.objects.create(
         videojuego=videojuego,
         plataforma=plataforma,
