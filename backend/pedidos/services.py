@@ -56,18 +56,27 @@ def agregar_o_incrementar(usuario, oferta_id: int, cantidad: int = 1) -> tuple[b
         return False, f'"{oferta.videojuego.titulo}" no tiene stock disponible.'
 
     pedido = get_or_create_carrito(usuario)
-    detalle, creado = DetallePedido.objects.get_or_create(
-        pedido=pedido,
-        oferta=oferta,
-        defaults={"precio_unitario": oferta.precio_vigente, "cantidad": 0},
+    detalle = (
+        DetallePedido.objects.select_for_update()
+        .filter(pedido=pedido, oferta=oferta)
+        .first()
     )
-
-    nueva_cantidad = detalle.cantidad + cantidad
+    cantidad_actual = detalle.cantidad if detalle is not None else 0
+    nueva_cantidad = cantidad_actual + cantidad
     if nueva_cantidad > oferta.stock:
         return False, f'Stock insuficiente. Máximo disponible: {oferta.stock}.'
 
-    detalle.cantidad = nueva_cantidad
-    detalle.save(update_fields=["cantidad"])
+    if detalle is None:
+        # La línea nueva nace con la cantidad solicitada: nunca con 0.
+        DetallePedido.objects.create(
+            pedido=pedido,
+            oferta=oferta,
+            precio_unitario=oferta.precio_vigente,
+            cantidad=cantidad,
+        )
+    else:
+        detalle.cantidad = nueva_cantidad
+        detalle.save(update_fields=["cantidad"])
     return True, (
         f'"{oferta.videojuego.titulo}" ({oferta.plataforma.nombre}) '
         "agregado al carrito."

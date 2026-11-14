@@ -56,3 +56,36 @@ def test_agregar_crea_carrito_pendiente(usuario_cliente, oferta):
     agregar_o_incrementar(usuario_cliente, oferta.pk, cantidad=1)
     pedidos = Pedido.objects.filter(cliente=usuario_cliente, estado=Pedido.Estado.PENDIENTE)
     assert pedidos.count() == 1
+
+
+# ── Cantidad real de la línea (AZ-S1-15) ─────────────────────────────────────
+
+@pytest.mark.django_db
+def test_agregar_crea_linea_con_la_cantidad_solicitada(usuario_cliente, oferta):
+    """La línea nueva nace con la cantidad pedida; nunca con 0."""
+    exito, _ = agregar_o_incrementar(usuario_cliente, oferta.pk, cantidad=3)
+    assert exito is True
+
+    detalle = DetallePedido.objects.get(oferta=oferta)
+    assert detalle.cantidad == 3
+
+
+@pytest.mark.django_db
+def test_agregar_incrementa_sin_doble_conteo(usuario_cliente, oferta):
+    """Cada llamada suma exactamente la cantidad solicitada, una sola vez."""
+    agregar_o_incrementar(usuario_cliente, oferta.pk, cantidad=3)
+    agregar_o_incrementar(usuario_cliente, oferta.pk, cantidad=2)
+
+    detalle = DetallePedido.objects.get(oferta=oferta)
+    assert detalle.cantidad == 5
+
+
+@pytest.mark.django_db
+def test_rechazo_por_stock_no_deja_linea_cero(usuario_cliente, oferta):
+    """Si el stock no alcanza, no se persiste una línea con cantidad 0."""
+    exito, _ = agregar_o_incrementar(
+        usuario_cliente, oferta.pk, cantidad=oferta.stock + 1
+    )
+
+    assert exito is False
+    assert not DetallePedido.objects.filter(oferta=oferta).exists()
