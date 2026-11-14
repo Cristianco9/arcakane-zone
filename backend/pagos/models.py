@@ -20,6 +20,13 @@ class Pago(models.Model):
     class Meta:
         verbose_name = "Pago"
         verbose_name_plural = "Pagos"
+        constraints = [
+            # Regla de negocio: un pago no puede tener monto negativo.
+            models.CheckConstraint(
+                condition=models.Q(monto__gte=0),
+                name="pagos_pago_monto_no_negativo",
+            ),
+        ]
 
     def __str__(self):
         return f"Pago #{self.pk} — Pedido #{self.pedido_id} [{self.estado}]"
@@ -33,6 +40,21 @@ class Venta(models.Model):
     class Meta:
         verbose_name = "Venta"
         verbose_name_plural = "Ventas"
+        constraints = [
+            # Regla de negocio: el total consolidado de una venta no puede
+            # ser negativo.
+            models.CheckConstraint(
+                condition=models.Q(total__gte=0),
+                name="pagos_venta_total_no_negativo",
+            ),
+        ]
+        indexes = [
+            # Reportes de ventas ordenados por fecha de registro.
+            models.Index(
+                fields=["registrada_en"],
+                name="pagos_venta_registrada_idx",
+            ),
+        ]
 
     def __str__(self):
         return f"Venta #{self.pk} — Pedido #{self.pedido_id} (${self.total})"

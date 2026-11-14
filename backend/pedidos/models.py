@@ -25,6 +25,13 @@ class Pedido(models.Model):
         verbose_name = "Pedido"
         verbose_name_plural = "Pedidos"
         ordering = ["-creado_en"]
+        indexes = [
+            # Historial de compras de un cliente, del más reciente al más antiguo.
+            models.Index(
+                fields=["cliente", "-creado_en"],
+                name="pedidos_pedido_cli_fecha_idx",
+            ),
+        ]
 
     def __str__(self):
         return f"Pedido #{self.pk} — {self.cliente} [{self.estado}]"
@@ -67,6 +74,18 @@ class DetallePedido(models.Model):
             models.UniqueConstraint(
                 fields=["pedido", "oferta"],
                 name="pedidos_detallepedido_pedido_oferta_unicos",
+            ),
+            # Regla de negocio: una línea siempre representa al menos una
+            # unidad comprada; no existen líneas de cantidad cero o negativa.
+            models.CheckConstraint(
+                condition=models.Q(cantidad__gte=1),
+                name="pedidos_detallepedido_cantidad_positiva",
+            ),
+            # Regla de negocio: el precio congelado de la línea no puede ser
+            # negativo (una devolución no se modela como precio negativo).
+            models.CheckConstraint(
+                condition=models.Q(precio_unitario__gte=0),
+                name="pedidos_detallepedido_precio_unitario_no_negativo",
             ),
         ]
 

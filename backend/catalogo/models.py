@@ -67,6 +67,18 @@ class Videojuego(models.Model):
         verbose_name = "Videojuego"
         verbose_name_plural = "Videojuegos"
         ordering = ["titulo"]
+        indexes = [
+            # Listados de catálogo filtrados por categoría y vigencia.
+            models.Index(
+                fields=["categoria", "activo"],
+                name="catalogo_vj_cat_activo_idx",
+            ),
+            # Listados de catálogo filtrados por género y vigencia.
+            models.Index(
+                fields=["genero", "activo"],
+                name="catalogo_vj_gen_activo_idx",
+            ),
+        ]
 
     def __str__(self):
         return self.titulo
@@ -139,9 +151,17 @@ class OfertaVideojuego(models.Model):
             ),
         ]
         indexes = [
+            # Storefront: ofertas publicadas con stock disponible. Sustituye
+            # al índice de una sola columna, que exigía leer la tabla para
+            # resolver el filtro de stock.
             models.Index(
-                fields=["estado_publicacion"],
-                name="catalogo_oferta_estado_idx",
+                fields=["estado_publicacion", "stock"],
+                name="catalogo_oferta_est_stock_idx",
+            ),
+            # Catálogo por plataforma: ofertas publicadas de cada plataforma.
+            models.Index(
+                fields=["plataforma", "estado_publicacion"],
+                name="catalogo_oferta_plat_est_idx",
             ),
         ]
 
