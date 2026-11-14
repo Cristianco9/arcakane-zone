@@ -1,7 +1,7 @@
 # Diccionario de datos — modelo normalizado
 
-**Issue:** #17 · AZ-S1-15 «Aplicar integridad referencial y restricciones SQL
-al modelo normalizado» · **Alcance:** capa de datos.
+**Issue:** #18 · AZ-S1-16 «Normalizar categorías y géneros con relaciones
+muchos-a-muchos» · **Alcance:** capa de datos.
 
 Este documento describe el esquema final del backend Django 5.2: tablas,
 columnas, reglas de integridad, restricciones SQL e índices. Las restricciones
@@ -34,6 +34,8 @@ verifican en ambos motores.
 | `catalogo` | `catalogo_genero` | Género del título (RPG, shooter…). |
 | `catalogo` | `catalogo_plataforma` | Plataforma de la oferta (PC, PS5…). |
 | `catalogo` | `catalogo_videojuego` | Identidad e información común de un título. |
+| `catalogo` | `catalogo_videojuegocategoria` | Tabla puente: categorías de un videojuego. |
+| `catalogo` | `catalogo_videojuegogenero` | Tabla puente: géneros de un videojuego. |
 | `catalogo` | `catalogo_ofertavideojuego` | Unidad comercial vendible: videojuego + plataforma. |
 | `pedidos` | `pedidos_pedido` | Pedido (carrito o compra) de un cliente. |
 | `pedidos` | `pedidos_detallepedido` | Línea del pedido con precio y snapshots congelados. |
@@ -102,17 +104,60 @@ Las tres tablas comparten estructura:
 | `descripcion` | text | no | `""` | — |
 | `portada` | varchar(100) | sí | `null` | ruta de archivo |
 | `fecha_lanzamiento` | date | sí | `null` | — |
-| `categoria_id` | bigint → `catalogo_categoria` | no | — | `PROTECT` |
-| `genero_id` | bigint → `catalogo_genero` | no | — | `PROTECT` |
 | `activo` | boolean | no | `true` | — |
 | `creado_en`, `actualizado_en` | timestamp | no | auto | — |
 
-Índices:
+Las columnas `categoria_id` y `genero_id` **ya no existen**: la clasificación
+se expresa con las tablas puente `catalogo_videojuegocategoria` y
+`catalogo_videojuegogenero`. En el ORM se accede con los M2M
+`Videojuego.categorias` y `Videojuego.generos` (con `through` explícito).
 
-| Índice | Columnas | Uso |
+> **Coste aceptado (AZ-S1-16):** al retirar las FKs se pierden los índices
+> `catalogo_vj_cat_activo_idx` `(categoria, activo)` y
+> `catalogo_vj_gen_activo_idx` `(genero, activo)`. El filtro "categoría/género
+> + vigencia" pasa a resolverse con un JOIN contra la tabla puente y el filtro
+> `activo` sobre `catalogo_videojuego`; no existe un índice compuesto portable
+> que cubra ambos lados sin desnormalizar.
+
+### `catalogo_videojuegocategoria`
+
+Tabla puente explícita entre un título y una categoría del catálogo.
+
+| Campo | Tipo | Nulo | Default | Regla |
+|---|---|---|---|---|
+| `id` | bigint | no | auto | PK |
+| `videojuego_id` | bigint → `catalogo_videojuego` | no | — | `CASCADE` (el vínculo no sobrevive al título) |
+| `categoria_id` | bigint → `catalogo_categoria` | no | — | `PROTECT` (categoría en uso no se borra) |
+
+Restricciones e índices:
+
+| Nombre | Tipo | Regla |
 |---|---|---|
-| `catalogo_vj_cat_activo_idx` | `(categoria, activo)` | Listado por categoría vigente. |
-| `catalogo_vj_gen_activo_idx` | `(genero, activo)` | Listado por género vigente. |
+| `catalogo_videojuegocategoria_videojuego_categoria_unicos` | `UniqueConstraint` | La pareja `(videojuego, categoria)` no se repite. |
+| `catalogo_vjc_categoria_idx` | índice `(categoria, videojuego)` | Listado de títulos por categoría. |
+| `(videojuego, categoria)` | índice único implícito | Cubre el JOIN desde el videojuego hacia sus categorías. |
+
+### `catalogo_videojuegogenero`
+
+Tabla puente explícita entre un título y un género del catálogo.
+
+| Campo | Tipo | Nulo | Default | Regla |
+|---|---|---|---|---|
+| `id` | bigint | no | auto | PK |
+| `videojuego_id` | bigint → `catalogo_videojuego` | no | — | `CASCADE` (el vínculo no sobrevive al título) |
+| `genero_id` | bigint → `catalogo_genero` | no | — | `PROTECT` (género en uso no se borra) |
+
+Restricciones e índices:
+
+| Nombre | Tipo | Regla |
+|---|---|---|
+| `catalogo_videojuegogenero_videojuego_genero_unicos` | `UniqueConstraint` | La pareja `(videojuego, genero)` no se repite. |
+| `catalogo_vjg_genero_idx` | índice `(genero, videojuego)` | Listado de títulos por género. |
+| `(videojuego, genero)` | índice único implícito | Cubre el JOIN desde el videojuego hacia sus géneros. |
+
+Un videojuego puede tener **cero, una o varias** categorías y géneros
+(`blank=True`); no hay campos adicionales en las tablas puente porque la pareja
+no tiene atributos propios de dominio.
 
 ### `catalogo_ofertavideojuego`
 
@@ -355,6 +400,10 @@ del dominio. La validación de `choices` solo ocurre en formularios y en
 | Migración | Contenido |
 |---|---|
 | `catalogo.0003_indices_catalogo` | Reemplaza `catalogo_oferta_estado_idx` por `catalogo_oferta_est_stock_idx`; agrega `catalogo_oferta_plat_est_idx`, `catalogo_vj_cat_activo_idx`, `catalogo_vj_gen_activo_idx`. |
+| `catalogo.0004_tablas_puente_categoria_genero` | Crea `catalogo_videojuegocategoria` y `catalogo_videojuegogenero` con sus únicos e índices. Solo esquema. |
+| `catalogo.0005_videojuego_categoria_genero_opcionales` | Relaja `categoria_id`/`genero_id` a `NULL` como paso intermedio reversible. Solo esquema. |
+| `catalogo.0006_copiar_asociaciones_catalogo` | Copia cada categoría/género actual a su tabla puente (`bulk_create(ignore_conflicts=True)`, idempotente). Solo datos. |
+| `catalogo.0007_retirar_fks_categoria_genero` | Elimina los índices de AZ-S1-15, retira `categoria_id`/`genero_id` y añade los M2M `categorias`/`generos` con `through`. Solo esquema. |
 | `pedidos.0003_integridad_detallepedido` | Índice de cliente/fecha; **valida datos** y luego agrega los checks de `cantidad` y `precio_unitario`. |
 | `pagos.0002_integridad_pagos` | Índice de ventas por fecha; **valida datos** y luego agrega los checks de `monto` y `total`. |
 
@@ -363,6 +412,12 @@ abortan con un `RuntimeError` que indica tabla, campo y cantidad de filas
 afectadas. El operador debe corregir los datos y reintentar. La validación se
 ejecuta antes de agregar los `CheckConstraint`, de modo que nunca se aplica un
 check sobre datos que lo violan.
+
+`catalogo.0006_copiar_asociaciones_catalogo` es reversible con una limitación
+documentada: el esquema anterior solo admitía una categoría y un género por
+título, así que la reversión restaura la asociación de **menor PK** y descarta
+las adicionales. Si algún videojuego no tiene categoría o género, aborta con un
+`RuntimeError` descriptivo en lugar de escribir `NULL`.
 
 ## Deudas técnicas y brechas conocidas
 

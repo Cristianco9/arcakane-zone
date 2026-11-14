@@ -1,6 +1,6 @@
 # Diagrama entidad-relación — esquema final
 
-**Issue:** #17 · AZ-S1-15 · **Alcance:** capa de datos.
+**Issue:** #18 · AZ-S1-16 · **Alcance:** capa de datos.
 
 Diagrama lógico del esquema normalizado implementado en PostgreSQL/SQLite.
 Las claves foráneas son `PROTECT` salvo las excepciones indicadas en el
@@ -67,11 +67,21 @@ erDiagram
         text descripcion
         varchar portada "ruta de archivo"
         date fecha_lanzamiento
-        bigint categoria_id FK
-        bigint genero_id FK
         boolean activo
         datetime creado_en
         datetime actualizado_en
+    }
+
+    VIDEOJUEGO_CATEGORIA {
+        bigint id PK
+        bigint videojuego_id FK
+        bigint categoria_id FK
+    }
+
+    VIDEOJUEGO_GENERO {
+        bigint id PK
+        bigint videojuego_id FK
+        bigint genero_id FK
     }
 
     OFERTA_VIDEOJUEGO {
@@ -167,8 +177,10 @@ erDiagram
     }
 
     ROL ||--o{ USUARIO : "agrupa"
-    CATEGORIA ||--o{ VIDEOJUEGO : "clasifica"
-    GENERO ||--o{ VIDEOJUEGO : "clasifica"
+    CATEGORIA ||--o{ VIDEOJUEGO_CATEGORIA : "clasifica"
+    VIDEOJUEGO ||--o{ VIDEOJUEGO_CATEGORIA : "tiene"
+    GENERO ||--o{ VIDEOJUEGO_GENERO : "clasifica"
+    VIDEOJUEGO ||--o{ VIDEOJUEGO_GENERO : "tiene"
     VIDEOJUEGO ||--o{ OFERTA_VIDEOJUEGO : "se vende como"
     PLATAFORMA ||--o{ OFERTA_VIDEOJUEGO : "edición en"
     USUARIO ||--o{ PEDIDO : "realiza"
@@ -186,14 +198,18 @@ erDiagram
 ```
 
 > Nota de Mermaid: las cardinalidades `||--o|` representan relaciones
-> `OneToOne`; `||--o{` representa `ForeignKey` uno-a-muchos. Las claves
-> compuestas (por ejemplo `(pedido, oferta)` única) y los nombres exactos de
-> los `CheckConstraint` se documentan en `docs/diccionario_datos.md`.
+> `OneToOne`; `||--o{` representa `ForeignKey` uno-a-muchos. Las tablas puente
+> `VIDEOJUEGO_CATEGORIA` y `VIDEOJUEGO_GENERO` materializan las relaciones
+> muchos-a-muchos entre títulos y catálogos. Las claves compuestas (por ejemplo
+> `(pedido, oferta)` única) y los nombres exactos de los `CheckConstraint` se
+> documentan en `docs/diccionario_datos.md`.
 
 ## Reglas de integridad representadas
 
 | Entidad | Regla SQL |
 |---|---|
+| `VIDEOJUEGO_CATEGORIA` | `(videojuego, categoria)` único; FK a videojuego `CASCADE`; FK a categoría `PROTECT`. |
+| `VIDEOJUEGO_GENERO` | `(videojuego, genero)` único; FK a videojuego `CASCADE`; FK a género `PROTECT`. |
 | `OFERTA_VIDEOJUEGO` | `(videojuego, plataforma)` único; `sku` único; `precio_vigente >= 0`; `stock >= 0`. |
 | `DETALLE_PEDIDO` | `(pedido, oferta)` único; `cantidad >= 1`; `precio_unitario >= 0`. |
 | `PAGO` | `pedido` único (OneToOne); `monto >= 0`. |
