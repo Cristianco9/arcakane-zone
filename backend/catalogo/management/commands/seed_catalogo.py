@@ -75,9 +75,12 @@ class Command(BaseCommand):
 
     # ------------------------------------------------------------------
     def _seed_roles(self):
+        """Siembra idempotente de roles base alineada al código estable (AZ-S1-18)."""
         creados = 0
-        for nombre in ["cliente", "administrador"]:
-            _, nuevo = Rol.objects.get_or_create(nombre=nombre)
+        for codigo, nombre in [("cliente", "Cliente"), ("administrador", "Administrador")]:
+            _, nuevo = Rol.objects.get_or_create(
+                codigo=codigo, defaults={"nombre": nombre}
+            )
             if nuevo:
                 creados += 1
         return creados
