@@ -88,7 +88,7 @@
         <td class="px-4 py-3 text-center">
           {% if o.esta_publicada %}
             <span class="text-xs bg-green-900 text-green-300 px-2 py-0.5 rounded-full">Publicada</span>
-          {% elif o.estado_publicacion == 'borrador' %}
+          {% elif o.estado_publicacion_id == 'borrador' %}
             <span class="text-xs bg-yellow-900 text-yellow-300 px-2 py-0.5 rounded-full">Borrador</span>
           {% else %}
             <span class="text-xs bg-gray-700 text-gray-400 px-2 py-0.5 rounded-full">Retirada</span>

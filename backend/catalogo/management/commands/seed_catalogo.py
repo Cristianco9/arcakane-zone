@@ -4,6 +4,7 @@ from django.core.management.base import BaseCommand
 
 from catalogo.models import (
     Categoria,
+    EstadoPublicacion,
     Genero,
     OfertaVideojuego,
     Plataforma,
@@ -12,12 +13,15 @@ from catalogo.models import (
     VideojuegoGenero,
 )
 from cuentas.models import Rol
+from pagos.models import EstadoIntentoPago
+from pedidos.models import EstadoPedido
 
 
 class Command(BaseCommand):
     help = "Pobla la base de datos con datos de prueba para Arkane Zone."
 
     def handle(self, *args, **kwargs):
+        estados_creados = self._seed_estados()
         roles_creados = self._seed_roles()
         cats_creadas = self._seed_categorias()
         plats_creadas = self._seed_plataformas()
@@ -25,12 +29,49 @@ class Command(BaseCommand):
         juegos_creados, ofertas_creadas = self._seed_catalogo_comercial()
 
         self.stdout.write(self.style.SUCCESS("\n=== Seed completado ==="))
+        self.stdout.write(f"  Estados:      {estados_creados} creados")
         self.stdout.write(f"  Roles:        {roles_creados} creados")
         self.stdout.write(f"  Categorías:   {cats_creadas} creadas")
         self.stdout.write(f"  Plataformas:  {plats_creadas} creadas")
         self.stdout.write(f"  Géneros:      {gens_creados} creados")
         self.stdout.write(f"  Videojuegos:  {juegos_creados} creados")
         self.stdout.write(f"  Ofertas:      {ofertas_creadas} creadas")
+
+    # ------------------------------------------------------------------
+    def _seed_estados(self):
+        """Siembra idempotente de los catálogos de estado (AZ-S1-17)."""
+        creados = 0
+        for codigo, nombre in [
+            ("pendiente", "Pendiente"),
+            ("pagado", "Pagado"),
+            ("cancelado", "Cancelado"),
+        ]:
+            _, nuevo = EstadoPedido.objects.get_or_create(
+                codigo=codigo, defaults={"nombre": nombre}
+            )
+            if nuevo:
+                creados += 1
+        for codigo, nombre in [
+            ("aprobado", "Aprobado"),
+            ("rechazado", "Rechazado"),
+            ("pendiente", "Pendiente"),
+        ]:
+            _, nuevo = EstadoIntentoPago.objects.get_or_create(
+                codigo=codigo, defaults={"nombre": nombre}
+            )
+            if nuevo:
+                creados += 1
+        for codigo, nombre in [
+            ("borrador", "Borrador"),
+            ("publicado", "Publicado"),
+            ("retirado", "Retirado"),
+        ]:
+            _, nuevo = EstadoPublicacion.objects.get_or_create(
+                codigo=codigo, defaults={"nombre": nombre}
+            )
+            if nuevo:
+                creados += 1
+        return creados
 
     # ------------------------------------------------------------------
     def _seed_roles(self):

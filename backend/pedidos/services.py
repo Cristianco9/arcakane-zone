@@ -7,7 +7,7 @@ from .models import DetallePedido, Pedido
 
 def get_or_create_carrito(usuario) -> Pedido:
     pedido, _ = Pedido.objects.get_or_create(
-        cliente=usuario, estado=Pedido.Estado.PENDIENTE
+        cliente=usuario, estado_id="pendiente"
     )
     return pedido
 
@@ -93,7 +93,7 @@ def actualizar_cantidad(usuario, detalle_id: int, cantidad: int) -> tuple[bool, 
             .get(
                 pk=detalle_id,
                 pedido__cliente=usuario,
-                pedido__estado=Pedido.Estado.PENDIENTE,
+                pedido__estado_id="pendiente",
             )
         )
     except DetallePedido.DoesNotExist:
@@ -116,7 +116,7 @@ def actualizar_cantidad(usuario, detalle_id: int, cantidad: int) -> tuple[bool, 
 def quitar_item(usuario, detalle_id: int) -> tuple[bool, str]:
     try:
         detalle = DetallePedido.objects.get(
-            pk=detalle_id, pedido__cliente=usuario, pedido__estado=Pedido.Estado.PENDIENTE
+            pk=detalle_id, pedido__cliente=usuario, pedido__estado_id="pendiente"
         )
         detalle.delete()
         return True, "Ítem eliminado."
@@ -127,8 +127,8 @@ def quitar_item(usuario, detalle_id: int) -> tuple[bool, str]:
 @transaction.atomic
 def cancelar_pedido(pedido: Pedido) -> tuple[bool, str]:
     """Cancela un pedido pendiente. Solo opera sobre el propio pedido del usuario."""
-    if pedido.estado != Pedido.Estado.PENDIENTE:
+    if pedido.estado_id != "pendiente":
         return False, "Solo se pueden cancelar pedidos en estado pendiente."
-    pedido.estado = Pedido.Estado.CANCELADO
+    pedido.estado_id = "cancelado"
     pedido.save(update_fields=["estado"])
     return True, f"Pedido #{pedido.pk} cancelado correctamente."

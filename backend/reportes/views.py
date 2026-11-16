@@ -106,7 +106,7 @@ def reporte_inventario(request):
             stock__gt=UMBRAL_BAJO_STOCK, videojuego__activo=True
         )
     elif filtro == "inactivas":
-        ofertas = ofertas.exclude(estado_publicacion=OfertaVideojuego.EstadoPublicacion.PUBLICADO)
+        ofertas = ofertas.exclude(estado_publicacion_id="publicado")
 
     contexto = {
         "ofertas": ofertas,

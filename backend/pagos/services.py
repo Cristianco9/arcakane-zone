@@ -12,7 +12,7 @@ from .models import Pago, Venta
 @transaction.atomic
 def procesar_pago_simulado(pedido: Pedido) -> tuple[bool, str]:
     """Simula la aprobación o rechazo de un pago y actualiza stock de las ofertas."""
-    if pedido.estado != Pedido.Estado.PENDIENTE:
+    if pedido.estado_id != "pendiente":
         return False, "El pedido no está en estado pendiente."
 
     # Bloquear las ofertas antes de verificar y descontar stock.
@@ -33,7 +33,7 @@ def procesar_pago_simulado(pedido: Pedido) -> tuple[bool, str]:
     pago = Pago.objects.create(
         pedido=pedido,
         monto=pedido.total,
-        estado=Pago.Estado.APROBADO if aprobado else Pago.Estado.RECHAZADO,
+        estado_id="aprobado" if aprobado else "rechazado",
         referencia=str(uuid.uuid4())[:8].upper(),
     )
 
@@ -44,7 +44,7 @@ def procesar_pago_simulado(pedido: Pedido) -> tuple[bool, str]:
             oferta.stock -= detalle.cantidad
             oferta.save(update_fields=["stock"])
 
-        pedido.estado = Pedido.Estado.PAGADO
+        pedido.estado_id = "pagado"
         pedido.save(update_fields=["estado"])
 
         Venta.objects.create(pedido=pedido, total=pedido.total)
