@@ -1,11 +1,11 @@
 # Diagrama entidad-relación — esquema final
 
-**Issue:** #19 · AZ-S1-17 · **Alcance:** capa de datos.
+**Issue:** #20 · AZ-S1-18 · **Alcance:** capa de datos.
 
 Diagrama lógico del esquema normalizado implementado en PostgreSQL/SQLite.
 Las claves foráneas son `PROTECT` salvo las excepciones indicadas en el
 diccionario (`DetallePedido.pedido` es `CASCADE`; `Contacto.usuario` es
-`SET_NULL`).
+`SET_NULL`; `UsuarioRol.usuario` es `CASCADE`).
 
 El diagrama editable histórico del proyecto está en
 [`resources/database/Diagrama entidad relación drawio.png`](<resources/database/Diagrama entidad relación drawio.png>).
@@ -17,7 +17,8 @@ Este archivo `.md` es la fuente versionada y actualizada del esquema final.
 erDiagram
     ROL {
         bigint id PK
-        varchar nombre UK "máx. 50"
+        varchar codigo UK "máx. 50, estable"
+        varchar nombre UK "máx. 50, etiqueta"
         text descripcion
         boolean activo
     }
@@ -34,10 +35,15 @@ erDiagram
         boolean is_superuser
         datetime last_login
         datetime date_joined
-        bigint rol_id FK
         varchar telefono "máx. 20"
         text direccion
         varchar foto "ruta de archivo"
+    }
+
+    USUARIO_ROL {
+        bigint id PK
+        bigint usuario_id FK "CASCADE"
+        bigint rol_id FK "PROTECT"
     }
 
     CATEGORIA {
@@ -197,7 +203,8 @@ erDiagram
         boolean atendido
     }
 
-    ROL ||--o{ USUARIO : "agrupa"
+    USUARIO ||--o{ USUARIO_ROL : "tiene"
+    ROL ||--o{ USUARIO_ROL : "se asigna en"
     CATEGORIA ||--o{ VIDEOJUEGO_CATEGORIA : "clasifica"
     VIDEOJUEGO ||--o{ VIDEOJUEGO_CATEGORIA : "tiene"
     GENERO ||--o{ VIDEOJUEGO_GENERO : "clasifica"
@@ -223,16 +230,19 @@ erDiagram
 
 > Nota de Mermaid: las cardinalidades `||--o|` representan relaciones
 > `OneToOne`; `||--o{` representa `ForeignKey` uno-a-muchos. Las tablas puente
-> `VIDEOJUEGO_CATEGORIA` y `VIDEOJUEGO_GENERO` materializan las relaciones
-> muchos-a-muchos entre títulos y catálogos. Los catálogos de estado
-> (`ESTADO_PEDIDO`, `ESTADO_INTENTO_PAGO`, `ESTADO_PUBLICACION`) se referencian
-> por `codigo` estable (`to_field="codigo"`). Las claves compuestas y los nombres
-> exactos de los `CheckConstraint` se documentan en `docs/diccionario_datos.md`.
+> materializan relaciones muchos-a-muchos: `USUARIO_ROL` entre usuarios y roles de
+> negocio, y `VIDEOJUEGO_CATEGORIA` / `VIDEOJUEGO_GENERO` entre títulos y
+> catálogos. Los catálogos de estado (`ESTADO_PEDIDO`, `ESTADO_INTENTO_PAGO`,
+> `ESTADO_PUBLICACION`) se referencian por `codigo` estable
+> (`to_field="codigo"`). Las claves compuestas y los nombres exactos de los
+> `CheckConstraint` se documentan en `docs/diccionario_datos.md`.
 
 ## Reglas de integridad representadas
 
 | Entidad | Regla SQL |
 |---|---|
+| `ROL` | `codigo` único (identificador estable) y `nombre` único (etiqueta). |
+| `USUARIO_ROL` | `(usuario, rol)` único; FK a usuario `CASCADE`; FK a rol `PROTECT`. |
 | `VIDEOJUEGO_CATEGORIA` | `(videojuego, categoria)` único; FK a videojuego `CASCADE`; FK a categoría `PROTECT`. |
 | `VIDEOJUEGO_GENERO` | `(videojuego, genero)` único; FK a videojuego `CASCADE`; FK a género `PROTECT`. |
 | `ESTADO_PUBLICACION` | `codigo` único (catálogo de estados editoriales). |
@@ -249,4 +259,5 @@ erDiagram
 como `TextChoices` sin `CheckConstraint` por decisión de alcance (AZ-S1-17,
 coherente con AZ-S1-14). Las transiciones entre estados de pedido, pago y
 publicación se documentan en `docs/adr_az-s1-17-estados-catalogo.md` y no se
-aplican en base de datos.
+aplican en base de datos. La frontera entre roles de negocio y permisos técnicos
+de Django se documenta en `docs/adr_az-s1-18-roles-usuario.md`.

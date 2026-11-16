@@ -1,6 +1,6 @@
 # Diccionario de datos — modelo normalizado
 
-**Issue:** #19 · AZ-S1-17 «Eliminar enumerados de dominio y normalizar estados mediante tablas catálogo» · **Alcance:** capa de datos.
+**Issue:** #20 · AZ-S1-18 «Normalizar asignación de roles y catálogo de permisos de negocio» · **Alcance:** capa de datos.
 
 Este documento describe el esquema final del backend Django 5.2: tablas,
 columnas, reglas de integridad, restricciones SQL e índices. Las restricciones
@@ -25,13 +25,17 @@ verifican en ambos motores.
 - **Catálogos de estado (AZ-S1-17):** `codigo` es el identificador estable
   referenciado por las FKs (`to_field="codigo"`); `nombre` es la etiqueta
   visible y editable; `descripcion` es opcional.
+- **Catálogo de roles (AZ-S1-18):** `Rol.codigo` es el identificador estable de
+  negocio (`cliente`, `administrador`); `Rol.nombre` es la etiqueta visible
+  editable. La asignación usuario↔rol se materializa en `cuentas_usuariorol`.
 
 ## Resumen de tablas
 
 | App | Tabla | Propósito |
 |---|---|---|
-| `cuentas` | `cuentas_rol` | Roles de acceso (cliente, administrador…). |
+| `cuentas` | `cuentas_rol` | Catálogo de roles de negocio. |
 | `cuentas` | `cuentas_usuario` | Usuario autenticable (`AbstractUser` + datos de contacto). |
+| `cuentas` | `cuentas_usuariorol` | Tabla puente: asignación explícita usuario↔rol. |
 | `catalogo` | `catalogo_categoria` | Categoría del título (acción, deportes…). |
 | `catalogo` | `catalogo_genero` | Género del título (RPG, shooter…). |
 | `catalogo` | `catalogo_plataforma` | Plataforma de la oferta (PC, PS5…). |
@@ -57,12 +61,23 @@ verifican en ambos motores.
 
 ### `cuentas_rol`
 
+Catálogo de roles de negocio (AZ-S1-18).
+
 | Campo | Tipo | Nulo | Default | Regla |
 |---|---|---|---|---|
 | `id` | bigint | no | auto | PK |
-| `nombre` | varchar(50) | no | — | **único** |
+| `codigo` | varchar(50) | no | — | **único**, identificador estable de negocio |
+| `nombre` | varchar(50) | no | — | **único**, etiqueta visible editable |
 | `descripcion` | text | no | `""` | — |
 | `activo` | boolean | no | `true` | — |
+
+Restricción:
+
+| Nombre | Tipo | Regla |
+|---|---|---|
+| `cuentas_rol_codigo_unico` | `UniqueConstraint` | `codigo` no se repite. |
+
+Roles base sembrados (idempotente): `cliente` (Cliente), `administrador` (Administrador).
 
 ### `cuentas_usuario`
 
@@ -78,12 +93,38 @@ relevantes.
 | `first_name`, `last_name` | varchar(150) | no | `""` | — |
 | `is_staff`, `is_active`, `is_superuser` | boolean | no | según Django | — |
 | `last_login`, `date_joined` | timestamp | sí / no | — / auto | — |
-| `rol_id` | bigint → `cuentas_rol` | sí | `null` | `PROTECT` |
 | `telefono` | varchar(20) | no | `""` | — |
 | `direccion` | text | no | `""` | — |
 | `foto` | varchar(100) | sí | `null` | ruta de archivo |
 
-Relaciones heredadas: `groups` (M2M), `user_permissions` (M2M).
+La relación con roles de negocio es **muchos-a-muchos** mediante la tabla puente
+`cuentas_usuariorol` (`Usuario.roles`, `through='cuentas.UsuarioRol'`,
+`related_name='usuarios'`). No existe la columna `rol_id` (FK directa retirada en
+AZ-S1-18).
+
+Relaciones heredadas/técnicas: `groups` (M2M), `user_permissions` (M2M).
+
+### `cuentas_usuariorol`
+
+Tabla puente explícita entre usuario y rol de negocio (AZ-S1-18).
+
+| Campo | Tipo | Nulo | Default | Regla |
+|---|---|---|---|---|
+| `id` | bigint | no | auto | PK |
+| `usuario_id` | bigint → `cuentas_usuario` | no | — | `CASCADE` (la asignación depende de la cuenta) |
+| `rol_id` | bigint → `cuentas_rol` | no | — | `PROTECT` (rol de catálogo no se borra si está asignado) |
+
+Restricciones e índices:
+
+| Nombre | Tipo | Regla / uso |
+|---|---|---|
+| `cuentas_usuariorol_usuario_rol_unico` | `UniqueConstraint` | La pareja `(usuario, rol)` no se repite. |
+| `cuentas_urol_rol_idx` | índice `(rol)` | Búsqueda inversa rol→usuarios. El `UniqueConstraint(usuario, rol)` cubre usuario→roles; no se duplica ese índice. |
+
+Sin metadatos de auditoría (`asignado_en`, `asignado_por`, `activo`). Si en el
+futuro se añade `asignado_por` (FK a usuario) hará falta declarar
+`through_fields` en el `ManyToManyField`, porque existirían dos FKs a
+`cuentas_usuario`.
 
 ---
 
@@ -439,6 +480,17 @@ Consecuencia actual de `naturaleza`: un `UPDATE` directo por SQL puede escribir
 un valor fuera del dominio. La validación de `choices` solo ocurre en
 formularios y en `full_clean()`, que el ORM no invoca automáticamente.
 
+## Roles de negocio y decisiones de alcance (AZ-S1-18)
+
+`Rol` es un catálogo de negocio con `codigo` estable y `nombre` editable. La
+asignación usuario↔rol es muchos-a-muchos explícita mediante `cuentas_usuariorol`
+(`UniqueConstraint(usuario, rol)`, `on_delete` `usuario=CASCADE`, `rol=PROTECT`,
+índice `cuentas_urol_rol_idx` para rol→usuarios). No hay metadatos de
+auditoría; si se añade `asignado_por` en el futuro hará falta `through_fields`.
+
+`is_superuser`, `is_staff`, `Group` y `Permission` de Django no se replican ni se
+sincronizan con `Rol`; ver `docs/adr_az-s1-18-roles-usuario.md`.
+
 ## Migraciones que materializan este esquema
 
 | Migración | Contenido |
@@ -465,6 +517,12 @@ formularios y en `full_clean()`, que el ORM no invoca automáticamente.
 | `catalogo.0010_oferta_estado_fk` | Retira índices de oferta, prepara la FK de publicación. Solo esquema. |
 | `catalogo.0011_copiar_estado_publicacion` | Copia/valida estados de publicación a la FK. Solo datos. |
 | `catalogo.0012_oferta_estado_definitivo` | Consolida la FK de publicación y recrea índices. Solo esquema. |
+| `cuentas.0002_rol_codigo_nullable` | Añade `codigo` a `cuentas_rol` nullable, sin unique. Solo esquema. |
+| `cuentas.0003_poblar_codigo_roles` | Puebla `codigo` con mapeo explícito desde `nombre`, garantiza roles base (idempotente); aborta con tabla/campo/valor/cantidad ante nombres sin mapeo o colisiones. Solo datos. |
+| `cuentas.0004_rol_codigo_definitivo` | `codigo` NOT NULL + `cuentas_rol_codigo_unico`. Solo esquema. |
+| `cuentas.0005_usuariorol_puente` | Crea `cuentas_usuariorol` con `cuentas_usuariorol_usuario_rol_unico` y `cuentas_urol_rol_idx`. Solo esquema. |
+| `cuentas.0006_copiar_roles_usuario` | Copia `Usuario.rol` no nulo a asignaciones iniciales (idempotente); usuarios sin rol quedan sin asignación. Reverso restaura según prioridad documentada. Solo datos. |
+| `cuentas.0007_usuario_roles_m2m` | Retira `Usuario.rol` y añade M2M `roles` (`through=UsuarioRol`). Solo esquema. |
 
 Las migraciones de datos no normalizan nada: si encuentran filas inválidas
 abortan con un `RuntimeError` que indica tabla, campo y cantidad de filas
@@ -483,6 +541,12 @@ nuevos usados que no existen en el esquema anterior, la reversión aborta con un
 mensaje claro. El reverso de la siembra falla si hay filas que referencian los
 catálogos (`PROTECT`).
 
+Las migraciones de roles (AZ-S1-18) son reversibles hasta `cuentas.0001_initial`
+con datos: al revertir, si un usuario tiene varios roles se restaura
+`administrador` si existe; si no, la asignación de menor PK; las asignaciones
+adicionales se pierden (la FK monovaluada no puede representarlas). `0003` aborta
+con mensaje claro ante nombres sin mapeo o colisiones de código.
+
 ## Deudas técnicas y brechas conocidas
 
 1. **`Usuario.email` no es único** (`cuentas`, fuera de alcance). Un mismo
@@ -499,5 +563,10 @@ catálogos (`PROTECT`).
    sigue siendo `TextChoices` (decisión AZ-S1-17).
 7. **Sin validación de transiciones.** Los catálogos de estado garantizan
    integridad referencial, no flujos de transición (ver ADR AZ-S1-17).
-8. **`flush` y catálogos.** Tras un `flush`, los catálogos de estado quedan
-   vacíos; `seed_catalogo` los repone de forma idempotente.
+8. **`flush` y catálogos.** Tras un `flush`, los catálogos de estado y los roles
+   base quedan vacíos; `seed_catalogo` los repone de forma idempotente y en
+   pruebas se garantizan mediante fixtures autouse idempotentes.
+9. **Compatibilidad transitoria `is_staff` ↔ rol de negocio.** `es_administrador`
+   conserva `True` para usuarios `is_staff` sin exigir asignación del rol
+   `administrador` (para no cambiar autorización). La frontera técnica/negocio
+   se documenta en `docs/adr_az-s1-18-roles-usuario.md`.
