@@ -1,7 +1,6 @@
 # Diccionario de datos — modelo normalizado
 
-**Issue:** #18 · AZ-S1-16 «Normalizar categorías y géneros con relaciones
-muchos-a-muchos» · **Alcance:** capa de datos.
+**Issue:** #19 · AZ-S1-17 «Eliminar enumerados de dominio y normalizar estados mediante tablas catálogo» · **Alcance:** capa de datos.
 
 Este documento describe el esquema final del backend Django 5.2: tablas,
 columnas, reglas de integridad, restricciones SQL e índices. Las restricciones
@@ -23,6 +22,9 @@ verifican en ambos motores.
   preexistentes conservan su nombre original.
 - **Índices:** nombre explícito de hasta 30 caracteres (límite portable de
   Django).
+- **Catálogos de estado (AZ-S1-17):** `codigo` es el identificador estable
+  referenciado por las FKs (`to_field="codigo"`); `nombre` es la etiqueta
+  visible y editable; `descripcion` es opcional.
 
 ## Resumen de tablas
 
@@ -36,9 +38,12 @@ verifican en ambos motores.
 | `catalogo` | `catalogo_videojuego` | Identidad e información común de un título. |
 | `catalogo` | `catalogo_videojuegocategoria` | Tabla puente: categorías de un videojuego. |
 | `catalogo` | `catalogo_videojuegogenero` | Tabla puente: géneros de un videojuego. |
+| `catalogo` | `catalogo_estadopublicacion` | Catálogo de estados editoriales de una oferta. |
 | `catalogo` | `catalogo_ofertavideojuego` | Unidad comercial vendible: videojuego + plataforma. |
+| `pedidos` | `pedidos_estadopedido` | Catálogo de estados de un pedido. |
 | `pedidos` | `pedidos_pedido` | Pedido (carrito o compra) de un cliente. |
 | `pedidos` | `pedidos_detallepedido` | Línea del pedido con precio y snapshots congelados. |
+| `pagos` | `pagos_estadointentopago` | Catálogo de estados de un intento de pago. |
 | `pagos` | `pagos_pago` | Intento de pago simulado de un pedido. |
 | `pagos` | `pagos_venta` | Venta consolidada de un pedido aprobado. |
 | `inventario` | `inventario_tipomovimientoinventario` | Catálogo de tipos de movimiento. |
@@ -112,13 +117,6 @@ se expresa con las tablas puente `catalogo_videojuegocategoria` y
 `catalogo_videojuegogenero`. En el ORM se accede con los M2M
 `Videojuego.categorias` y `Videojuego.generos` (con `through` explícito).
 
-> **Coste aceptado (AZ-S1-16):** al retirar las FKs se pierden los índices
-> `catalogo_vj_cat_activo_idx` `(categoria, activo)` y
-> `catalogo_vj_gen_activo_idx` `(genero, activo)`. El filtro "categoría/género
-> + vigencia" pasa a resolverse con un JOIN contra la tabla puente y el filtro
-> `activo` sobre `catalogo_videojuego`; no existe un índice compuesto portable
-> que cubra ambos lados sin desnormalizar.
-
 ### `catalogo_videojuegocategoria`
 
 Tabla puente explícita entre un título y una categoría del catálogo.
@@ -159,6 +157,22 @@ Un videojuego puede tener **cero, una o varias** categorías y géneros
 (`blank=True`); no hay campos adicionales en las tablas puente porque la pareja
 no tiene atributos propios de dominio.
 
+### `catalogo_estadopublicacion`
+
+Catálogo relacional de estados editoriales (AZ-S1-17).
+
+| Campo | Tipo | Nulo | Default | Regla |
+|---|---|---|---|---|
+| `id` | bigint | no | auto | PK |
+| `codigo` | varchar(50) | no | — | **único**, identificador estable |
+| `nombre` | varchar(100) | no | — | etiqueta visible editable |
+| `descripcion` | text | no | `""` | — |
+
+Constraint: `catalogo_estadopublicacion_codigo_unico` (`codigo` único).
+
+Valores sembrados: `borrador` (Borrador), `publicado` (Publicado),
+`retirado` (Retirado).
+
 ### `catalogo_ofertavideojuego`
 
 Unidad comercial vendible. Concentra precio, SKU, stock y publicación.
@@ -171,7 +185,7 @@ Unidad comercial vendible. Concentra precio, SKU, stock y publicación.
 | `precio_vigente` | numeric(10,2) | no | — | `>= 0` |
 | `sku` | varchar(50) | no | — | **único** |
 | `stock` | integer | no | `0` | `>= 0` (implícito de `PositiveIntegerField`) |
-| `estado_publicacion` | varchar(20) | no | `publicado` | `borrador`/`publicado`/`retirado` (check de enum diferido) |
+| `estado_publicacion` | varchar(50) → `catalogo_estadopublicacion.codigo` | no | `publicado` | FK `PROTECT`, `to_field="codigo"`, `db_index=False` |
 | `creado_en`, `actualizado_en` | timestamp | no | auto | — |
 
 Restricciones:
@@ -181,17 +195,34 @@ Restricciones:
 | `catalogo_ofertavideojuego_videojuego_plataforma_unicos` | `(videojuego, plataforma)` único. |
 | `catalogo_ofertavideojuego_precio_vigente_no_negativo` | `precio_vigente >= 0`. |
 | `sku` (`unique=True`) | SKU interno único. |
+| FK `estado_publicacion` | Solo códigos existentes en `catalogo_estadopublicacion`. |
 
 Índices:
 
 | Índice | Columnas | Uso |
 |---|---|---|
-| `catalogo_oferta_est_stock_idx` | `(estado_publicacion, stock)` | Storefront: publicadas con stock. Sustituye al índice de una columna. |
+| `catalogo_oferta_est_stock_idx` | `(estado_publicacion, stock)` | Storefront: publicadas con stock. |
 | `catalogo_oferta_plat_est_idx` | `(plataforma, estado_publicacion)` | Catálogo por plataforma. |
 
 ---
 
 ## `pedidos`
+
+### `pedidos_estadopedido`
+
+Catálogo relacional de estados de pedido (AZ-S1-17).
+
+| Campo | Tipo | Nulo | Default | Regla |
+|---|---|---|---|---|
+| `id` | bigint | no | auto | PK |
+| `codigo` | varchar(50) | no | — | **único**, identificador estable |
+| `nombre` | varchar(100) | no | — | etiqueta visible editable |
+| `descripcion` | text | no | `""` | — |
+
+Constraint: `pedidos_estadopedido_codigo_unico` (`codigo` único).
+
+Valores sembrados: `pendiente` (Pendiente), `pagado` (Pagado),
+`cancelado` (Cancelado).
 
 ### `pedidos_pedido`
 
@@ -199,7 +230,7 @@ Restricciones:
 |---|---|---|---|---|
 | `id` | bigint | no | auto | PK |
 | `cliente_id` | bigint → `cuentas_usuario` | no | — | `PROTECT` |
-| `estado` | varchar(20) | no | `pendiente` | `pendiente`/`pagado`/`cancelado` (check de enum diferido) |
+| `estado` | varchar(50) → `pedidos_estadopedido.codigo` | no | `pendiente` | FK `PROTECT`, `to_field="codigo"`, `db_index=False` |
 | `creado_en` | timestamp | no | auto | — |
 | `actualizado_en` | timestamp | no | auto | — |
 
@@ -211,9 +242,7 @@ Restricciones:
 
 > **Deuda técnica:** no existe una restricción que garantice un único pedido
 > `pendiente` por cliente. `get_or_create_carrito()` mitiga el caso normal,
-> pero dos peticiones concurrentes podrían crear dos carritos y luego
-> provocar `MultipleObjectsReturned`. Se recomienda un `UniqueConstraint`
-> parcial sobre `(cliente)` con `estado = 'pendiente'` (issue de carrito).
+> pero dos peticiones concurrentes podrían crear dos carritos.
 
 ### `pedidos_detallepedido`
 
@@ -242,6 +271,22 @@ Restricciones:
 
 ## `pagos`
 
+### `pagos_estadointentopago`
+
+Catálogo relacional de estados de intento de pago (AZ-S1-17).
+
+| Campo | Tipo | Nulo | Default | Regla |
+|---|---|---|---|---|
+| `id` | bigint | no | auto | PK |
+| `codigo` | varchar(50) | no | — | **único**, identificador estable |
+| `nombre` | varchar(100) | no | — | etiqueta visible editable |
+| `descripcion` | text | no | `""` | — |
+
+Constraint: `pagos_estadointentopago_codigo_unico` (`codigo` único).
+
+Valores sembrados: `aprobado` (Aprobado), `rechazado` (Rechazado),
+`pendiente` (Pendiente).
+
 ### `pagos_pago`
 
 | Campo | Tipo | Nulo | Default | Regla |
@@ -249,7 +294,7 @@ Restricciones:
 | `id` | bigint | no | auto | PK |
 | `pedido_id` | bigint → `pedidos_pedido` | no | — | `PROTECT`, **único** (`OneToOne`) |
 | `monto` | numeric(10,2) | no | — | `>= 0` |
-| `estado` | varchar(20) | no | `pendiente` | `aprobado`/`rechazado`/`pendiente` (check de enum diferido) |
+| `estado` | varchar(50) → `pagos_estadointentopago.codigo` | no | `pendiente` | FK `PROTECT`, `to_field="codigo"`, `db_index=False` |
 | `referencia` | varchar(100) | no | `""` | sin unicidad (deuda técnica) |
 | `creado_en` | timestamp | no | auto | — |
 
@@ -259,14 +304,13 @@ Restricciones:
 |---|---|
 | `pagos_pago_pedido_id_key` (`OneToOne`) | Un pedido tiene como máximo un pago. |
 | `pagos_pago_monto_no_negativo` | `monto >= 0`. |
+| FK `estado` | Solo códigos existentes en `pagos_estadointentopago`. |
 
 > **Deudas técnicas:**
 > - `referencia` debería ser única cuando no está vacía (idempotencia de la
 >   pasarela). Hoy puede repetirse o quedar vacía.
 > - Al ser `pedido` un `OneToOne`, un pago rechazado ocupa la única fila y un
->   reintento de pago del mismo pedido chocaría con la unicidad. El modelo de
->   reintentos requiere pasar a `ForeignKey` o reutilizar la fila existente
->   (issue de pagos).
+>   reintento de pago del mismo pedido chocaría con la unicidad.
 
 ### `pagos_venta`
 
@@ -297,7 +341,7 @@ Restricciones e índices:
 | `codigo` | varchar(50) | no | — | **único** |
 | `nombre` | varchar(100) | no | — | — |
 | `descripcion` | text | no | `""` | — |
-| `naturaleza` | varchar(10) | no | — | `entrada`/`salida`/`ajuste` (check de enum diferido) |
+| `naturaleza` | varchar(10) | no | — | `entrada`/`salida`/`ajuste` (`TextChoices`, sin `CheckConstraint`; decisión de alcance AZ-S1-17) |
 | `activo` | boolean | no | `true` | — |
 
 Constraint: `inventario_tipomovimiento_codigo_unico` (`codigo` único).
@@ -357,8 +401,6 @@ Restricciones:
 > y el ledger es la fuente auditable. Hoy `pagos.services` descuenta `stock`
 > sin escribir un movimiento. Mientras el servicio no escriba ambos en la
 > misma transacción, el stock puede divergir del último `saldo_posterior`.
-> La BD no puede imponer esa relación porque el signo depende de
-> `tipo_movimiento.naturaleza`.
 
 ---
 
@@ -380,32 +422,49 @@ Restricciones:
 
 ---
 
-## Restricciones diferidas a AZ-S1-17
+## Estados y decisiones de alcance (AZ-S1-17)
 
-Los siguientes campos usan `TextChoices` en Python, pero **no** tienen
-`CheckConstraint` de base de datos. Se dejan explícitamente fuera de este
-issue para no duplicar el trabajo de AZ-S1-17 (enums):
+Los estados de `Pedido`, `Pago` (intento de pago) y `OfertaVideojuego` se
+normalizaron como catálogos relacionales con FKs por `to_field="codigo"` y
+`PROTECT`. Las etiquetas (`nombre`) son editables sin alterar los datos
+transaccionales; los códigos son estables. No se implementa lógica de transición
+(ver `docs/adr_az-s1-17-estados-catalogo.md`).
 
-- `pedidos_pedido.estado`
-- `pagos_pago.estado`
-- `catalogo_ofertavideojuego.estado_publicacion`
-- `inventario_tipomovimientoinventario.naturaleza`
+**Excepción documentada:** `inventario_tipomovimientoinventario.naturaleza`
+permanece como `TextChoices` (`entrada`/`salida`/`ajuste`) sin
+`CheckConstraint`. Es un dominio cerrado que determina la aritmética del ledger
+(AZ-S1-14); no se convierte ni se duplica.
 
-Consecuencia actual: un `UPDATE` directo por SQL puede escribir un valor fuera
-del dominio. La validación de `choices` solo ocurre en formularios y en
-`full_clean()`, que el ORM no invoca automáticamente.
+Consecuencia actual de `naturaleza`: un `UPDATE` directo por SQL puede escribir
+un valor fuera del dominio. La validación de `choices` solo ocurre en
+formularios y en `full_clean()`, que el ORM no invoca automáticamente.
 
 ## Migraciones que materializan este esquema
 
 | Migración | Contenido |
 |---|---|
-| `catalogo.0003_indices_catalogo` | Reemplaza `catalogo_oferta_estado_idx` por `catalogo_oferta_est_stock_idx`; agrega `catalogo_oferta_plat_est_idx`, `catalogo_vj_cat_activo_idx`, `catalogo_vj_gen_activo_idx`. |
-| `catalogo.0004_tablas_puente_categoria_genero` | Crea `catalogo_videojuegocategoria` y `catalogo_videojuegogenero` con sus únicos e índices. Solo esquema. |
-| `catalogo.0005_videojuego_categoria_genero_opcionales` | Relaja `categoria_id`/`genero_id` a `NULL` como paso intermedio reversible. Solo esquema. |
-| `catalogo.0006_copiar_asociaciones_catalogo` | Copia cada categoría/género actual a su tabla puente (`bulk_create(ignore_conflicts=True)`, idempotente). Solo datos. |
-| `catalogo.0007_retirar_fks_categoria_genero` | Elimina los índices de AZ-S1-15, retira `categoria_id`/`genero_id` y añade los M2M `categorias`/`generos` con `through`. Solo esquema. |
-| `pedidos.0003_integridad_detallepedido` | Índice de cliente/fecha; **valida datos** y luego agrega los checks de `cantidad` y `precio_unitario`. |
-| `pagos.0002_integridad_pagos` | Índice de ventas por fecha; **valida datos** y luego agrega los checks de `monto` y `total`. |
+| `catalogo.0003_indices_catalogo` | Reemplaza `catalogo_oferta_estado_idx` por `catalogo_oferta_est_stock_idx`; agrega índices compuestos de catálogo. |
+| `catalogo.0004_tablas_puente_categoria_genero` | Crea tablas puente M2M. Solo esquema. |
+| `catalogo.0005_videojuego_categoria_genero_opcionales` | Relaja FKs directas a `NULL`. Solo esquema. |
+| `catalogo.0006_copiar_asociaciones_catalogo` | Copia asociaciones a las tablas puente (idempotente). Solo datos. |
+| `catalogo.0007_retirar_fks_categoria_genero` | Retira FKs directas y añade M2M. Solo esquema. |
+| `pedidos.0003_integridad_detallepedido` | Índice de cliente/fecha; valida datos y agrega checks de `cantidad` y `precio_unitario`. |
+| `pagos.0002_integridad_pagos` | Índice de ventas por fecha; valida datos y agrega checks de `monto` y `total`. |
+| `pedidos.0004_estado_pedido` | Crea `pedidos_estadopedido`. Solo esquema. |
+| `pedidos.0005_semilla_estados_pedido` | Siembra estados de pedido (idempotente). Solo datos. |
+| `pedidos.0006_pedido_estado_fk` | Renombra `estado` a `estado_legacy`, lo relaja y agrega FK nullable. Solo esquema. |
+| `pedidos.0007_copiar_estado_pedido` | Copia/valida estados de pedido a la FK; aborta con tabla/campo/valor/cantidad si hay desconocidos. Solo datos. |
+| `pedidos.0008_pedido_estado_definitivo` | Elimina `estado_legacy` y deja la FK `NOT NULL` con default. Solo esquema. |
+| `pagos.0003_estado_intento_pago` | Crea `pagos_estadointentopago`. Solo esquema. |
+| `pagos.0004_semilla_estados_pago` | Siembra estados de intento de pago. Solo datos. |
+| `pagos.0005_pago_estado_fk` | Prepara la FK de estado en pago. Solo esquema. |
+| `pagos.0006_copiar_estado_pago` | Copia/valida estados de pago a la FK. Solo datos. |
+| `pagos.0007_pago_estado_definitivo` | Consolida la FK de estado en pago. Solo esquema. |
+| `catalogo.0008_estado_publicacion` | Crea `catalogo_estadopublicacion`. Solo esquema. |
+| `catalogo.0009_semilla_estados_publicacion` | Siembra estados de publicación. Solo datos. |
+| `catalogo.0010_oferta_estado_fk` | Retira índices de oferta, prepara la FK de publicación. Solo esquema. |
+| `catalogo.0011_copiar_estado_publicacion` | Copia/valida estados de publicación a la FK. Solo datos. |
+| `catalogo.0012_oferta_estado_definitivo` | Consolida la FK de publicación y recrea índices. Solo esquema. |
 
 Las migraciones de datos no normalizan nada: si encuentran filas inválidas
 abortan con un `RuntimeError` que indica tabla, campo y cantidad de filas
@@ -414,23 +473,31 @@ ejecuta antes de agregar los `CheckConstraint`, de modo que nunca se aplica un
 check sobre datos que lo violan.
 
 `catalogo.0006_copiar_asociaciones_catalogo` es reversible con una limitación
-documentada: el esquema anterior solo admitía una categoría y un género por
-título, así que la reversión restaura la asociación de **menor PK** y descarta
-las adicionales. Si algún videojuego no tiene categoría o género, aborta con un
-`RuntimeError` descriptivo en lugar de escribir `NULL`.
+documentada: la reversión restaura la asociación de **menor PK** y descarta las
+adicionales. Si algún videojuego no tiene categoría o género, aborta con un
+`RuntimeError` descriptivo.
+
+Las migraciones de estados (AZ-S1-17) son reversibles con datos: la restauración
+del valor al campo antiguo ocurre antes de volver a `NOT NULL`. Si hay códigos
+nuevos usados que no existen en el esquema anterior, la reversión aborta con un
+mensaje claro. El reverso de la siembra falla si hay filas que referencian los
+catálogos (`PROTECT`).
 
 ## Deudas técnicas y brechas conocidas
 
 1. **`Usuario.email` no es único** (`cuentas`, fuera de alcance). Un mismo
-   correo puede asociarse a varias cuentas. Requiere limpieza previa y una
-   restricción única en la app `cuentas`.
-2. **`Pago.referencia` sin unicidad ni obligatoriedad.** No hay idempotencia
-   a nivel de base de datos para la referencia de la pasarela.
+   correo puede asociarse a varias cuentas.
+2. **`Pago.referencia` sin unicidad ni obligatoriedad.** No hay idempotencia a
+   nivel de base de datos para la referencia de la pasarela.
 3. **`Pago.pedido` es `OneToOne`.** Un pago rechazado bloquea estructuralmente
    un reintento de pago del mismo pedido.
 4. **Múltiples pedidos `pendiente` por cliente.** No hay restricción parcial
    que garantice un único carrito activo.
 5. **Stock vs. libro mayor.** `pagos.services` modifica `stock` sin registrar
-   un movimiento de inventario; la conciliación queda pendiente del issue de
-   servicios de inventario.
-6. **Checks de enums diferidos a AZ-S1-17** (ver sección anterior).
+   un movimiento de inventario.
+6. **`naturaleza` sin `CheckConstraint`.** `TipoMovimientoInventario.naturaleza`
+   sigue siendo `TextChoices` (decisión AZ-S1-17).
+7. **Sin validación de transiciones.** Los catálogos de estado garantizan
+   integridad referencial, no flujos de transición (ver ADR AZ-S1-17).
+8. **`flush` y catálogos.** Tras un `flush`, los catálogos de estado quedan
+   vacíos; `seed_catalogo` los repone de forma idempotente.

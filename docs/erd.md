@@ -1,6 +1,6 @@
 # Diagrama entidad-relación — esquema final
 
-**Issue:** #18 · AZ-S1-16 · **Alcance:** capa de datos.
+**Issue:** #19 · AZ-S1-17 · **Alcance:** capa de datos.
 
 Diagrama lógico del esquema normalizado implementado en PostgreSQL/SQLite.
 Las claves foráneas son `PROTECT` salvo las excepciones indicadas en el
@@ -84,6 +84,13 @@ erDiagram
         bigint genero_id FK
     }
 
+    ESTADO_PUBLICACION {
+        bigint id PK
+        varchar codigo UK "máx. 50, estable"
+        varchar nombre "máx. 100, etiqueta"
+        text descripcion
+    }
+
     OFERTA_VIDEOJUEGO {
         bigint id PK
         bigint videojuego_id FK
@@ -91,15 +98,22 @@ erDiagram
         decimal precio_vigente "numeric(10,2) >= 0"
         varchar sku UK "máx. 50"
         int stock ">= 0"
-        varchar estado_publicacion "borrador|publicado|retirado"
+        varchar estado_publicacion FK "→ ESTADO_PUBLICACION.codigo"
         datetime creado_en
         datetime actualizado_en
+    }
+
+    ESTADO_PEDIDO {
+        bigint id PK
+        varchar codigo UK "máx. 50, estable"
+        varchar nombre "máx. 100, etiqueta"
+        text descripcion
     }
 
     PEDIDO {
         bigint id PK
         bigint cliente_id FK
-        varchar estado "pendiente|pagado|cancelado"
+        varchar estado FK "→ ESTADO_PEDIDO.codigo"
         datetime creado_en
         datetime actualizado_en
     }
@@ -114,11 +128,18 @@ erDiagram
         varchar plataforma_snapshot "máx. 100, congelado"
     }
 
+    ESTADO_INTENTO_PAGO {
+        bigint id PK
+        varchar codigo UK "máx. 50, estable"
+        varchar nombre "máx. 100, etiqueta"
+        text descripcion
+    }
+
     PAGO {
         bigint id PK
         bigint pedido_id FK,UK "OneToOne"
         decimal monto "numeric(10,2) >= 0"
-        varchar estado "aprobado|rechazado|pendiente"
+        varchar estado FK "→ ESTADO_INTENTO_PAGO.codigo"
         varchar referencia "máx. 100, sin unicidad"
         datetime creado_en
     }
@@ -183,10 +204,13 @@ erDiagram
     VIDEOJUEGO ||--o{ VIDEOJUEGO_GENERO : "tiene"
     VIDEOJUEGO ||--o{ OFERTA_VIDEOJUEGO : "se vende como"
     PLATAFORMA ||--o{ OFERTA_VIDEOJUEGO : "edición en"
+    ESTADO_PUBLICACION ||--o{ OFERTA_VIDEOJUEGO : "estado"
     USUARIO ||--o{ PEDIDO : "realiza"
+    ESTADO_PEDIDO ||--o{ PEDIDO : "estado"
     PEDIDO ||--o{ DETALLE_PEDIDO : "contiene"
     OFERTA_VIDEOJUEGO ||--o{ DETALLE_PEDIDO : "se adquiere en"
     PEDIDO ||--o| PAGO : "tiene intento"
+    ESTADO_INTENTO_PAGO ||--o{ PAGO : "estado"
     PEDIDO ||--o| VENTA : "se consolida en"
     OFERTA_VIDEOJUEGO ||--o{ MOVIMIENTO_INVENTARIO : "registra movimientos"
     TIPO_MOVIMIENTO ||--o{ MOVIMIENTO_INVENTARIO : "clasifica"
@@ -200,9 +224,10 @@ erDiagram
 > Nota de Mermaid: las cardinalidades `||--o|` representan relaciones
 > `OneToOne`; `||--o{` representa `ForeignKey` uno-a-muchos. Las tablas puente
 > `VIDEOJUEGO_CATEGORIA` y `VIDEOJUEGO_GENERO` materializan las relaciones
-> muchos-a-muchos entre títulos y catálogos. Las claves compuestas (por ejemplo
-> `(pedido, oferta)` única) y los nombres exactos de los `CheckConstraint` se
-> documentan en `docs/diccionario_datos.md`.
+> muchos-a-muchos entre títulos y catálogos. Los catálogos de estado
+> (`ESTADO_PEDIDO`, `ESTADO_INTENTO_PAGO`, `ESTADO_PUBLICACION`) se referencian
+> por `codigo` estable (`to_field="codigo"`). Las claves compuestas y los nombres
+> exactos de los `CheckConstraint` se documentan en `docs/diccionario_datos.md`.
 
 ## Reglas de integridad representadas
 
@@ -210,11 +235,18 @@ erDiagram
 |---|---|
 | `VIDEOJUEGO_CATEGORIA` | `(videojuego, categoria)` único; FK a videojuego `CASCADE`; FK a categoría `PROTECT`. |
 | `VIDEOJUEGO_GENERO` | `(videojuego, genero)` único; FK a videojuego `CASCADE`; FK a género `PROTECT`. |
-| `OFERTA_VIDEOJUEGO` | `(videojuego, plataforma)` único; `sku` único; `precio_vigente >= 0`; `stock >= 0`. |
+| `ESTADO_PUBLICACION` | `codigo` único (catálogo de estados editoriales). |
+| `OFERTA_VIDEOJUEGO` | `(videojuego, plataforma)` único; `sku` único; `precio_vigente >= 0`; `stock >= 0`; `estado_publicacion` FK `PROTECT` a `ESTADO_PUBLICACION.codigo`. |
+| `ESTADO_PEDIDO` | `codigo` único (catálogo de estados de pedido). |
+| `PEDIDO` | `estado` FK `PROTECT` a `ESTADO_PEDIDO.codigo`. |
 | `DETALLE_PEDIDO` | `(pedido, oferta)` único; `cantidad >= 1`; `precio_unitario >= 0`. |
-| `PAGO` | `pedido` único (OneToOne); `monto >= 0`. |
+| `ESTADO_INTENTO_PAGO` | `codigo` único (catálogo de estados de intento de pago). |
+| `PAGO` | `pedido` único (OneToOne); `monto >= 0`; `estado` FK `PROTECT` a `ESTADO_INTENTO_PAGO.codigo`. |
 | `VENTA` | `pedido` único (OneToOne); `total >= 0`. |
 | `MOVIMIENTO_INVENTARIO` | `clave_idempotencia` única; `detalle_pedido` único si no es null; `cantidad > 0`; saldos `>= 0`; inmutable vía ORM. |
 
-Los checks de los enums (`estado`, `estado_publicacion`, `naturaleza`) se
-incorporarán en AZ-S1-17 y hoy no existen en la base de datos.
+`TipoMovimientoInventario.naturaleza` (`entrada`/`salida`/`ajuste`) permanece
+como `TextChoices` sin `CheckConstraint` por decisión de alcance (AZ-S1-17,
+coherente con AZ-S1-14). Las transiciones entre estados de pedido, pago y
+publicación se documentan en `docs/adr_az-s1-17-estados-catalogo.md` y no se
+aplican en base de datos.
