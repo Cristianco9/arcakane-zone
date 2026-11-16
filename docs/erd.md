@@ -1,6 +1,6 @@
 # Diagrama entidad-relación — esquema final
 
-**Issue:** #20 · AZ-S1-18 · **Alcance:** capa de datos.
+**Issue:** #21 · AZ-S1-19 · **Alcance:** capa de datos.
 
 Diagrama lógico del esquema normalizado implementado en PostgreSQL/SQLite.
 Las claves foráneas son `PROTECT` salvo las excepciones indicadas en el
@@ -134,6 +134,15 @@ erDiagram
         varchar plataforma_snapshot "máx. 100, congelado"
     }
 
+    HISTORIAL_ESTADO_PEDIDO {
+        bigint id PK
+        bigint pedido_id FK "PROTECT"
+        varchar estado FK "→ ESTADO_PEDIDO.codigo"
+        datetime fecha "momento registro"
+        bigint actor_id FK "nullable, PROTECT"
+        text observacion
+    }
+
     ESTADO_INTENTO_PAGO {
         bigint id PK
         varchar codigo UK "máx. 50, estable"
@@ -141,19 +150,22 @@ erDiagram
         text descripcion
     }
 
-    PAGO {
+    INTENTO_PAGO {
         bigint id PK
-        bigint pedido_id FK,UK "OneToOne"
-        decimal monto "numeric(10,2) >= 0"
+        bigint pedido_id FK "1:N"
+        decimal importe "numeric(10,2) >= 0"
         varchar estado FK "→ ESTADO_INTENTO_PAGO.codigo"
-        varchar referencia "máx. 100, sin unicidad"
+        varchar referencia UK "máx. 100"
+        varchar clave_idempotencia "única si no vacía"
         datetime creado_en
+        datetime actualizado_en
     }
 
     VENTA {
         bigint id PK
         bigint pedido_id FK,UK "OneToOne"
-        decimal total "numeric(10,2) >= 0"
+        bigint intento_aprobado_id FK,UK "OneToOne → INTENTO_PAGO"
+        decimal total "numeric(10,2) >= 0, snapshot"
         datetime registrada_en
     }
 
@@ -216,9 +228,13 @@ erDiagram
     ESTADO_PEDIDO ||--o{ PEDIDO : "estado"
     PEDIDO ||--o{ DETALLE_PEDIDO : "contiene"
     OFERTA_VIDEOJUEGO ||--o{ DETALLE_PEDIDO : "se adquiere en"
-    PEDIDO ||--o| PAGO : "tiene intento"
-    ESTADO_INTENTO_PAGO ||--o{ PAGO : "estado"
+    PEDIDO ||--o{ HISTORIAL_ESTADO_PEDIDO : "registra historial"
+    ESTADO_PEDIDO ||--o{ HISTORIAL_ESTADO_PEDIDO : "estado"
+    USUARIO ||--o{ HISTORIAL_ESTADO_PEDIDO : "actor"
+    PEDIDO ||--o{ INTENTO_PAGO : "tiene intentos"
+    ESTADO_INTENTO_PAGO ||--o{ INTENTO_PAGO : "estado"
     PEDIDO ||--o| VENTA : "se consolida en"
+    INTENTO_PAGO ||--o| VENTA : "origina"
     OFERTA_VIDEOJUEGO ||--o{ MOVIMIENTO_INVENTARIO : "registra movimientos"
     TIPO_MOVIMIENTO ||--o{ MOVIMIENTO_INVENTARIO : "clasifica"
     MOTIVO_MOVIMIENTO ||--o{ MOVIMIENTO_INVENTARIO : "justifica"
@@ -232,7 +248,9 @@ erDiagram
 > `OneToOne`; `||--o{` representa `ForeignKey` uno-a-muchos. Las tablas puente
 > materializan relaciones muchos-a-muchos: `USUARIO_ROL` entre usuarios y roles de
 > negocio, y `VIDEOJUEGO_CATEGORIA` / `VIDEOJUEGO_GENERO` entre títulos y
-> catálogos. Los catálogos de estado (`ESTADO_PEDIDO`, `ESTADO_INTENTO_PAGO`,
+> catálogos. `PEDIDO` admite múltiples `INTENTO_PAGO` (1:N) y un historial inmutable
+> de estados; `VENTA` es 1:1 con `PEDIDO` y 1:1 con el `INTENTO_PAGO` aprobado que
+> la originó. Los catálogos de estado (`ESTADO_PEDIDO`, `ESTADO_INTENTO_PAGO`,
 > `ESTADO_PUBLICACION`) se referencian por `codigo` estable
 > (`to_field="codigo"`). Las claves compuestas y los nombres exactos de los
 > `CheckConstraint` se documentan en `docs/diccionario_datos.md`.
@@ -250,9 +268,10 @@ erDiagram
 | `ESTADO_PEDIDO` | `codigo` único (catálogo de estados de pedido). |
 | `PEDIDO` | `estado` FK `PROTECT` a `ESTADO_PEDIDO.codigo`. |
 | `DETALLE_PEDIDO` | `(pedido, oferta)` único; `cantidad >= 1`; `precio_unitario >= 0`. |
+| `HISTORIAL_ESTADO_PEDIDO` | Inmutable (solo-apéndice); FKs `pedido`/`estado`/`actor` en `PROTECT`; índice `(pedido, fecha)`. |
 | `ESTADO_INTENTO_PAGO` | `codigo` único (catálogo de estados de intento de pago). |
-| `PAGO` | `pedido` único (OneToOne); `monto >= 0`; `estado` FK `PROTECT` a `ESTADO_INTENTO_PAGO.codigo`. |
-| `VENTA` | `pedido` único (OneToOne); `total >= 0`. |
+| `INTENTO_PAGO` | 1:N con `PEDIDO`; `importe >= 0`; `referencia` única; `clave_idempotencia` única condicional (si no vacía); FKs `PROTECT`. |
+| `VENTA` | `pedido` único (OneToOne); `intento_aprobado` único (OneToOne, `PROTECT`); `total >= 0` (snapshot contable). |
 | `MOVIMIENTO_INVENTARIO` | `clave_idempotencia` única; `detalle_pedido` único si no es null; `cantidad > 0`; saldos `>= 0`; inmutable vía ORM. |
 
 `TipoMovimientoInventario.naturaleza` (`entrada`/`salida`/`ajuste`) permanece
@@ -260,4 +279,4 @@ como `TextChoices` sin `CheckConstraint` por decisión de alcance (AZ-S1-17,
 coherente con AZ-S1-14). Las transiciones entre estados de pedido, pago y
 publicación se documentan en `docs/adr_az-s1-17-estados-catalogo.md` y no se
 aplican en base de datos. La frontera entre roles de negocio y permisos técnicos
-de Django se documenta en `docs/adr_az-s1-18-roles-usuario.md`.
+de Django se documenta en `docs/adr_az-s1-18-roles-usuario.md`. El ciclo transaccional normalizado, garantías y deuda técnica se documentan en `docs/adr_az-s1-19-ciclo-transaccional.md`.

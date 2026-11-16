@@ -1,6 +1,6 @@
 # Diccionario de datos — modelo normalizado
 
-**Issue:** #20 · AZ-S1-18 «Normalizar asignación de roles y catálogo de permisos de negocio» · **Alcance:** capa de datos.
+**Issue:** #21 · AZ-S1-19 «Normalizar ciclo transaccional: historial de estados de pedido, intentos de pago y venta aprobada» · **Alcance:** capa de datos.
 
 Este documento describe el esquema final del backend Django 5.2: tablas,
 columnas, reglas de integridad, restricciones SQL e índices. Las restricciones
@@ -47,9 +47,10 @@ verifican en ambos motores.
 | `pedidos` | `pedidos_estadopedido` | Catálogo de estados de un pedido. |
 | `pedidos` | `pedidos_pedido` | Pedido (carrito o compra) de un cliente. |
 | `pedidos` | `pedidos_detallepedido` | Línea del pedido con precio y snapshots congelados. |
+| `pedidos` | `pedidos_historialestadopedido` | Historial inmutable de estados de un pedido. |
 | `pagos` | `pagos_estadointentopago` | Catálogo de estados de un intento de pago. |
-| `pagos` | `pagos_pago` | Intento de pago simulado de un pedido. |
-| `pagos` | `pagos_venta` | Venta consolidada de un pedido aprobado. |
+| `pagos` | `pagos_intentopago` | Intento de pago de un pedido (1:N). |
+| `pagos` | `pagos_venta` | Venta consolidada vinculada al intento aprobado. |
 | `inventario` | `inventario_tipomovimientoinventario` | Catálogo de tipos de movimiento. |
 | `inventario` | `inventario_motivomovimientoinventario` | Catálogo de motivos de movimiento. |
 | `inventario` | `inventario_movimientoinventarioofertavideojuego` | Libro mayor inmutable de inventario. |
@@ -308,6 +309,33 @@ Restricciones:
 | `pedidos_detallepedido_cantidad_positiva` | `cantidad >= 1`: no existen líneas de cantidad cero o negativa. |
 | `pedidos_detallepedido_precio_unitario_no_negativo` | `precio_unitario >= 0`. |
 
+### `pedidos_historialestadopedido`
+
+Historial inmutable (solo-apéndice) de estados de un pedido (AZ-S1-19). Hereda el
+comportamiento de inmutabilidad de `inventario.models.ModeloInmutable` (acoplamiento
+documentado `pedidos→inventario`).
+
+| Campo | Tipo | Nulo | Default | Regla |
+|---|---|---|---|---|
+| `id` | bigint | no | auto | PK |
+| `pedido_id` | bigint → `pedidos_pedido` | no | — | `PROTECT` |
+| `estado` | varchar(50) → `pedidos_estadopedido.codigo` | no | — | FK `PROTECT`, `to_field="codigo"`, `db_index=False` |
+| `fecha` | timestamp | no | `now` | momento del registro (editable=False) |
+| `actor_id` | bigint → `cuentas_usuario` | sí | `null` | `PROTECT`; NULL si sistema/migración |
+| `observacion` | text | no | `""` | — |
+
+Índice:
+
+| Índice | Columnas | Uso |
+|---|---|---|
+| `pedidos_hist_ped_fec_idx` | `(pedido, fecha)` | Historial cronológico del pedido. |
+
+> La escritura automática del historial en cada transición de estado es
+> responsabilidad del servicio (deuda técnica, issue de servicios). La migración
+> inserta una fila inicial por pedido existente con `estado` actual,
+> `fecha=actualizado_en`, `actor=NULL` y observación
+> «Estado vigente al migrar (AZ-S1-19); historial previo no disponible».
+
 ---
 
 ## `pagos`
@@ -328,38 +356,46 @@ Constraint: `pagos_estadointentopago_codigo_unico` (`codigo` único).
 Valores sembrados: `aprobado` (Aprobado), `rechazado` (Rechazado),
 `pendiente` (Pendiente).
 
-### `pagos_pago`
+### `pagos_intentopago`
+
+Intento de pago asociado a un pedido (AZ-S1-19; antes `pagos_pago`). Relación 1:N
+con `Pedido`: un pedido puede tener varios intentos (p. ej. tras rechazo). No se
+almacenan datos de tarjetas ni credenciales financieras.
 
 | Campo | Tipo | Nulo | Default | Regla |
 |---|---|---|---|---|
 | `id` | bigint | no | auto | PK |
-| `pedido_id` | bigint → `pedidos_pedido` | no | — | `PROTECT`, **único** (`OneToOne`) |
-| `monto` | numeric(10,2) | no | — | `>= 0` |
+| `pedido_id` | bigint → `pedidos_pedido` | no | — | FK `PROTECT` (`related_name=intentos_pago`) |
+| `importe` | numeric(10,2) | no | — | `>= 0` (snapshot monetario del intento) |
 | `estado` | varchar(50) → `pagos_estadointentopago.codigo` | no | `pendiente` | FK `PROTECT`, `to_field="codigo"`, `db_index=False` |
-| `referencia` | varchar(100) | no | `""` | sin unicidad (deuda técnica) |
+| `referencia` | varchar(100) | no | — | **única** (identidad interna trazable) |
+| `clave_idempotencia` | varchar(200) | no | `""` | **única cuando no está vacía** |
 | `creado_en` | timestamp | no | auto | — |
+| `actualizado_en` | timestamp | no | auto | — |
 
-Restricciones:
+Restricciones e índices:
 
-| Constraint | Regla |
-|---|---|
-| `pagos_pago_pedido_id_key` (`OneToOne`) | Un pedido tiene como máximo un pago. |
-| `pagos_pago_monto_no_negativo` | `monto >= 0`. |
-| FK `estado` | Solo códigos existentes en `pagos_estadointentopago`. |
+| Nombre | Tipo | Regla / uso |
+|---|---|---|
+| `pagos_intento_importe_nn` | check | `importe >= 0`. |
+| `pagos_intento_ref_unico` | unique | `referencia` no se repite. |
+| `pagos_intento_idem_unico` | unique condicional | `clave_idempotencia` única si `<> ''`. |
+| `pagos_intento_ped_fec_idx` | index `(pedido, -creado_en)` | Historial de intentos por pedido. |
+| `pagos_intento_est_fec_idx` | index `(estado, -creado_en)` | Consultas por estado y fecha. |
 
-> **Deudas técnicas:**
-> - `referencia` debería ser única cuando no está vacía (idempotencia de la
->   pasarela). Hoy puede repetirse o quedar vacía.
-> - Al ser `pedido` un `OneToOne`, un pago rechazado ocupa la única fila y un
->   reintento de pago del mismo pedido chocaría con la unicidad.
+> Propiedad de compatibilidad de solo lectura: `Pedido.pago` devuelve el intento
+> aprobado del pedido (o `None`).
 
 ### `pagos_venta`
 
+Venta consolidada de un pedido completado (AZ-S1-19).
+
 | Campo | Tipo | Nulo | Default | Regla |
 |---|---|---|---|---|
 | `id` | bigint | no | auto | PK |
 | `pedido_id` | bigint → `pedidos_pedido` | no | — | `PROTECT`, **único** (`OneToOne`) |
-| `total` | numeric(10,2) | no | — | `>= 0` |
+| `intento_aprobado_id` | bigint → `pagos_intentopago` | no | — | `PROTECT`, **único** (`OneToOne`): intento que originó la venta |
+| `total` | numeric(10,2) | no | — | `>= 0`, **snapshot contable** (verificable contra suma de detalles al momento de la venta) |
 | `registrada_en` | timestamp | no | auto | — |
 
 Restricciones e índices:
@@ -367,6 +403,7 @@ Restricciones e índices:
 | Nombre | Tipo | Regla / uso |
 |---|---|---|
 | `pagos_venta_pedido_id_key` | unique (OneToOne) | Una venta por pedido. |
+| `pagos_venta_intento_aprobado_id_key` | unique (OneToOne) | Un intento origina como máximo una venta. |
 | `pagos_venta_total_no_negativo` | check | `total >= 0`. |
 | `pagos_venta_registrada_idx` | index `(registrada_en)` | Reportes de ventas por fecha. |
 
@@ -465,7 +502,7 @@ Restricciones:
 
 ## Estados y decisiones de alcance (AZ-S1-17)
 
-Los estados de `Pedido`, `Pago` (intento de pago) y `OfertaVideojuego` se
+Los estados de `Pedido`, `IntentoPago` (intento de pago) y `OfertaVideojuego` se
 normalizaron como catálogos relacionales con FKs por `to_field="codigo"` y
 `PROTECT`. Las etiquetas (`nombre`) son editables sin alterar los datos
 transaccionales; los códigos son estables. No se implementa lógica de transición
@@ -523,6 +560,19 @@ sincronizan con `Rol`; ver `docs/adr_az-s1-18-roles-usuario.md`.
 | `cuentas.0005_usuariorol_puente` | Crea `cuentas_usuariorol` con `cuentas_usuariorol_usuario_rol_unico` y `cuentas_urol_rol_idx`. Solo esquema. |
 | `cuentas.0006_copiar_roles_usuario` | Copia `Usuario.rol` no nulo a asignaciones iniciales (idempotente); usuarios sin rol quedan sin asignación. Reverso restaura según prioridad documentada. Solo datos. |
 | `cuentas.0007_usuario_roles_m2m` | Retira `Usuario.rol` y añade M2M `roles` (`through=UsuarioRol`). Solo esquema. |
+| `pedidos.0009_historialestado_schema` | Crea `pedidos_historialestadopedido` e índice `pedidos_hist_ped_fec_idx`. Solo esquema. |
+| `pedidos.0010_historialestado_backfill` | Inserta historial inicial por pedido existente (`estado` actual, `fecha=actualizado_en`, `actor=NULL`, observación de migración); aborta si algún pedido queda sin fila. Reverso elimina esas filas. Solo datos. |
+| `pagos.0008_remove_check_monto` | Elimina `pagos_pago_monto_no_negativo` antes del renombre de campo. Solo esquema. |
+| `pagos.0009_rename_monto_importe` | Renombra `monto` → `importe`. Solo esquema. |
+| `pagos.0010_check_importe` | Agrega `pagos_intento_importe_nn` sobre `importe`. Solo esquema. |
+| `pagos.0011_rename_model_intento` | Renombra `Pago` → `IntentoPago` (tabla pasa a `pagos_intentopago`). Solo esquema. |
+| `pagos.0012_intentopago_schema_campos` | Convierte `pedido` a FK (1:N), ajusta `estado`, añade `clave_idempotencia`/`actualizado_en` e índices `pagos_intento_ped_fec_idx`, `pagos_intento_est_fec_idx`. Solo esquema. |
+| `pagos.0013_intentopago_datos_backfill` | Rellena referencias vacías (`LEGACY-<pk>`) y `actualizado_en`; aborta ante referencias no vacías duplicadas (tabla, campo, valor, cantidad). Reverso restaura referencias generadas. Solo datos. |
+| `pagos.0014_intentopago_constraints` | Endurece `referencia`/`actualizado_en` y añade `pagos_intento_ref_unico`, `pagos_intento_idem_unico`. Solo esquema. |
+| `pagos.0015_guardia_reversion_onetoone` | Guardia de reversión: al revertir verifica ≤1 intento por pedido y aborta con `RuntimeError` descriptivo si no (tabla, campo, cantidad). Solo datos. |
+| `pagos.0016_venta_intento_nullable` | Añade `Venta.intento_aprobado` nullable (FK). Solo esquema. |
+| `pagos.0017_venta_intento_backfill` | Vincula cada venta con el intento aprobado del mismo pedido; aborta si no existe o no es único (tabla, campo, cantidad/pedido). Reverso limpia el vínculo. Solo datos. |
+| `pagos.0018_venta_intento_definitivo` | Endurece `intento_aprobado` a NOT NULL `OneToOne` (`PROTECT`). Solo esquema. |
 
 Las migraciones de datos no normalizan nada: si encuentran filas inválidas
 abortan con un `RuntimeError` que indica tabla, campo y cantidad de filas
@@ -547,14 +597,25 @@ con datos: al revertir, si un usuario tiene varios roles se restaura
 adicionales se pierden (la FK monovaluada no puede representarlas). `0003` aborta
 con mensaje claro ante nombres sin mapeo o colisiones de código.
 
+Las migraciones del ciclo transaccional (AZ-S1-19) son reversibles con datos hasta
+`pedidos.0008`/`pagos.0007`: se restaura `Pago` (OneToOne, `monto`) y se elimina
+`intento_aprobado`/historial en el orden correcto. La reversión aborta con
+`RuntimeError` descriptivo si algún pedido tiene más de un intento (guardia
+`pagos.0015` antes del `AlterField` inverso) o si hay datos incompatibles con el
+esquema anterior.
+
 ## Deudas técnicas y brechas conocidas
 
 1. **`Usuario.email` no es único** (`cuentas`, fuera de alcance). Un mismo
    correo puede asociarse a varias cuentas.
-2. **`Pago.referencia` sin unicidad ni obligatoriedad.** No hay idempotencia a
-   nivel de base de datos para la referencia de la pasarela.
-3. **`Pago.pedido` es `OneToOne`.** Un pago rechazado bloquea estructuralmente
-   un reintento de pago del mismo pedido.
+2. **Idempotencia operativa de pagos en servicios.** La BD garantiza unicidad de
+   `referencia` y unicidad condicional de `clave_idempotencia`, pero el servicio
+   de checkout/procesamiento debe aplicar idempotencia y concurrencia (deuda
+   técnica, issue de servicios).
+3. **Escritura automática del historial.** `HistorialEstadoPedido` conserva
+   transiciones registradas; la escritura automática en cada transición queda en
+   servicios (deuda técnica). Un pago rechazado ya no bloquea reintentos
+   (intentos 1:N).
 4. **Múltiples pedidos `pendiente` por cliente.** No hay restricción parcial
    que garantice un único carrito activo.
 5. **Stock vs. libro mayor.** `pagos.services` modifica `stock` sin registrar
@@ -570,3 +631,7 @@ con mensaje claro ante nombres sin mapeo o colisiones de código.
    conserva `True` para usuarios `is_staff` sin exigir asignación del rol
    `administrador` (para no cambiar autorización). La frontera técnica/negocio
    se documenta en `docs/adr_az-s1-18-roles-usuario.md`.
+10. **Coherencia venta↔intento no garantizable solo en BD.** La BD no garantiza que
+    `Venta.intento_aprobado` pertenezca al mismo `pedido` de la venta ni que el
+    intento esté en estado aprobado (se cubre en pruebas y queda para el issue de
+    servicios/checkout). `DetallePedido.pedido` sigue con `CASCADE` (documentado).
