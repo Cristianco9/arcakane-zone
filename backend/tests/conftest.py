@@ -68,16 +68,43 @@ def estados_catalogo(db):
             pass
 
 
-# ── Roles ────────────────────────────────────────────────────────────────────
+# ── Roles (AZ-S1-18) ─────────────────────────────────────────────────────────
+
+ROLES_BASE = [("cliente", "Cliente"), ("administrador", "Administrador")]
+
+
+@pytest.fixture(autouse=True)
+def roles_catalogo(db):
+    """Siembra idempotente de roles base.
+
+    Las pruebas transaccionales hacen flush y los vacían; esta fixture los
+    repone. Tolerante a esquemas intermedios durante pruebas de migraciones.
+    """
+    for codigo, nombre in ROLES_BASE:
+        try:
+            with transaction.atomic():
+                Rol.objects.get_or_create(
+                    codigo=codigo, defaults={"nombre": nombre}
+                )
+        except (DatabaseError, TypeError):
+            # Esquema intermedio (p. ej. sin columna codigo) o tabla inexistente.
+            pass
+
 
 @pytest.fixture
 def rol_cliente(db):
-    return Rol.objects.create(nombre="cliente")
+    try:
+        return Rol.objects.get(codigo="cliente")
+    except Exception:
+        return Rol.objects.create(codigo="cliente", nombre="Cliente")
 
 
 @pytest.fixture
 def rol_admin(db):
-    return Rol.objects.create(nombre="administrador")
+    try:
+        return Rol.objects.get(codigo="administrador")
+    except Exception:
+        return Rol.objects.create(codigo="administrador", nombre="Administrador")
 
 
 # ── Usuarios ─────────────────────────────────────────────────────────────────
@@ -88,8 +115,8 @@ def usuario_cliente(db, rol_cliente):
         username="cliente_test",
         password="pass1234!",
         email="cliente@test.com",
-        rol=rol_cliente,
     )
+    u.roles.add(rol_cliente)
     return u
 
 
@@ -99,9 +126,9 @@ def usuario_admin(db, rol_admin):
         username="admin_test",
         password="pass1234!",
         email="admin@test.com",
-        rol=rol_admin,
         is_staff=True,
     )
+    u.roles.add(rol_admin)
     return u
 
 
