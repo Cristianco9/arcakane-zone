@@ -160,14 +160,43 @@ class VideojuegoGenero(models.Model):
         return f"{self.videojuego.titulo} · {self.genero.nombre}"
 
 
+class EstadoPublicacion(models.Model):
+    """
+    Catálogo de estados de publicación de una oferta.
+
+    ``codigo`` es el identificador estable referenciado por las ofertas;
+    ``nombre`` es la etiqueta visible y editable. Regla de negocio: el estado
+    editorial no se almacena como enum en código (AZ-S1-17).
+    """
+
+    codigo = models.CharField(
+        max_length=50,
+        help_text="Identificador estable del estado; no es la etiqueta visible.",
+    )
+    nombre = models.CharField(max_length=100)
+    descripcion = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = "Estado de publicación"
+        verbose_name_plural = "Estados de publicación"
+        ordering = ["codigo"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["codigo"],
+                name="catalogo_estadopublicacion_codigo_unico",
+            ),
+        ]
+
+    def __str__(self):
+        return self.nombre
+
+
 class OfertaVideojuegoQuerySet(models.QuerySet):
     """Consultas de dominio sobre el catálogo comercial."""
 
     def publicadas(self):
         """Ofertas visibles en la tienda (estado de publicación = publicado)."""
-        return self.filter(
-            estado_publicacion=OfertaVideojuego.EstadoPublicacion.PUBLICADO
-        )
+        return self.filter(estado_publicacion_id="publicado")
 
     def vendibles(self):
         """Ofertas publicadas, de títulos activos y con stock disponible."""
@@ -183,11 +212,6 @@ class OfertaVideojuego(models.Model):
     provisional del inventario hasta AZ-S1-14).
     """
 
-    class EstadoPublicacion(models.TextChoices):
-        BORRADOR = "borrador", "Borrador"
-        PUBLICADO = "publicado", "Publicado"
-        RETIRADO = "retirado", "Retirado"
-
     videojuego = models.ForeignKey(
         Videojuego, on_delete=models.PROTECT, related_name="ofertas"
     )
@@ -197,10 +221,15 @@ class OfertaVideojuego(models.Model):
     precio_vigente = models.DecimalField(max_digits=10, decimal_places=2)
     sku = models.CharField(max_length=50, unique=True)
     stock = models.PositiveIntegerField(default=0)
-    estado_publicacion = models.CharField(
-        max_length=20,
-        choices=EstadoPublicacion.choices,
-        default=EstadoPublicacion.PUBLICADO,
+    estado_publicacion = models.ForeignKey(
+        EstadoPublicacion,
+        to_field="codigo",
+        db_column="estado_publicacion",
+        db_index=False,
+        on_delete=models.PROTECT,
+        related_name="ofertas",
+        default="publicado",
+        help_text="Estado editorial de la oferta (catálogo catalogo.EstadoPublicacion).",
     )
     creado_en = models.DateTimeField(auto_now_add=True)
     actualizado_en = models.DateTimeField(auto_now=True)
@@ -241,7 +270,7 @@ class OfertaVideojuego(models.Model):
 
     @property
     def esta_publicada(self) -> bool:
-        return self.estado_publicacion == self.EstadoPublicacion.PUBLICADO
+        return self.estado_publicacion_id == "publicado"
 
     @property
     def disponible(self) -> bool:

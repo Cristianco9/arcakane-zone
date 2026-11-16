@@ -4,19 +4,53 @@ from django.db import models
 from catalogo.models import OfertaVideojuego
 
 
-class Pedido(models.Model):
-    class Estado(models.TextChoices):
-        PENDIENTE = "pendiente", "Pendiente"
-        PAGADO = "pagado", "Pagado"
-        CANCELADO = "cancelado", "Cancelado"
+class EstadoPedido(models.Model):
+    """
+    Catálogo de estados de un pedido.
 
+    Tabla relacional: ``codigo`` es el identificador estable que referencian
+    las filas transaccionales; ``nombre`` es la etiqueta visible y editable sin
+    alterar el historial. Regla de negocio: el dominio de estados no es un enum
+    en código (AZ-S1-17).
+    """
+
+    codigo = models.CharField(
+        max_length=50,
+        help_text="Identificador estable del estado; no es la etiqueta visible.",
+    )
+    nombre = models.CharField(max_length=100)
+    descripcion = models.TextField(blank=True)
+
+    class Meta:
+        verbose_name = "Estado de pedido"
+        verbose_name_plural = "Estados de pedido"
+        ordering = ["codigo"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["codigo"],
+                name="pedidos_estadopedido_codigo_unico",
+            ),
+        ]
+
+    def __str__(self):
+        return self.nombre
+
+
+class Pedido(models.Model):
     cliente = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.PROTECT,
         related_name="pedidos",
     )
-    estado = models.CharField(
-        max_length=20, choices=Estado.choices, default=Estado.PENDIENTE
+    estado = models.ForeignKey(
+        EstadoPedido,
+        to_field="codigo",
+        db_column="estado",
+        db_index=False,
+        on_delete=models.PROTECT,
+        related_name="pedidos",
+        default="pendiente",
+        help_text="Estado actual del pedido (catálogo pedidos.EstadoPedido).",
     )
     creado_en = models.DateTimeField(auto_now_add=True)
     actualizado_en = models.DateTimeField(auto_now=True)
@@ -34,7 +68,7 @@ class Pedido(models.Model):
         ]
 
     def __str__(self):
-        return f"Pedido #{self.pk} — {self.cliente} [{self.estado}]"
+        return f"Pedido #{self.pk} — {self.cliente} [{self.estado_id}]"
 
     @property
     def total(self):
@@ -42,7 +76,7 @@ class Pedido(models.Model):
 
     @property
     def puede_cancelar(self) -> bool:
-        return self.estado == self.Estado.PENDIENTE
+        return self.estado_id == "pendiente"
 
 
 class DetallePedido(models.Model):
