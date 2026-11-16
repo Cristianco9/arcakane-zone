@@ -1,11 +1,13 @@
 """Fixtures compartidos para toda la suite de pruebas."""
 import uuid
+from decimal import Decimal
 
 import pytest
-from decimal import Decimal
+from django.db import DatabaseError, transaction
 
 from catalogo.models import (
     Categoria,
+    EstadoPublicacion,
     Genero,
     OfertaVideojuego,
     Plataforma,
@@ -19,7 +21,51 @@ from inventario.models import (
     MovimientoInventarioOfertaVideojuego,
     TipoMovimientoInventario,
 )
-from pedidos.models import DetallePedido, Pedido
+from pagos.models import EstadoIntentoPago
+from pedidos.models import DetallePedido, EstadoPedido, Pedido
+
+
+# ── Catálogos de estado (AZ-S1-17) ────────────────────────────────────────────
+
+ESTADOS_PEDIDO = [
+    ("pendiente", "Pendiente"),
+    ("pagado", "Pagado"),
+    ("cancelado", "Cancelado"),
+]
+ESTADOS_INTENTO_PAGO = [
+    ("aprobado", "Aprobado"),
+    ("rechazado", "Rechazado"),
+    ("pendiente", "Pendiente"),
+]
+ESTADOS_PUBLICACION = [
+    ("borrador", "Borrador"),
+    ("publicado", "Publicado"),
+    ("retirado", "Retirado"),
+]
+
+
+@pytest.fixture(autouse=True)
+def estados_catalogo(db):
+    """Siembra idempotente de los catálogos de estado.
+
+    Las pruebas transaccionales hacen flush y los vacían; esta fixture los
+    repone antes de cada prueba (AZ-S1-17). Si el esquema aún no tiene las
+    tablas (p. ej. durante pruebas de migraciones intermedias), no hace nada.
+    """
+    for modelo, filas in [
+        (EstadoPedido, ESTADOS_PEDIDO),
+        (EstadoIntentoPago, ESTADOS_INTENTO_PAGO),
+        (EstadoPublicacion, ESTADOS_PUBLICACION),
+    ]:
+        try:
+            with transaction.atomic():
+                for codigo, nombre in filas:
+                    modelo.objects.get_or_create(
+                        codigo=codigo, defaults={"nombre": nombre}
+                    )
+        except DatabaseError:
+            # La tabla del catálogo no existe en este estado de migración.
+            pass
 
 
 # ── Roles ────────────────────────────────────────────────────────────────────
@@ -98,7 +144,7 @@ def oferta(db, videojuego, plataforma):
         precio_vigente=Decimal("80000"),
         stock=10,
         sku="AZ-0001-001",
-        estado_publicacion=OfertaVideojuego.EstadoPublicacion.PUBLICADO,
+        estado_publicacion_id="publicado",
     )
 
 
@@ -111,7 +157,7 @@ def oferta_agotada(db, videojuego, plataforma):
         precio_vigente=Decimal("60000"),
         stock=0,
         sku="AZ-0002-001",
-        estado_publicacion=OfertaVideojuego.EstadoPublicacion.PUBLICADO,
+        estado_publicacion_id="publicado",
     )
 
 
@@ -119,7 +165,7 @@ def oferta_agotada(db, videojuego, plataforma):
 
 @pytest.fixture
 def pedido_con_item(db, usuario_cliente, oferta):
-    pedido = Pedido.objects.create(cliente=usuario_cliente, estado=Pedido.Estado.PENDIENTE)
+    pedido = Pedido.objects.create(cliente=usuario_cliente, estado_id="pendiente")
     DetallePedido.objects.create(
         pedido=pedido,
         oferta=oferta,

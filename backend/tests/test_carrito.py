@@ -36,7 +36,7 @@ def test_agregar_misma_oferta_incrementa_cantidad(usuario_cliente, oferta):
     agregar_o_incrementar(usuario_cliente, oferta.pk, cantidad=1)
     agregar_o_incrementar(usuario_cliente, oferta.pk, cantidad=2)
 
-    pedido = Pedido.objects.get(cliente=usuario_cliente, estado=Pedido.Estado.PENDIENTE)
+    pedido = Pedido.objects.get(cliente=usuario_cliente, estado_id="pendiente")
     detalles = DetallePedido.objects.filter(pedido=pedido, oferta=oferta)
 
     assert detalles.count() == 1, "No debe haber más de una línea para la misma oferta"
@@ -54,7 +54,7 @@ def test_agregar_oferta_hasta_limite_de_stock(usuario_cliente, oferta):
 def test_agregar_crea_carrito_pendiente(usuario_cliente, oferta):
     """Agregar un ítem crea o reutiliza un único pedido en estado pendiente."""
     agregar_o_incrementar(usuario_cliente, oferta.pk, cantidad=1)
-    pedidos = Pedido.objects.filter(cliente=usuario_cliente, estado=Pedido.Estado.PENDIENTE)
+    pedidos = Pedido.objects.filter(cliente=usuario_cliente, estado_id="pendiente")
     assert pedidos.count() == 1
 
 

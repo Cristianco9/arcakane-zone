@@ -24,8 +24,9 @@ from pedidos.models import DetallePedido, Pedido
 
 ANTES = [("catalogo", "0001_initial"), ("pedidos", "0001_initial")]
 DESPUES = [
-    ("catalogo", "0002_ofertavideojuego"),
-    ("pedidos", "0002_detallepedido_oferta"),
+    ("catalogo", "0012_oferta_estado_definitivo"),
+    ("pedidos", "0008_pedido_estado_definitivo"),
+    ("pagos", "0007_pago_estado_definitivo"),
 ]
 
 
@@ -103,7 +104,7 @@ def test_migracion_traslada_estado_no_publicado(usuario_cliente):
     _migrate(DESPUES)
 
     oferta = OfertaVideojuego.objects.get(videojuego__titulo="Juego Retirado")
-    assert oferta.estado_publicacion == OfertaVideojuego.EstadoPublicacion.RETIRADO
+    assert oferta.estado_publicacion_id == "retirado"
     assert vj.pk is not None
 
 
@@ -183,7 +184,7 @@ def test_migraciones_desde_cero_aplican_limpio(usuario_cliente):
         stock=2,
     )
     pedido = Pedido.objects.create(
-        cliente=usuario_cliente, estado=Pedido.Estado.PENDIENTE
+        cliente=usuario_cliente, estado_id="pendiente"
     )
     detalle = DetallePedido.objects.create(
         pedido=pedido, oferta=oferta, cantidad=1,

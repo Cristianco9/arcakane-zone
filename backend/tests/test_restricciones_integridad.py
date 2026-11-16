@@ -17,7 +17,7 @@ from pedidos.models import DetallePedido, Pedido
 
 def _pedido(usuario_cliente):
     return Pedido.objects.create(
-        cliente=usuario_cliente, estado=Pedido.Estado.PENDIENTE
+        cliente=usuario_cliente, estado_id="pendiente"
     )
 
 
@@ -81,7 +81,7 @@ def test_pago_monto_negativo_es_rechazado(pedido_con_item):
             Pago.objects.create(
                 pedido=pedido_con_item,
                 monto=Decimal("-100.00"),
-                estado=Pago.Estado.PENDIENTE,
+                estado_id="pendiente",
             )
 
 
@@ -91,7 +91,7 @@ def test_pago_monto_cero_es_valido(pedido_con_item):
         pago = Pago.objects.create(
             pedido=pedido_con_item,
             monto=Decimal("0.00"),
-            estado=Pago.Estado.PENDIENTE,
+            estado_id="pendiente",
         )
 
     assert pago.pk is not None

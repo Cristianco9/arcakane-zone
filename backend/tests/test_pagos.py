@@ -20,7 +20,7 @@ def test_pago_aprobado_cambia_estado_a_pagado(pedido_con_item):
 
     assert exito is True
     pedido_con_item.refresh_from_db()
-    assert pedido_con_item.estado == Pedido.Estado.PAGADO
+    assert pedido_con_item.estado_id == "pagado"
 
 
 @pytest.mark.django_db
@@ -52,7 +52,7 @@ def test_pago_rechazado_no_cambia_estado(pedido_con_item):
 
     assert exito is False
     pedido_con_item.refresh_from_db()
-    assert pedido_con_item.estado == Pedido.Estado.PENDIENTE
+    assert pedido_con_item.estado_id == "pendiente"
 
 
 @pytest.mark.django_db
