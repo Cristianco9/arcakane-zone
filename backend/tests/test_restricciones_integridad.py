@@ -11,7 +11,7 @@ from decimal import Decimal
 import pytest
 from django.db import IntegrityError, connection, transaction
 
-from pagos.models import Pago, Venta
+from pagos.models import IntentoPago, Venta
 from pedidos.models import DetallePedido, Pedido
 
 
@@ -71,30 +71,32 @@ def test_detalle_acepta_los_limites_inferiores(usuario_cliente, oferta):
     assert detalle.precio_unitario == Decimal("0.00")
 
 
-# ── Pago ─────────────────────────────────────────────────────────────────────
+# ── Intento de pago ──────────────────────────────────────────────────────────
 
 @pytest.mark.django_db
-def test_pago_monto_negativo_es_rechazado(pedido_con_item):
-    """``pagos_pago_monto_no_negativo``: monto >= 0."""
+def test_intento_importe_negativo_es_rechazado(pedido_con_item):
+    """``pagos_intento_importe_nn``: importe >= 0."""
     with pytest.raises(IntegrityError):
         with transaction.atomic():
-            Pago.objects.create(
+            IntentoPago.objects.create(
                 pedido=pedido_con_item,
-                monto=Decimal("-100.00"),
+                importe=Decimal("-100.00"),
                 estado_id="pendiente",
+                referencia="REF-INT-NEG",
             )
 
 
 @pytest.mark.django_db
-def test_pago_monto_cero_es_valido(pedido_con_item):
+def test_intento_importe_cero_es_valido(pedido_con_item):
     with transaction.atomic():
-        pago = Pago.objects.create(
+        intento = IntentoPago.objects.create(
             pedido=pedido_con_item,
-            monto=Decimal("0.00"),
+            importe=Decimal("0.00"),
             estado_id="pendiente",
+            referencia="REF-INT-CERO",
         )
 
-    assert pago.pk is not None
+    assert intento.pk is not None
 
 
 # ── Venta ────────────────────────────────────────────────────────────────────
@@ -102,19 +104,33 @@ def test_pago_monto_cero_es_valido(pedido_con_item):
 @pytest.mark.django_db
 def test_venta_total_negativo_es_rechazado(pedido_con_item):
     """``pagos_venta_total_no_negativo``: total >= 0."""
+    intento = IntentoPago.objects.create(
+        pedido=pedido_con_item,
+        importe=pedido_con_item.total,
+        estado_id="aprobado",
+        referencia="REF-VTA-NEG",
+    )
     with pytest.raises(IntegrityError):
         with transaction.atomic():
             Venta.objects.create(
                 pedido=pedido_con_item,
+                intento_aprobado=intento,
                 total=Decimal("-0.01"),
             )
 
 
 @pytest.mark.django_db
 def test_venta_total_cero_es_valido(pedido_con_item):
+    intento = IntentoPago.objects.create(
+        pedido=pedido_con_item,
+        importe=Decimal("0.00"),
+        estado_id="aprobado",
+        referencia="REF-VTA-CERO",
+    )
     with transaction.atomic():
         venta = Venta.objects.create(
             pedido=pedido_con_item,
+            intento_aprobado=intento,
             total=Decimal("0.00"),
         )
 
@@ -137,6 +153,11 @@ def test_indices_nuevos_existen_en_la_base_de_datos():
         "catalogo_videojuegogenero": {"catalogo_vjg_genero_idx"},
         "pedidos_pedido": {"pedidos_pedido_cli_fecha_idx"},
         "pagos_venta": {"pagos_venta_registrada_idx"},
+        "pagos_intentopago": {
+            "pagos_intento_ped_fec_idx",
+            "pagos_intento_est_fec_idx",
+        },
+        "pedidos_historialestadopedido": {"pedidos_hist_ped_fec_idx"},
     }
 
     with connection.cursor() as cursor:

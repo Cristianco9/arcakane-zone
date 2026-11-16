@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 import pytest
 
-from pagos.models import Pago, Venta
+from pagos.models import IntentoPago, Venta
 from pagos.services import procesar_pago_simulado
 from pedidos.models import Pedido
 
@@ -42,7 +42,9 @@ def test_pago_aprobado_genera_venta(pedido_con_item):
 
     assert Venta.objects.filter(pedido=pedido_con_item).exists()
     venta = Venta.objects.get(pedido=pedido_con_item)
+    intento = IntentoPago.objects.get(pedido=pedido_con_item, estado_id="aprobado")
     assert venta.total == pedido_con_item.total
+    assert venta.intento_aprobado_id == intento.pk
 
 
 @pytest.mark.django_db

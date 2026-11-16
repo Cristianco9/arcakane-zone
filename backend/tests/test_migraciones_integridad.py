@@ -13,7 +13,7 @@ import pytest
 from django.db import IntegrityError, connection, transaction
 from django.db.migrations.executor import MigrationExecutor
 
-from pagos.models import Pago, Venta
+from pagos.models import IntentoPago, Venta
 from pedidos.models import DetallePedido, Pedido
 
 # Esquema inmediatamente anterior a los checks de AZ-S1-15.
@@ -108,13 +108,16 @@ def test_migracion_pagos_conserva_datos_validos_y_activa_checks(
 
     _migrate()
 
-    assert Pago.objects.get(pedido=pedido_con_item).monto == Decimal("150.00")
-    assert Venta.objects.get(pedido=pedido_con_item).total == Decimal("150.00")
+    intento = IntentoPago.objects.get(pedido=pedido_con_item)
+    assert intento.importe == Decimal("150.00")
+    venta = Venta.objects.get(pedido=pedido_con_item)
+    assert venta.total == Decimal("150.00")
+    assert venta.intento_aprobado_id == intento.pk
 
     with pytest.raises(IntegrityError):
         with transaction.atomic():
-            Pago.objects.filter(pedido=pedido_con_item).update(
-                monto=Decimal("-1.00")
+            IntentoPago.objects.filter(pk=intento.pk).update(
+                importe=Decimal("-1.00")
             )
 
 

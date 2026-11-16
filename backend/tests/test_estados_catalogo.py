@@ -9,7 +9,7 @@ from django.db import IntegrityError, connection, transaction
 from django.db.models.deletion import ProtectedError
 
 from catalogo.models import EstadoPublicacion
-from pagos.models import EstadoIntentoPago, Pago
+from pagos.models import EstadoIntentoPago, IntentoPago
 from pedidos.models import EstadoPedido, Pedido
 
 
@@ -53,10 +53,11 @@ def test_pedido_rechaza_estado_inexistente(usuario_cliente):
 def test_pago_rechaza_estado_inexistente(pedido_con_item):
     with pytest.raises(IntegrityError):
         with transaction.atomic():
-            Pago.objects.create(
+            IntentoPago.objects.create(
                 pedido=pedido_con_item,
-                monto=pedido_con_item.total,
+                importe=pedido_con_item.total,
                 estado_id="inexistente",
+                referencia="REF-EST-INEX",
             )
             connection.check_constraints()
 
@@ -89,15 +90,16 @@ def test_no_se_puede_borrar_estado_pedido_en_uso(pedido_con_item):
 
 @pytest.mark.django_db
 def test_no_se_puede_borrar_estado_pago_en_uso(pedido_con_item):
-    pago = Pago.objects.create(
+    intento = IntentoPago.objects.create(
         pedido=pedido_con_item,
-        monto=pedido_con_item.total,
+        importe=pedido_con_item.total,
         estado_id="aprobado",
+        referencia="REF-EST-USO",
     )
     estado = EstadoIntentoPago.objects.get(codigo="aprobado")
     with pytest.raises(ProtectedError):
         estado.delete()
-    assert Pago.objects.filter(pk=pago.pk).exists()
+    assert IntentoPago.objects.filter(pk=intento.pk).exists()
 
 
 @pytest.mark.django_db
@@ -125,18 +127,19 @@ def test_etiqueta_pedido_editable_sin_alterar_transaccionales(pedido_con_item):
 
 @pytest.mark.django_db
 def test_etiqueta_pago_editable_sin_alterar_transaccionales(pedido_con_item):
-    pago = Pago.objects.create(
+    intento = IntentoPago.objects.create(
         pedido=pedido_con_item,
-        monto=pedido_con_item.total,
+        importe=pedido_con_item.total,
         estado_id="aprobado",
+        referencia="REF-EST-LBL",
     )
     estado = EstadoIntentoPago.objects.get(codigo="aprobado")
     estado.nombre = "Confirmado"
     estado.save()
 
-    pago.refresh_from_db()
-    assert pago.estado_id == "aprobado"
-    assert pago.estado.nombre == "Confirmado"
+    intento.refresh_from_db()
+    assert intento.estado_id == "aprobado"
+    assert intento.estado.nombre == "Confirmado"
 
 
 @pytest.mark.django_db
