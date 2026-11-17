@@ -2,6 +2,8 @@
 
 **Issue:** #21 · AZ-S1-19 «Normalizar ciclo transaccional: historial de estados de pedido, intentos de pago y venta aprobada» · **Alcance:** capa de datos.
 
+**Issue:** #22 · AZ-S1-20 «Enriquecer y normalizar los catálogos maestros del videojuego» · **Alcance:** capa de datos y datos de referencia.
+
 Este documento describe el esquema final del backend Django 5.2: tablas,
 columnas, reglas de integridad, restricciones SQL e índices. Las restricciones
 se implementan en la base de datos (no solo en formularios o servicios) y se
@@ -39,9 +41,16 @@ verifican en ambos motores.
 | `catalogo` | `catalogo_categoria` | Categoría del título (acción, deportes…). |
 | `catalogo` | `catalogo_genero` | Género del título (RPG, shooter…). |
 | `catalogo` | `catalogo_plataforma` | Plataforma de la oferta (PC, PS5…). |
+| `catalogo` | `catalogo_desarrolladora` | Catálogo maestro de estudios desarrolladores. |
+| `catalogo` | `catalogo_distribuidora` | Catálogo maestro de distribuidoras. |
+| `catalogo` | `catalogo_clasificacionedad` | Catálogo PEGI de clasificación por edad. |
+| `catalogo` | `catalogo_idioma` | Catálogo de idiomas ISO 639-1. |
 | `catalogo` | `catalogo_videojuego` | Identidad e información común de un título. |
 | `catalogo` | `catalogo_videojuegocategoria` | Tabla puente: categorías de un videojuego. |
 | `catalogo` | `catalogo_videojuegogenero` | Tabla puente: géneros de un videojuego. |
+| `catalogo` | `catalogo_videojuegodesarrolladora` | Tabla puente: desarrolladoras de un videojuego. |
+| `catalogo` | `catalogo_videojuegodistribuidora` | Tabla puente: distribuidoras de un videojuego. |
+| `catalogo` | `catalogo_videojuegoidioma` | Tabla puente: idiomas y tipo de presencia. |
 | `catalogo` | `catalogo_estadopublicacion` | Catálogo de estados editoriales de una oferta. |
 | `catalogo` | `catalogo_ofertavideojuego` | Unidad comercial vendible: videojuego + plataforma. |
 | `pedidos` | `pedidos_estadopedido` | Catálogo de estados de un pedido. |
@@ -151,6 +160,7 @@ Las tres tablas comparten estructura:
 | `descripcion` | text | no | `""` | — |
 | `portada` | varchar(100) | sí | `null` | ruta de archivo |
 | `fecha_lanzamiento` | date | sí | `null` | — |
+| `clasificacion_edad` | varchar(20) → `catalogo_clasificacionedad.codigo` | sí | `null` | FK `PROTECT`, `to_field="codigo"`, `db_index=False` (AZ-S1-20) |
 | `activo` | boolean | no | `true` | — |
 | `creado_en`, `actualizado_en` | timestamp | no | auto | — |
 
@@ -158,6 +168,13 @@ Las columnas `categoria_id` y `genero_id` **ya no existen**: la clasificación
 se expresa con las tablas puente `catalogo_videojuegocategoria` y
 `catalogo_videojuegogenero`. En el ORM se accede con los M2M
 `Videojuego.categorias` y `Videojuego.generos` (con `through` explícito).
+
+Desde AZ-S1-20, `Videojuego` tampoco guarda textos de desarrolladora,
+distribuidora ni idioma: se usan los M2M `Videojuego.desarrolladoras`,
+`Videojuego.distribuidoras` y `Videojuego.idiomas` con sus tablas puente. La
+clasificación por edad es la única FK directa nueva y es nullable. Índice:
+`catalogo_vj_clasificacion_idx` sobre `clasificacion_edad` (la FK usa
+`db_index=False`).
 
 ### `catalogo_videojuegocategoria`
 
@@ -198,6 +215,37 @@ Restricciones e índices:
 Un videojuego puede tener **cero, una o varias** categorías y géneros
 (`blank=True`); no hay campos adicionales en las tablas puente porque la pareja
 no tiene atributos propios de dominio.
+
+### Catálogos maestros: `catalogo_desarrolladora`, `catalogo_distribuidora`, `catalogo_clasificacionedad`, `catalogo_idioma`
+
+Catálogos de referencia de AZ-S1-20; `id` es bigint PK. `codigo` es el
+identificador estable (slug, ISO 639-1 o código PEGI) y `nombre` la etiqueta
+visible.
+
+| Tabla | Campos propios | Restricciones |
+|---|---|---|
+| `catalogo_desarrolladora` | `codigo` varchar(100), `nombre` varchar(150), `activo` bool | `catalogo_desarrolladora_codigo_unico`; `catalogo_desarrolladora_nombre_unico` (`Lower("nombre")`) |
+| `catalogo_distribuidora` | `codigo` varchar(100), `nombre` varchar(150), `activo` bool | `catalogo_distribuidora_codigo_unico`; `catalogo_distribuidora_nombre_unico` (`Lower("nombre")`) |
+| `catalogo_clasificacionedad` | `codigo` varchar(20), `nombre` varchar(50), `orden` smallint | `catalogo_clasificacionedad_codigo_unico`; `catalogo_clasificacionedad_nombre_unico` |
+| `catalogo_idioma` | `codigo` varchar(2), `nombre` varchar(100) | `catalogo_idioma_codigo_unico`; `catalogo_idioma_nombre_unico` (`Lower("nombre")`) |
+
+Se siembran de forma idempotente las clasificaciones PEGI `3`, `7`, `12`, `16`,
+`18` y los idiomas `es`, `en`, `fr`, `de`, `it`, `pt`, `ja`, `ko`, `zh`, `ru`;
+no se siembran desarrolladoras ni distribuidoras.
+
+### Tablas puente: `catalogo_videojuegodesarrolladora`, `catalogo_videojuegodistribuidora`, `catalogo_videojuegoidioma`
+
+Asocian un título con un catálogo; `id` es bigint PK, el lado `videojuego` es
+`CASCADE` y el lado catálogo `PROTECT`.
+
+| Tabla | Columnas | Restricciones e índices |
+|---|---|---|
+| `catalogo_videojuegodesarrolladora` | `videojuego_id`, `desarrolladora_id` | `catalogo_vjdesarrolladora_unicos` (`(videojuego, desarrolladora)`); índice `catalogo_vjd_desarroll_idx` (`(desarrolladora, videojuego)`) |
+| `catalogo_videojuegodistribuidora` | `videojuego_id`, `distribuidora_id` | `catalogo_vjdistribuidora_unicos` (`(videojuego, distribuidora)`); índice `catalogo_vjd_distrib_idx` (`(distribuidora, videojuego)`) |
+| `catalogo_videojuegoidioma` | `videojuego_id`, `idioma_id`, `tipo` varchar(10) | `catalogo_vjidioma_tipo_unicos` (`(videojuego, idioma, tipo)`); `catalogo_vji_tipo_valido` (`tipo` ∈ `audio`/`interfaz`/`subtitulos`); índice `catalogo_vji_idioma_tipo_idx` (`(idioma, tipo, videojuego)`) |
+
+Un título puede tener cero, una o varias filas en cada puente (`blank=True`); un
+mismo idioma se repite si cambia el `tipo` (audio, interfaz, subtítulos).
 
 ### `catalogo_estadopublicacion`
 
@@ -528,6 +576,27 @@ auditoría; si se añade `asignado_por` en el futuro hará falta `through_fields
 `is_superuser`, `is_staff`, `Group` y `Permission` de Django no se replican ni se
 sincronizan con `Rol`; ver `docs/adr_az-s1-18-roles-usuario.md`.
 
+## Catálogos maestros y decisiones de alcance (AZ-S1-20)
+
+`Desarrolladora`, `Distribuidora`, `ClasificacionEdad` e `Idioma` son catálogos
+maestros: `codigo` es el identificador estable y `nombre` la etiqueta visible
+(único sin mayúsculas con `Lower("nombre")`, salvo clasificación, único exacto).
+Antes de cargar o sembrar se recortan extremos y se colapsan espacios con
+`catalogo.models.normalizar_nombre_catalogo`; la base de datos cubre mayúsculas,
+no espacios.
+
+Desarrolladora y distribuidora son M:N con tablas puente y
+`UniqueConstraint(videojuego, entidad)`; idioma usa una puente con `tipo`,
+`CheckConstraint` y `UniqueConstraint(videojuego, idioma, tipo)`.
+`Videojuego.clasificacion_edad` es FK nullable por `to_field="codigo"` y
+`PROTECT`. El lado catálogo es `PROTECT`; el lado videojuego de las puentes es
+`CASCADE`.
+
+No se crea `Caracteristica` ni campos técnicos (sin conjunto de datos acordado)
+ni una edad numérica libre (la clasificación es el catálogo PEGI). El esquema
+anterior nunca tuvo columnas de texto de estos atributos, así que no hubo
+backfill legado. Ver `docs/adr_az-s1-20-catalogos-maestros.md`.
+
 ## Migraciones que materializan este esquema
 
 | Migración | Contenido |
@@ -573,6 +642,8 @@ sincronizan con `Rol`; ver `docs/adr_az-s1-18-roles-usuario.md`.
 | `pagos.0016_venta_intento_nullable` | Añade `Venta.intento_aprobado` nullable (FK). Solo esquema. |
 | `pagos.0017_venta_intento_backfill` | Vincula cada venta con el intento aprobado del mismo pedido; aborta si no existe o no es único (tabla, campo, cantidad/pedido). Reverso limpia el vínculo. Solo datos. |
 | `pagos.0018_venta_intento_definitivo` | Endurece `intento_aprobado` a NOT NULL `OneToOne` (`PROTECT`). Solo esquema. |
+| `catalogo.0013_catalogos_maestros` | Crea `Desarrolladora`, `Distribuidora`, `ClasificacionEdad`, `Idioma`, las tres puentes, los M2M de `Videojuego`, la FK nullable `clasificacion_edad` y sus índices. Solo esquema. |
+| `catalogo.0014_semilla_catalogos_maestros` | Siembra idempotente de clasificaciones PEGI e idiomas comunes; el reverso aborta con mensaje claro si hay datos nuevos y elimina solo lo sembrado. Solo datos. |
 
 Las migraciones de datos no normalizan nada: si encuentran filas inválidas
 abortan con un `RuntimeError` que indica tabla, campo y cantidad de filas

@@ -2,6 +2,8 @@
 
 **Issue:** #21 · AZ-S1-19 · **Alcance:** capa de datos.
 
+**Issue:** #22 · AZ-S1-20 «Enriquecer y normalizar los catálogos maestros del videojuego» · **Alcance:** capa de datos y datos de referencia.
+
 Diagrama lógico del esquema normalizado implementado en PostgreSQL/SQLite.
 Las claves foráneas son `PROTECT` salvo las excepciones indicadas en el
 diccionario (`DetallePedido.pedido` es `CASCADE`; `Contacto.usuario` es
@@ -67,12 +69,40 @@ erDiagram
         boolean activo
     }
 
+    DESARROLLADORA {
+        bigint id PK
+        varchar codigo UK "máx. 100, slug estable"
+        varchar nombre UK "máx. 150, único sin mayúsculas"
+        boolean activo
+    }
+
+    DISTRIBUIDORA {
+        bigint id PK
+        varchar codigo UK "máx. 100, slug estable"
+        varchar nombre UK "máx. 150, único sin mayúsculas"
+        boolean activo
+    }
+
+    CLASIFICACION_EDAD {
+        bigint id PK
+        varchar codigo UK "máx. 20, PEGI"
+        varchar nombre UK "máx. 50, etiqueta"
+        smallint orden "presentación"
+    }
+
+    IDIOMA {
+        bigint id PK
+        varchar codigo UK "ISO 639-1, máx. 2"
+        varchar nombre UK "máx. 100, único sin mayúsculas"
+    }
+
     VIDEOJUEGO {
         bigint id PK
         varchar titulo "máx. 200"
         text descripcion
         varchar portada "ruta de archivo"
         date fecha_lanzamiento
+        varchar clasificacion_edad FK "nullable → CLASIFICACION_EDAD.codigo"
         boolean activo
         datetime creado_en
         datetime actualizado_en
@@ -88,6 +118,25 @@ erDiagram
         bigint id PK
         bigint videojuego_id FK
         bigint genero_id FK
+    }
+
+    VIDEOJUEGO_DESARROLLADORA {
+        bigint id PK
+        bigint videojuego_id FK
+        bigint desarrolladora_id FK
+    }
+
+    VIDEOJUEGO_DISTRIBUIDORA {
+        bigint id PK
+        bigint videojuego_id FK
+        bigint distribuidora_id FK
+    }
+
+    VIDEOJUEGO_IDIOMA {
+        bigint id PK
+        bigint videojuego_id FK
+        bigint idioma_id FK
+        varchar tipo "audio|interfaz|subtitulos"
     }
 
     ESTADO_PUBLICACION {
@@ -221,6 +270,13 @@ erDiagram
     VIDEOJUEGO ||--o{ VIDEOJUEGO_CATEGORIA : "tiene"
     GENERO ||--o{ VIDEOJUEGO_GENERO : "clasifica"
     VIDEOJUEGO ||--o{ VIDEOJUEGO_GENERO : "tiene"
+    DESARROLLADORA ||--o{ VIDEOJUEGO_DESARROLLADORA : "desarrolla"
+    VIDEOJUEGO ||--o{ VIDEOJUEGO_DESARROLLADORA : "tiene"
+    DISTRIBUIDORA ||--o{ VIDEOJUEGO_DISTRIBUIDORA : "distribuye"
+    VIDEOJUEGO ||--o{ VIDEOJUEGO_DISTRIBUIDORA : "tiene"
+    IDIOMA ||--o{ VIDEOJUEGO_IDIOMA : "se usa en"
+    VIDEOJUEGO ||--o{ VIDEOJUEGO_IDIOMA : "tiene"
+    CLASIFICACION_EDAD ||--o{ VIDEOJUEGO : "clasifica"
     VIDEOJUEGO ||--o{ OFERTA_VIDEOJUEGO : "se vende como"
     PLATAFORMA ||--o{ OFERTA_VIDEOJUEGO : "edición en"
     ESTADO_PUBLICACION ||--o{ OFERTA_VIDEOJUEGO : "estado"
@@ -263,6 +319,13 @@ erDiagram
 | `USUARIO_ROL` | `(usuario, rol)` único; FK a usuario `CASCADE`; FK a rol `PROTECT`. |
 | `VIDEOJUEGO_CATEGORIA` | `(videojuego, categoria)` único; FK a videojuego `CASCADE`; FK a categoría `PROTECT`. |
 | `VIDEOJUEGO_GENERO` | `(videojuego, genero)` único; FK a videojuego `CASCADE`; FK a género `PROTECT`. |
+| `DESARROLLADORA` / `DISTRIBUIDORA` | `codigo` único; `nombre` único sin distinguir mayúsculas (`Lower("nombre")`). |
+| `CLASIFICACION_EDAD` | `codigo` único (PEGI) y `nombre` único; `orden` define la presentación. |
+| `IDIOMA` | `codigo` ISO 639-1 único; `nombre` único sin distinguir mayúsculas. |
+| `VIDEOJUEGO` | `clasificacion_edad` FK `PROTECT` nullable a `CLASIFICACION_EDAD.codigo`; índice `catalogo_vj_clasificacion_idx`. |
+| `VIDEOJUEGO_DESARROLLADORA` | `(videojuego, desarrolladora)` único; FK a videojuego `CASCADE`; FK a desarrolladora `PROTECT`; índice `(desarrolladora, videojuego)`. |
+| `VIDEOJUEGO_DISTRIBUIDORA` | `(videojuego, distribuidora)` único; FK a videojuego `CASCADE`; FK a distribuidora `PROTECT`; índice `(distribuidora, videojuego)`. |
+| `VIDEOJUEGO_IDIOMA` | `(videojuego, idioma, tipo)` único; `tipo` restringido a `audio`/`interfaz`/`subtitulos`; FK a videojuego `CASCADE`; FK a idioma `PROTECT`; índice `(idioma, tipo, videojuego)`. |
 | `ESTADO_PUBLICACION` | `codigo` único (catálogo de estados editoriales). |
 | `OFERTA_VIDEOJUEGO` | `(videojuego, plataforma)` único; `sku` único; `precio_vigente >= 0`; `stock >= 0`; `estado_publicacion` FK `PROTECT` a `ESTADO_PUBLICACION.codigo`. |
 | `ESTADO_PEDIDO` | `codigo` único (catálogo de estados de pedido). |
