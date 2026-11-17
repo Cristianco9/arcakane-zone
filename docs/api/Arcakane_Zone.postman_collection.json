@@ -1,0 +1,3897 @@
+{
+  "info": {
+    "_postman_id": "eb694e4b-30c0-422f-b140-14d6b6b9cc50",
+    "name": "Arcakane Zone · API v1",
+    "description": "# Arcakane Zone · API v1\n\nColección para probar **todos los endpoints** REST de Arcakane Zone.\n\n## Uso rápido\n1. Importa este archivo en Postman.\n2. Verifica la variable `base_url` (por defecto `http://localhost:8000/api/v1`).\n3. Ejecuta la colección completa con **Run collection**: el orden de las carpetas deja el token de administrador listo para las carpetas 03 y 07-09.\n4. Para probar una request suelta, ejecuta primero **01 · Autenticación y perfil → Login (admin_demo)**.\n5. Las variables de IDs se guardan automáticamente.\n\n## Credenciales demo\n- Cliente: `cliente_demo` / `Arcakane2026!Dev`\n- Admin: `admin_demo` / `Arcakane2026!Admin`\n\n> El encabezado correcto es `Authorization: Token <token>` (NO `Bearer`). La colección ya lo configura.\n\n## Flujo de compras\n1. `04 · Carrito` deja un pedido pendiente con un ítem y guarda `pedido_id`.\n2. `05 · Pagos y ventas → Procesar pago` cobra ese pedido (90% de aprobación; si responde 402, reintenta).\n3. `06 · Pedidos` lista el pedido pagado y crea pedidos nuevos para probar las dos formas de cancelar.\n\n## Notas\n- Todas las rutas requieren barra final.\n- Los listados usan `page` y `page_size` (máximo 100).\n- Las escrituras del catálogo, los reportes, usuarios y roles requieren token de administrador.\n- `Cambiar contraseña` modifica a `cliente_demo`; `Restaurar contraseña` la deja como estaba.\n- `10 · Cierre de sesión` es opcional y debe ejecutarse al final: borra el token.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "csrftoken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "username",
+      "value": "cliente_demo",
+      "type": "string"
+    },
+    {
+      "key": "password",
+      "value": "Arcakane2026!Dev",
+      "type": "string"
+    },
+    {
+      "key": "admin_username",
+      "value": "admin_demo",
+      "type": "string"
+    },
+    {
+      "key": "admin_password",
+      "value": "Arcakane2026!Admin",
+      "type": "string"
+    },
+    {
+      "key": "demo_suffix",
+      "value": "000000",
+      "type": "string"
+    },
+    {
+      "key": "categoria_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "plataforma_id",
+      "value": "4",
+      "type": "string"
+    },
+    {
+      "key": "genero_id",
+      "value": "3",
+      "type": "string"
+    },
+    {
+      "key": "videojuego_id",
+      "value": "11",
+      "type": "string"
+    },
+    {
+      "key": "oferta_id",
+      "value": "19",
+      "type": "string"
+    },
+    {
+      "key": "categoria_admin_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "plataforma_admin_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "genero_admin_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "videojuego_admin_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "oferta_admin_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "pedido_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "pedido_cancelar_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "pedido_cancelar_id_2",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "carrito_item_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "pago_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "venta_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "contacto_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "usuario_id",
+      "value": "1",
+      "type": "string"
+    },
+    {
+      "key": "rol_id",
+      "value": "1",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 · Raíz y salud",
+      "description": "Endpoints públicos de índice y healthcheck.",
+      "item": [
+        {
+          "name": "Raíz de la API",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                ""
+              ]
+            },
+            "description": "Índice navegable con las URLs de todos los recursos."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Healthcheck",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/health/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "health",
+                ""
+              ]
+            },
+            "description": "Estado del servicio."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "01 · Autenticación y perfil",
+      "description": "Registro, login, perfil y cambio de contraseña. Termina con el token de admin_demo.",
+      "item": [
+        {
+          "name": "Obtener CSRF",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/csrf/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "csrf",
+                ""
+              ]
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Crea la cookie csrftoken para clientes que usan sesión. Con token no es necesario."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Registrar usuario",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/registro/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "registro",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"nuevo_cliente_{{demo_suffix}}\",\n  \"email\": \"nuevo_cliente_{{demo_suffix}}@arcakane-zone.com\",\n  \"first_name\": \"Nuevo\",\n  \"last_name\": \"Cliente\",\n  \"telefono\": \"3001234567\",\n  \"direccion\": \"Calle 1 # 2-3, Zarzal\",\n  \"password\": \"Pz8#kL3!vN6$\",\n  \"password_confirm\": \"Pz8#kL3!vN6$\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Cuenta nueva. Guarda automáticamente el token de la respuesta."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('demo_suffix', Date.now().toString().slice(-6));",
+                  "pm.sendRequest({",
+                  "  url: pm.collectionVariables.get('base_url') + '/auth/csrf/',",
+                  "  method: 'GET'",
+                  "}, function (err, res) {",
+                  "  if (err) { console.error(err); return; }",
+                  "  const body = res.json();",
+                  "  const csrf = body && body.data && body.data.csrfToken;",
+                  "  if (csrf) {",
+                  "    pm.collectionVariables.set('csrftoken', csrf);",
+                  "    pm.request.headers.upsert({ key: 'X-CSRFToken', value: csrf });",
+                  "  }",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 201', function () {",
+                  "  pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (body && body.data && body.data.token) {",
+                  "  pm.collectionVariables.set('token', body.data.token);",
+                  "  console.log('Token guardado en la variable token');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login (cliente_demo)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Login del usuario cliente. Guarda el token en la variable token."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.sendRequest({",
+                  "  url: pm.collectionVariables.get('base_url') + '/auth/csrf/',",
+                  "  method: 'GET'",
+                  "}, function (err, res) {",
+                  "  if (err) { console.error(err); return; }",
+                  "  const body = res.json();",
+                  "  const csrf = body && body.data && body.data.csrfToken;",
+                  "  if (csrf) {",
+                  "    pm.collectionVariables.set('csrftoken', csrf);",
+                  "    pm.request.headers.upsert({ key: 'X-CSRFToken', value: csrf });",
+                  "  }",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (body && body.data && body.data.token) {",
+                  "  pm.collectionVariables.set('token', body.data.token);",
+                  "  console.log('Token guardado en la variable token');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Perfil · obtener",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/me/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Perfil · actualizar (PATCH)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"first_name\": \"Cliente\",\n  \"last_name\": \"Demo\",\n  \"telefono\": \"3001112233\",\n  \"direccion\": \"Calle 10 # 20-30, Zarzal\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Perfil · actualizar (PUT)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"cliente_demo@arcakane-zone.com\",\n  \"first_name\": \"Cliente\",\n  \"last_name\": \"Demo\",\n  \"telefono\": \"3001112233\",\n  \"direccion\": \"Calle 10 # 20-30, Zarzal\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cambiar contraseña",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me/password/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me",
+                "password",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"old_password\": \"{{password}}\",\n  \"new_password\": \"NuevaClave2026!\",\n  \"new_password_confirm\": \"NuevaClave2026!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Cambia la contraseña de `cliente_demo` y actualiza la variable `password`. Ejecuta después **Restaurar contraseña** para dejar el usuario demo como estaba."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (body && body.success) {",
+                  "  pm.collectionVariables.set('password', 'NuevaClave2026!');",
+                  "  console.log('Variable password actualizada a NuevaClave2026!');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Restaurar contraseña",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/me/password/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "me",
+                "password",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"old_password\": \"NuevaClave2026!\",\n  \"new_password\": \"Arcakane2026!Dev\",\n  \"new_password_confirm\": \"Arcakane2026!Dev\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Devuelve la contraseña de `cliente_demo` a su valor original. Si no cambiaste la contraseña antes, responde 400 y no modifica nada."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200 o 400', function () {",
+                  "  pm.expect([200, 400]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (body && body.success) {",
+                  "  pm.collectionVariables.set('password', 'Arcakane2026!Dev');",
+                  "}",
+                  "console.log('Contraseña de cliente_demo restaurada (o ya estaba en su valor original).');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login (admin_demo)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/auth/login/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "login",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{admin_username}}\",\n  \"password\": \"{{admin_password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Login del administrador. Se ejecuta al final de la carpeta para que las carpetas de administración encuentren un token con permisos."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.sendRequest({",
+                  "  url: pm.collectionVariables.get('base_url') + '/auth/csrf/',",
+                  "  method: 'GET'",
+                  "}, function (err, res) {",
+                  "  if (err) { console.error(err); return; }",
+                  "  const body = res.json();",
+                  "  const csrf = body && body.data && body.data.csrfToken;",
+                  "  if (csrf) {",
+                  "    pm.collectionVariables.set('csrftoken', csrf);",
+                  "    pm.request.headers.upsert({ key: 'X-CSRFToken', value: csrf });",
+                  "  }",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (body && body.data && body.data.token) {",
+                  "  pm.collectionVariables.set('token', body.data.token);",
+                  "  console.log('Token guardado en la variable token');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "auth": {
+        "type": "apikey",
+        "apikey": [
+          {
+            "key": "key",
+            "value": "Authorization",
+            "type": "string"
+          },
+          {
+            "key": "value",
+            "value": "Token {{token}}",
+            "type": "string"
+          },
+          {
+            "key": "in",
+            "value": "header",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "02 · Catálogo · lectura pública",
+      "description": "Consultas públicas de categorías, plataformas, géneros, videojuegos y ofertas.",
+      "item": [
+        {
+          "name": "Categorías · listar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalogo/categorias/?page=1&page_size=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "categorias",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "Búsqueda por nombre o descripción",
+                  "disabled": true
+                },
+                {
+                  "key": "ordering",
+                  "value": "nombre",
+                  "description": "nombre | -nombre | id | -id",
+                  "disabled": true
+                },
+                {
+                  "key": "activo",
+                  "value": "true",
+                  "description": "Solo administrador: true | false",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Número de página"
+                },
+                {
+                  "key": "page_size",
+                  "value": "20",
+                  "description": "Elementos por página (máx. 100)"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (Array.isArray(body.data) && body.data.length > 0 && body.data[0].id) {",
+                  "  pm.collectionVariables.set('categoria_id', body.data[0].id);",
+                  "  console.log('categoria_id =', body.data[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Categorías · detalle",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalogo/categorias/{{categoria_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "categorias",
+                "{{categoria_id}}",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Plataformas · listar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalogo/plataformas/?page=1&page_size=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "plataformas",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "Búsqueda por nombre o descripción",
+                  "disabled": true
+                },
+                {
+                  "key": "ordering",
+                  "value": "nombre",
+                  "description": "nombre | -nombre | id | -id",
+                  "disabled": true
+                },
+                {
+                  "key": "activo",
+                  "value": "true",
+                  "description": "Solo administrador: true | false",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Número de página"
+                },
+                {
+                  "key": "page_size",
+                  "value": "20",
+                  "description": "Elementos por página (máx. 100)"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (Array.isArray(body.data) && body.data.length > 0 && body.data[0].id) {",
+                  "  pm.collectionVariables.set('plataforma_id', body.data[0].id);",
+                  "  console.log('plataforma_id =', body.data[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Plataformas · detalle",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalogo/plataformas/{{plataforma_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "plataformas",
+                "{{plataforma_id}}",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Géneros · listar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalogo/generos/?page=1&page_size=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "generos",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "Búsqueda por nombre o descripción",
+                  "disabled": true
+                },
+                {
+                  "key": "ordering",
+                  "value": "nombre",
+                  "description": "nombre | -nombre | id | -id",
+                  "disabled": true
+                },
+                {
+                  "key": "activo",
+                  "value": "true",
+                  "description": "Solo administrador: true | false",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Número de página"
+                },
+                {
+                  "key": "page_size",
+                  "value": "20",
+                  "description": "Elementos por página (máx. 100)"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (Array.isArray(body.data) && body.data.length > 0 && body.data[0].id) {",
+                  "  pm.collectionVariables.set('genero_id', body.data[0].id);",
+                  "  console.log('genero_id =', body.data[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Géneros · detalle",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalogo/generos/{{genero_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "generos",
+                "{{genero_id}}",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Videojuegos · listar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalogo/videojuegos/?page=1&page_size=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "videojuegos",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "Título, descripción, categoría o género",
+                  "disabled": true
+                },
+                {
+                  "key": "categoria",
+                  "value": "{{categoria_id}}",
+                  "description": "ID de categoría",
+                  "disabled": true
+                },
+                {
+                  "key": "genero",
+                  "value": "{{genero_id}}",
+                  "description": "ID de género",
+                  "disabled": true
+                },
+                {
+                  "key": "plataforma",
+                  "value": "{{plataforma_id}}",
+                  "description": "ID de plataforma",
+                  "disabled": true
+                },
+                {
+                  "key": "disponible",
+                  "value": "true",
+                  "description": "true | false",
+                  "disabled": true
+                },
+                {
+                  "key": "activo",
+                  "value": "true",
+                  "description": "Solo administrador",
+                  "disabled": true
+                },
+                {
+                  "key": "ordering",
+                  "value": "titulo",
+                  "description": "titulo | fecha_lanzamiento | creado_en | id",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Número de página"
+                },
+                {
+                  "key": "page_size",
+                  "value": "20",
+                  "description": "Elementos por página"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (Array.isArray(body.data) && body.data.length > 0 && body.data[0].id) {",
+                  "  pm.collectionVariables.set('videojuego_id', body.data[0].id);",
+                  "  console.log('videojuego_id =', body.data[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Videojuegos · detalle",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalogo/videojuegos/{{videojuego_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "videojuegos",
+                "{{videojuego_id}}",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Videojuegos · ofertas del título",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalogo/videojuegos/{{videojuego_id}}/ofertas/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "videojuegos",
+                "{{videojuego_id}}",
+                "ofertas",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (Array.isArray(body.data) && body.data.length > 0 && body.data[0].id) {",
+                  "  pm.collectionVariables.set('oferta_id', body.data[0].id);",
+                  "  console.log('oferta_id =', body.data[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ofertas · listar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalogo/ofertas/?page=1&page_size=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "ofertas",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "SKU, título o plataforma",
+                  "disabled": true
+                },
+                {
+                  "key": "videojuego",
+                  "value": "{{videojuego_id}}",
+                  "description": "ID del videojuego",
+                  "disabled": true
+                },
+                {
+                  "key": "plataforma",
+                  "value": "{{plataforma_id}}",
+                  "description": "ID de plataforma",
+                  "disabled": true
+                },
+                {
+                  "key": "categoria",
+                  "value": "{{categoria_id}}",
+                  "description": "ID de categoría",
+                  "disabled": true
+                },
+                {
+                  "key": "genero",
+                  "value": "{{genero_id}}",
+                  "description": "ID de género",
+                  "disabled": true
+                },
+                {
+                  "key": "disponible",
+                  "value": "true",
+                  "description": "true | false",
+                  "disabled": true
+                },
+                {
+                  "key": "estado_publicacion",
+                  "value": "publicado",
+                  "description": "borrador | publicado | retirado (solo admin)",
+                  "disabled": true
+                },
+                {
+                  "key": "ordering",
+                  "value": "precio_vigente",
+                  "description": "precio_vigente | stock | creado_en | id",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "Número de página"
+                },
+                {
+                  "key": "page_size",
+                  "value": "20",
+                  "description": "Elementos por página"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (Array.isArray(body.data) && body.data.length > 0 && body.data[0].id) {",
+                  "  pm.collectionVariables.set('oferta_id', body.data[0].id);",
+                  "  console.log('oferta_id =', body.data[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ofertas · detalle",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalogo/ofertas/{{oferta_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "ofertas",
+                "{{oferta_id}}",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "03 · Catálogo · administración",
+      "description": "Crear, actualizar y eliminar. Requiere token de administrador (Login admin_demo).",
+      "item": [
+        {
+          "name": "Categorías · crear",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogo/categorias/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "categorias",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Categoría demo {{demo_suffix}}\",\n  \"descripcion\": \"Creada desde Postman\",\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('demo_suffix', Date.now().toString().slice(-6));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 201', function () {",
+                  "  pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (body && body.data && body.data.id) {",
+                  "  pm.collectionVariables.set('categoria_admin_id', body.data.id);",
+                  "  console.log('categoria_admin_id =', body.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Categorías · actualizar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogo/categorias/{{categoria_admin_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "categorias",
+                "{{categoria_admin_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descripcion\": \"Descripción actualizada desde Postman\",\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Categorías · eliminar",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalogo/categorias/{{categoria_admin_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "categorias",
+                "{{categoria_admin_id}}",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 204', function () {",
+                  "  pm.expect([204]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Plataformas · crear",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogo/plataformas/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "plataformas",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Plataforma demo {{demo_suffix}}\",\n  \"descripcion\": \"Creada desde Postman\",\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('demo_suffix', Date.now().toString().slice(-6));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 201', function () {",
+                  "  pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (body && body.data && body.data.id) {",
+                  "  pm.collectionVariables.set('plataforma_admin_id', body.data.id);",
+                  "  console.log('plataforma_admin_id =', body.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Plataformas · actualizar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogo/plataformas/{{plataforma_admin_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "plataformas",
+                "{{plataforma_admin_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descripcion\": \"Descripción actualizada desde Postman\",\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Plataformas · eliminar",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalogo/plataformas/{{plataforma_admin_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "plataformas",
+                "{{plataforma_admin_id}}",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 204', function () {",
+                  "  pm.expect([204]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Géneros · crear",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogo/generos/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "generos",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Género demo {{demo_suffix}}\",\n  \"descripcion\": \"Creado desde Postman\",\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('demo_suffix', Date.now().toString().slice(-6));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 201', function () {",
+                  "  pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (body && body.data && body.data.id) {",
+                  "  pm.collectionVariables.set('genero_admin_id', body.data.id);",
+                  "  console.log('genero_admin_id =', body.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Géneros · actualizar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogo/generos/{{genero_admin_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "generos",
+                "{{genero_admin_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descripcion\": \"Descripción actualizada desde Postman\",\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Géneros · eliminar",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalogo/generos/{{genero_admin_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "generos",
+                "{{genero_admin_id}}",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 204', function () {",
+                  "  pm.expect([204]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Videojuegos · crear",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogo/videojuegos/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "videojuegos",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Juego demo {{demo_suffix}}\",\n  \"descripcion\": \"Creado desde Postman\",\n  \"fecha_lanzamiento\": \"2024-01-01\",\n  \"categoria\": {{categoria_id}},\n  \"genero\": {{genero_id}},\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('demo_suffix', Date.now().toString().slice(-6));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 201', function () {",
+                  "  pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (body && body.data && body.data.id) {",
+                  "  pm.collectionVariables.set('videojuego_admin_id', body.data.id);",
+                  "  console.log('videojuego_admin_id =', body.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Videojuegos · actualizar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogo/videojuegos/{{videojuego_admin_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "videojuegos",
+                "{{videojuego_admin_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"descripcion\": \"Descripción actualizada desde Postman\",\n  \"activo\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ofertas · crear",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogo/ofertas/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "ofertas",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"videojuego\": {{videojuego_admin_id}},\n  \"plataforma\": {{plataforma_id}},\n  \"precio_vigente\": \"199900.00\",\n  \"sku\": \"SKU-DEMO-{{demo_suffix}}\",\n  \"stock\": 10,\n  \"estado_publicacion\": \"publicado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('demo_suffix', Date.now().toString().slice(-6));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 201', function () {",
+                  "  pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (body && body.data && body.data.id) {",
+                  "  pm.collectionVariables.set('oferta_admin_id', body.data.id);",
+                  "  console.log('oferta_admin_id =', body.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ofertas · actualizar",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/catalogo/ofertas/{{oferta_admin_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "ofertas",
+                "{{oferta_admin_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"stock\": 25,\n  \"estado_publicacion\": \"publicado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ofertas · eliminar",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalogo/ofertas/{{oferta_admin_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "ofertas",
+                "{{oferta_admin_id}}",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 204', function () {",
+                  "  pm.expect([204]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Videojuegos · eliminar",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalogo/videojuegos/{{videojuego_admin_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "catalogo",
+                "videojuegos",
+                "{{videojuego_admin_id}}",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 204', function () {",
+                  "  pm.expect([204]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "auth": {
+        "type": "apikey",
+        "apikey": [
+          {
+            "key": "key",
+            "value": "Authorization",
+            "type": "string"
+          },
+          {
+            "key": "value",
+            "value": "Token {{token}}",
+            "type": "string"
+          },
+          {
+            "key": "in",
+            "value": "header",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "04 · Carrito",
+      "description": "Carrito del usuario autenticado.",
+      "item": [
+        {
+          "name": "Ver carrito",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/carrito/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "carrito",
+                ""
+              ]
+            },
+            "description": "Devuelve el pedido pendiente del usuario. Si no existe, id = null."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Agregar ítem",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/carrito/items/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "carrito",
+                "items",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oferta\": {{oferta_id}},\n  \"cantidad\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 201', function () {",
+                  "  pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (body && body.data && body.data.id) {",
+                  "  pm.collectionVariables.set('carrito_item_id', body.data.id);",
+                  "  console.log('carrito_item_id =', body.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ver ítem",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/carrito/items/{{carrito_item_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "carrito",
+                "items",
+                "{{carrito_item_id}}",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Actualizar cantidad",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/carrito/items/{{carrito_item_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "carrito",
+                "items",
+                "{{carrito_item_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cantidad\": 2\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Eliminar ítem",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/carrito/items/{{carrito_item_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "carrito",
+                "items",
+                "{{carrito_item_id}}",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Vaciar carrito",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/carrito/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "carrito",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Agregar ítem (pedido para pagar)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/carrito/items/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "carrito",
+                "items",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oferta\": {{oferta_id}},\n  \"cantidad\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Deja el carrito con un ítem para procesar el pago en la siguiente carpeta."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 201', function () {",
+                  "  pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (body && body.data && body.data.id) {",
+                  "  pm.collectionVariables.set('carrito_item_id', body.data.id);",
+                  "  console.log('carrito_item_id =', body.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Ver carrito (guardar pedido_id)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/carrito/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "carrito",
+                ""
+              ]
+            },
+            "description": "Guarda el id del pedido pendiente que se pagará en la carpeta 05."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (body && body.data && body.data.id) {",
+                  "  pm.collectionVariables.set('pedido_id', body.data.id);",
+                  "  console.log('pedido_id =', body.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "auth": {
+        "type": "apikey",
+        "apikey": [
+          {
+            "key": "key",
+            "value": "Authorization",
+            "type": "string"
+          },
+          {
+            "key": "value",
+            "value": "Token {{token}}",
+            "type": "string"
+          },
+          {
+            "key": "in",
+            "value": "header",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "05 · Pagos y ventas",
+      "description": "Pago simulado y ventas registradas.",
+      "item": [
+        {
+          "name": "Listar pagos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pagos/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pagos",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (Array.isArray(body.data) && body.data.length > 0 && body.data[0].id) {",
+                  "  pm.collectionVariables.set('pago_id', body.data[0].id);",
+                  "  console.log('pago_id =', body.data[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Procesar pago",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/pagos/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pagos",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"pedido\": {{pedido_id}}\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Pago simulado: 90% de aprobación. Requiere un pedido pendiente con ítems (lo deja la carpeta 04). Si responde 402, vuelve a ejecutar."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Pago aprobado (201) o rechazado (402, se puede reintentar)', function () {",
+                  "  pm.expect([201, 402]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "const pago = (body && body.data) ? body.data : (body && body.error ? body.error.details : null);",
+                  "if (pago && pago.id) {",
+                  "  pm.collectionVariables.set('pago_id', pago.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Detalle de pago",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pagos/{{pago_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pagos",
+                "{{pago_id}}",
+                ""
+              ]
+            },
+            "description": "Usa el id guardado por Procesar pago."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Listar ventas (admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/ventas/?page=1&page_size=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ventas",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "desde",
+                  "value": "2026-01-01",
+                  "description": "AAAA-MM-DD",
+                  "disabled": true
+                },
+                {
+                  "key": "hasta",
+                  "value": "2026-12-31",
+                  "description": "AAAA-MM-DD",
+                  "disabled": true
+                },
+                {
+                  "key": "cliente",
+                  "value": "{{usuario_id}}",
+                  "description": "ID del cliente",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "20"
+                }
+              ]
+            },
+            "description": "Solo administrador. Si no hay ventas registradas, la lista viene vacía."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (Array.isArray(body.data) && body.data.length > 0 && body.data[0].id) {",
+                  "  pm.collectionVariables.set('venta_id', body.data[0].id);",
+                  "  console.log('venta_id =', body.data[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Detalle de venta (admin)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/ventas/{{venta_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "ventas",
+                "{{venta_id}}",
+                ""
+              ]
+            },
+            "description": "Requiere que exista al menos una venta: se crea cuando un pago es aprobado. Si el pago salió rechazado, reintenta Procesar pago."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200 o 404', function () {",
+                  "  pm.expect([200, 404]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "auth": {
+        "type": "apikey",
+        "apikey": [
+          {
+            "key": "key",
+            "value": "Authorization",
+            "type": "string"
+          },
+          {
+            "key": "value",
+            "value": "Token {{token}}",
+            "type": "string"
+          },
+          {
+            "key": "in",
+            "value": "header",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "06 · Pedidos",
+      "description": "Pedidos del usuario; el admin ve todos.",
+      "item": [
+        {
+          "name": "Listar pedidos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pedidos/?page=1&page_size=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pedidos",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "estado",
+                  "value": "pendiente",
+                  "description": "pendiente | pagado | cancelado",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (Array.isArray(body.data) && body.data.length > 0 && body.data[0].id) {",
+                  "  pm.collectionVariables.set('pedido_id', body.data[0].id);",
+                  "  console.log('pedido_id =', body.data[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Detalle de pedido",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pedidos/{{pedido_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pedidos",
+                "{{pedido_id}}",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Preparar pedido cancelable · agregar ítem",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/carrito/items/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "carrito",
+                "items",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oferta\": {{oferta_id}},\n  \"cantidad\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Crea un pedido pendiente nuevo para probar la cancelación."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 201', function () {",
+                  "  pm.expect([201]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Preparar pedido cancelable · obtener id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/carrito/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "carrito",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (body && body.data && body.data.id) {",
+                  "  pm.collectionVariables.set('pedido_cancelar_id', body.data.id);",
+                  "  console.log('pedido_cancelar_id =', body.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cancelar con PATCH",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/pedidos/{{pedido_cancelar_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pedidos",
+                "{{pedido_cancelar_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"cancelado\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Solo se puede cancelar un pedido en estado pendiente."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Preparar segundo pedido · agregar ítem",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/carrito/items/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "carrito",
+                "items",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oferta\": {{oferta_id}},\n  \"cantidad\": 1\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "El pedido anterior quedó cancelado; este habilita la prueba del alias."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 201', function () {",
+                  "  pm.expect([201]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Preparar segundo pedido · obtener id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/carrito/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "carrito",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (body && body.data && body.data.id) {",
+                  "  pm.collectionVariables.set('pedido_cancelar_id_2', body.data.id);",
+                  "  console.log('pedido_cancelar_id_2 =', body.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Cancelar (alias)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/pedidos/{{pedido_cancelar_id_2}}/cancelar/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "pedidos",
+                "{{pedido_cancelar_id_2}}",
+                "cancelar",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "auth": {
+        "type": "apikey",
+        "apikey": [
+          {
+            "key": "key",
+            "value": "Authorization",
+            "type": "string"
+          },
+          {
+            "key": "value",
+            "value": "Token {{token}}",
+            "type": "string"
+          },
+          {
+            "key": "in",
+            "value": "header",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "07 · Reportes (admin)",
+      "description": "Reportes de administración.",
+      "item": [
+        {
+          "name": "Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reportes/dashboard/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reportes",
+                "dashboard",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reporte de ventas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reportes/ventas/?page=1&page_size=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reportes",
+                "ventas",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "desde",
+                  "value": "2026-01-01",
+                  "description": "AAAA-MM-DD",
+                  "disabled": true
+                },
+                {
+                  "key": "hasta",
+                  "value": "2026-12-31",
+                  "description": "AAAA-MM-DD",
+                  "disabled": true
+                },
+                {
+                  "key": "cliente",
+                  "value": "{{usuario_id}}",
+                  "description": "ID del cliente",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reporte de inventario",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reportes/inventario/?filtro=todos&page=1&page_size=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reportes",
+                "inventario",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "filtro",
+                  "value": "todos",
+                  "description": "todos | agotados | bajo_stock | disponibles | inactivas"
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reporte de videojuegos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/reportes/videojuegos/?page=1&page_size=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "reportes",
+                "videojuegos",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "categoria",
+                  "value": "{{categoria_id}}",
+                  "description": "ID de categoría",
+                  "disabled": true
+                },
+                {
+                  "key": "genero",
+                  "value": "{{genero_id}}",
+                  "description": "ID de género",
+                  "disabled": true
+                },
+                {
+                  "key": "plataforma",
+                  "value": "{{plataforma_id}}",
+                  "description": "ID de plataforma",
+                  "disabled": true
+                },
+                {
+                  "key": "estado",
+                  "value": "activo",
+                  "description": "activo | inactivo",
+                  "disabled": true
+                },
+                {
+                  "key": "disponibilidad",
+                  "value": "disponible",
+                  "description": "disponible | agotado",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "auth": {
+        "type": "apikey",
+        "apikey": [
+          {
+            "key": "key",
+            "value": "Authorization",
+            "type": "string"
+          },
+          {
+            "key": "value",
+            "value": "Token {{token}}",
+            "type": "string"
+          },
+          {
+            "key": "in",
+            "value": "header",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "08 · Soporte",
+      "description": "Contactos y solicitudes de información.",
+      "item": [
+        {
+          "name": "Contactos · listar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/soporte/contactos/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "soporte",
+                "contactos",
+                ""
+              ]
+            },
+            "description": "El administrador ve todos los mensajes; un cliente solo los suyos."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Contactos · crear (público)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/soporte/contactos/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "soporte",
+                "contactos",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Visitante Demo\",\n  \"email\": \"visitante@example.com\",\n  \"telefono\": \"3001234567\",\n  \"asunto\": \"Consulta desde Postman\",\n  \"mensaje\": \"Quiero información sobre los métodos de pago.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            },
+            "description": "Formulario público: no requiere token."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.sendRequest({",
+                  "  url: pm.collectionVariables.get('base_url') + '/auth/csrf/',",
+                  "  method: 'GET'",
+                  "}, function (err, res) {",
+                  "  if (err) { console.error(err); return; }",
+                  "  const body = res.json();",
+                  "  const csrf = body && body.data && body.data.csrfToken;",
+                  "  if (csrf) {",
+                  "    pm.collectionVariables.set('csrftoken', csrf);",
+                  "    pm.request.headers.upsert({ key: 'X-CSRFToken', value: csrf });",
+                  "  }",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 201', function () {",
+                  "  pm.expect([201]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Contactos · crear (autenticado)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/soporte/contactos/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "soporte",
+                "contactos",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"asunto\": \"Solicitud del cliente demo\",\n  \"mensaje\": \"Mensaje creado desde Postman con el token del usuario.\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Toma nombre y correo de la cuenta autenticada."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 201', function () {",
+                  "  pm.expect([201]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (body && body.data && body.data.id) {",
+                  "  pm.collectionVariables.set('contacto_id', body.data.id);",
+                  "  console.log('contacto_id =', body.data.id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Contactos · detalle",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/soporte/contactos/{{contacto_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "soporte",
+                "contactos",
+                "{{contacto_id}}",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Contactos · actualizar (admin)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/soporte/contactos/{{contacto_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "soporte",
+                "contactos",
+                "{{contacto_id}}",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"atendido\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "description": "Solo un administrador puede marcar un contacto como atendido."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Contactos · eliminar (admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/soporte/contactos/{{contacto_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "soporte",
+                "contactos",
+                "{{contacto_id}}",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 204', function () {",
+                  "  pm.expect([204]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Mayor información (público)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/soporte/mayor-informacion/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "soporte",
+                "mayor-informacion",
+                ""
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nombre\": \"Interesado Demo\",\n  \"email\": \"interesado@example.com\",\n  \"telefono\": \"3007654321\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "auth": {
+              "type": "noauth"
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.sendRequest({",
+                  "  url: pm.collectionVariables.get('base_url') + '/auth/csrf/',",
+                  "  method: 'GET'",
+                  "}, function (err, res) {",
+                  "  if (err) { console.error(err); return; }",
+                  "  const body = res.json();",
+                  "  const csrf = body && body.data && body.data.csrfToken;",
+                  "  if (csrf) {",
+                  "    pm.collectionVariables.set('csrftoken', csrf);",
+                  "    pm.request.headers.upsert({ key: 'X-CSRFToken', value: csrf });",
+                  "  }",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 201', function () {",
+                  "  pm.expect([201]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "auth": {
+        "type": "apikey",
+        "apikey": [
+          {
+            "key": "key",
+            "value": "Authorization",
+            "type": "string"
+          },
+          {
+            "key": "value",
+            "value": "Token {{token}}",
+            "type": "string"
+          },
+          {
+            "key": "in",
+            "value": "header",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "09 · Usuarios y roles (admin)",
+      "description": "Consulta administrativa de solo lectura.",
+      "item": [
+        {
+          "name": "Usuarios · listar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/usuarios/?page=1&page_size=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "usuarios",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "username, email, nombres",
+                  "disabled": true
+                },
+                {
+                  "key": "rol",
+                  "value": "{{rol_id}}",
+                  "description": "ID del rol",
+                  "disabled": true
+                },
+                {
+                  "key": "activo",
+                  "value": "true",
+                  "description": "true | false",
+                  "disabled": true
+                },
+                {
+                  "key": "ordering",
+                  "value": "username",
+                  "description": "username | date_joined | id",
+                  "disabled": true
+                },
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (Array.isArray(body.data) && body.data.length > 0 && body.data[0].id) {",
+                  "  pm.collectionVariables.set('usuario_id', body.data[0].id);",
+                  "  console.log('usuario_id =', body.data[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Usuarios · detalle",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/usuarios/{{usuario_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "usuarios",
+                "{{usuario_id}}",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Roles · listar",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/roles/?page=1&page_size=20",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "roles",
+                ""
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "page_size",
+                  "value": "20"
+                }
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "const body = pm.response.json();",
+                  "if (Array.isArray(body.data) && body.data.length > 0 && body.data[0].id) {",
+                  "  pm.collectionVariables.set('rol_id', body.data[0].id);",
+                  "  console.log('rol_id =', body.data[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Roles · detalle",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/roles/{{rol_id}}/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "roles",
+                "{{rol_id}}",
+                ""
+              ]
+            }
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "auth": {
+        "type": "apikey",
+        "apikey": [
+          {
+            "key": "key",
+            "value": "Authorization",
+            "type": "string"
+          },
+          {
+            "key": "value",
+            "value": "Token {{token}}",
+            "type": "string"
+          },
+          {
+            "key": "in",
+            "value": "header",
+            "type": "string"
+          }
+        ]
+      }
+    },
+    {
+      "name": "10 · Cierre de sesión (opcional)",
+      "description": "Invalida el token actual. Ejecútalo solo al terminar; limpia la variable token.",
+      "item": [
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/auth/logout/",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "auth",
+                "logout",
+                ""
+              ]
+            },
+            "description": "Invalida el token actual y limpia la variable token."
+          },
+          "response": [],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status esperado: 200', function () {",
+                  "  pm.expect([200]).to.include(pm.response.code);",
+                  "});",
+                  "pm.collectionVariables.set('token', '');",
+                  "console.log('Token limpiado. Ejecuta un login antes de volver a probar rutas privadas.');"
+                ]
+              }
+            }
+          ]
+        }
+      ],
+      "auth": {
+        "type": "apikey",
+        "apikey": [
+          {
+            "key": "key",
+            "value": "Authorization",
+            "type": "string"
+          },
+          {
+            "key": "value",
+            "value": "Token {{token}}",
+            "type": "string"
+          },
+          {
+            "key": "in",
+            "value": "header",
+            "type": "string"
+          }
+        ]
+      }
+    }
+  ]
+}
