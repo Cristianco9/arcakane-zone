@@ -10,6 +10,7 @@ Sistema de gestión para una tienda de videojuegos. El repositorio está organiz
 | [`compose.prod.yaml`](compose.prod.yaml) | Override de producción (Gunicorn + Nginx) |
 | [`.env.example`](.env.example) | Plantilla única de variables de entorno para todo el stack |
 | [`render.yaml`](render.yaml) | Blueprint de despliegue del backend en Render |
+| [`docs/api/API.md`](docs/api/API.md) | Contrato de la API REST versionada (`/api/v1/`) |
 
 > **Nota sobre el frontend:** el issue AZ-S1-22 menciona Next.js, pero el repositorio ya contiene un frontend inicializado con **Vite + React + TypeScript** (issue AZ-S2-01). El stack Docker se construyó sobre el frontend real y es agnóstico al framework: si más adelante se migra a Next.js, solo cambia el `Dockerfile` de `frontend/`.
 
@@ -51,7 +52,7 @@ El backend espera a que PostgreSQL esté saludable, aplica migraciones, recolect
 docker compose ps
 curl -I http://localhost:8000/
 curl -I http://localhost:5173/
-curl -I http://localhost:5173/api/catalogo/
+curl -I http://localhost:5173/api/v1/catalogo/videojuegos/
 ```
 
 Todos los servicios deben aparecer como `healthy`. Si alguno queda en `starting`, revisa los logs:
@@ -69,7 +70,8 @@ docker compose logs -f pgadmin
 |---|---|---|
 | Frontend | <http://localhost:5173> | Vite dev server; en producción, Nginx |
 | Backend / admin | <http://localhost:8000/> | Django; admin en `/admin/` |
-| API a través del frontend | <http://localhost:5173/api/catalogo/> | Vite/Nginx reenvía `/api/*` a `backend:8000` |
+| API a través del frontend | <http://localhost:5173/api/v1/> | Vite/Nginx reenvía `/api/*` a `backend:8000` conservando el prefijo |
+| API directa | <http://localhost:8000/api/v1/> | Raíz navegable de la API REST |
 | pgAdmin | <http://localhost:5050> | Usuario y contraseña de `.env` |
 | PostgreSQL | `localhost:5432` | Solo para clientes externos; los contenedores usan `db:5432` |
 
@@ -84,6 +86,31 @@ Para cargar datos de ejemplo del catálogo:
 ```bash
 docker compose exec backend python manage.py seed_catalogo
 ```
+
+### API REST
+
+El backend expone una API JSON versionada en `/api/v1/` y conserva el sitio HTML
+existente. El frontend la consume con rutas relativas bajo `/api/v1/...`; Vite en
+desarrollo y Nginx en producción reenvían el prefijo completo al backend.
+
+```bash
+# Raíz navegable
+curl -s http://localhost:5173/api/v1/
+
+# Catálogo público
+curl -s "http://localhost:5173/api/v1/catalogo/videojuegos/?q=zelda"
+
+# Login: devuelve token y también inicia sesión por cookie
+curl -s -X POST http://localhost:5173/api/v1/auth/login/ \
+  -H "Content-Type: application/json" \
+  -d '{"username":"cliente","password":"secreto"}'
+```
+
+- Respuestas: `{"success": true, "data": ...}`; errores:
+  `{"success": false, "error": {"code", "message", "details"}}`.
+- Autenticación: token de DRF o sesión de Django con `X-CSRFToken`.
+- Contrato completo: [`docs/api/API.md`](docs/api/API.md).
+- Cliente TypeScript del frontend: [`frontend/src/api/client.ts`](frontend/src/api/client.ts).
 
 ### Registrar PostgreSQL en pgAdmin
 
@@ -138,7 +165,7 @@ Toda la configuración está centralizada en el `.env` de la raíz. El Compose n
 | Grupo | Variables principales |
 |---|---|
 | Proyecto | `COMPOSE_PROJECT_NAME`, `IMAGE_TAG`, `TZ` |
-| Backend | `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `SECURE_SSL_REDIRECT`, `BACKEND_HOST`, `BACKEND_PORT`, `BACKEND_PUBLISHED_PORT`, `BACKEND_WORKERS`, `BACKEND_TIMEOUT`, `RUN_MIGRATIONS`, `COLLECTSTATIC`, `SEED_CATALOGO` |
+| Backend | `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `CORS_ALLOWED_ORIGINS`, `SECURE_SSL_REDIRECT`, `BACKEND_HOST`, `BACKEND_PORT`, `BACKEND_PUBLISHED_PORT`, `BACKEND_WORKERS`, `BACKEND_TIMEOUT`, `RUN_MIGRATIONS`, `COLLECTSTATIC`, `SEED_CATALOGO` |
 | PostgreSQL | `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_PUBLISHED_PORT` |
 | pgAdmin | `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD`, `PGADMIN_PORT`, `PGADMIN_PUBLISHED_PORT` |
 | Frontend | `FRONTEND_PORT`, `FRONTEND_PUBLISHED_PORT`, `VITE_API_BASE_URL` |
@@ -250,7 +277,7 @@ El override de producción:
 Antes de usarlo:
 
 1. Define `DJANGO_DEBUG=False` y secretos fuertes en `.env`.
-2. Agrega tu dominio a `DJANGO_ALLOWED_HOSTS` y `DJANGO_CSRF_TRUSTED_ORIGINS`.
+2. Agrega tu dominio a `DJANGO_ALLOWED_HOSTS` y `DJANGO_CSRF_TRUSTED_ORIGINS`. Si el frontend consume la API sin el proxy `/api`, agrégalo también a `CORS_ALLOWED_ORIGINS`.
 3. Termina TLS en un proxy inverso externo (Nginx, Caddy, balanceador cloud).
 4. Para secretos de producción, usa **Docker secrets** (Swarm) o el gestor de secretos de tu plataforma; no los guardes en `.env` versionado ni en el repositorio.
 5. **Medios:** con `DEBUG=False` Django no sirve `/media/`. Configura S3/Supabase Storage (variables `AWS_*`) o sirve el volumen `backend_media` desde tu proxy inverso.
@@ -315,7 +342,7 @@ Comprobado en un entorno limpio con Docker Compose:
 - Los cuatro servicios arrancan y alcanzan estado `healthy`.
 - `GET /` del backend responde `200`.
 - `GET /` del frontend responde `200`.
-- `GET /api/catalogo/` a través del frontend responde `200` (proxy interno hacia `backend`).
+- `GET /api/v1/health/` a través del frontend responde `200` (proxy interno hacia `backend` conservando `/api`).
 - `GET /misc/ping` de pgAdmin responde `200` desde dentro del contenedor.
 - Conectividad backend → PostgreSQL verificada con `manage.py shell`.
 - Persistencia verificada: se creó un registro, se ejecutó `docker compose down` (sin `-v`), se volvió a levantar el stack y el registro seguía presente.
@@ -325,6 +352,7 @@ Comprobado en un entorno limpio con Docker Compose:
 
 - [Backend](backend/README.md)
 - [Frontend](frontend/README.md)
+- [API REST](docs/api/API.md)
 - [Auditoría inicial](docs/audit/INITIAL-AUDIT.md)
 - [Plan del Sprint 1](docs/sprints/SPRINT-1.md)
 - [Diagrama de clases](docs/Diagrama%20de%20clases.drawio.png)

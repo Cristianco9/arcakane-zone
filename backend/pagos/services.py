@@ -30,12 +30,23 @@ def procesar_pago_simulado(pedido: Pedido) -> tuple[bool, str]:
 
     aprobado = random.random() < 0.9  # 90% de probabilidad de aprobación
 
-    pago = Pago.objects.create(
-        pedido=pedido,
-        monto=pedido.total,
-        estado=Pago.Estado.APROBADO if aprobado else Pago.Estado.RECHAZADO,
-        referencia=str(uuid.uuid4())[:8].upper(),
-    )
+    # Un pedido tiene un único Pago (OneToOne). Si un intento anterior fue
+    # rechazado, se reutiliza el registro para permitir reintentar el pago.
+    estado_pago = Pago.Estado.APROBADO if aprobado else Pago.Estado.RECHAZADO
+    referencia = str(uuid.uuid4())[:8].upper()
+    pago = Pago.objects.filter(pedido=pedido).first()
+    if pago is None:
+        pago = Pago.objects.create(
+            pedido=pedido,
+            monto=pedido.total,
+            estado=estado_pago,
+            referencia=referencia,
+        )
+    else:
+        pago.monto = pedido.total
+        pago.estado = estado_pago
+        pago.referencia = referencia
+        pago.save(update_fields=["monto", "estado", "referencia"])
 
     if aprobado:
         # Descontar stock de cada oferta
