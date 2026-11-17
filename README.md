@@ -1,4 +1,4 @@
-# Arkane Zone
+# Arcakane Zone
 
 Sistema de gestión para una tienda de videojuegos. El repositorio está organizado como un **monorepo** con dos aplicaciones independientes y un stack de infraestructura reproducible con Docker Compose.
 
@@ -110,13 +110,13 @@ curl -s -X POST http://localhost:5173/api/v1/auth/login/ \
   `{"success": false, "error": {"code", "message", "details"}}`.
 - Autenticación: token de DRF o sesión de Django con `X-CSRFToken`.
 - Contrato completo: [`docs/api/API.md`](docs/api/API.md).
-- Cliente TypeScript del frontend: [`frontend/src/api/client.ts`](frontend/src/api/client.ts).
+- El frontend consulta `/api/v1/health/` para mostrar el estado de la API.
 
 ### Registrar PostgreSQL en pgAdmin
 
 1. Abre <http://localhost:5050> e inicia sesión con `PGADMIN_DEFAULT_EMAIL` y `PGADMIN_DEFAULT_PASSWORD`.
 2. Clic derecho en **Servers → Register → Server**.
-3. En **General**, asigna un nombre (por ejemplo `Arkane Zone`).
+3. En **General**, asigna un nombre (por ejemplo `Arcakane Zone`).
 4. En **Connection**, usa:
    - Host: `db` (nombre del servicio Docker, no `localhost`).
    - Port: `POSTGRES_PORT` (por defecto `5432`).
@@ -128,7 +128,7 @@ curl -s -X POST http://localhost:5173/api/v1/auth/login/ \
 También puedes conectarte por consola:
 
 ```bash
-docker compose exec db psql -U arkane -d arkane_zone
+docker compose exec db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
 ```
 
 ## Servicios y red
@@ -164,10 +164,11 @@ Toda la configuración está centralizada en el `.env` de la raíz. El Compose n
 
 | Grupo | Variables principales |
 |---|---|
-| Proyecto | `COMPOSE_PROJECT_NAME`, `IMAGE_TAG`, `TZ` |
-| Backend | `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `CORS_ALLOWED_ORIGINS`, `SECURE_SSL_REDIRECT`, `BACKEND_HOST`, `BACKEND_PORT`, `BACKEND_PUBLISHED_PORT`, `BACKEND_WORKERS`, `BACKEND_TIMEOUT`, `RUN_MIGRATIONS`, `COLLECTSTATIC`, `SEED_CATALOGO` |
+| Proyecto | `COMPOSE_PROJECT_NAME`, `IMAGE_TAG`, `TZ`, `RESTART_POLICY`, `PROD_RESTART_POLICY` |
+| Healthchecks | `HEALTHCHECK_INTERVAL`, `HEALTHCHECK_TIMEOUT`, `HEALTHCHECK_RETRIES`, `HEALTHCHECK_START_PERIOD`, `BACKEND_HEALTHCHECK_START_PERIOD`, `FRONTEND_HEALTHCHECK_START_PERIOD`, `PGADMIN_HEALTHCHECK_START_PERIOD` |
+| Backend | `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `CORS_ALLOWED_ORIGINS`, `SECURE_SSL_REDIRECT`, `USE_X_FORWARDED_HOST`, `BACKEND_HOST`, `BACKEND_PORT`, `BACKEND_PUBLISHED_PORT`, `BACKEND_WORKERS`, `BACKEND_TIMEOUT`, `RUN_MIGRATIONS`, `COLLECTSTATIC`, `SEED_CATALOGO` |
 | PostgreSQL | `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_PUBLISHED_PORT` |
-| pgAdmin | `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD`, `PGADMIN_PORT`, `PGADMIN_PUBLISHED_PORT` |
+| pgAdmin | `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD`, `PGADMIN_PORT`, `PGADMIN_PUBLISHED_PORT`, `PGADMIN_MASTER_PASSWORD_REQUIRED` |
 | Frontend | `FRONTEND_PORT`, `FRONTEND_PUBLISHED_PORT`, `VITE_API_BASE_URL` |
 
 Los valores de `.env.example` son ficticios y solo ilustran el formato. En producción usa secretos reales gestionados fuera del repositorio.
@@ -229,23 +230,23 @@ docker compose exec -T db pg_dump \
   > backup_arkane_$(date +%Y%m%d_%H%M%S).sql
 ```
 
-O de forma explícita, sin leer `.env`:
+O usando directamente las variables dentro del contenedor:
 
 ```bash
-docker compose exec -T db pg_dump -U arkane -d arkane_zone > backup.sql
+docker compose exec -T db sh -c 'pg_dump -U "$POSTGRES_USER" -d "$POSTGRES_DB"' > backup.sql
 ```
 
 ### Restauración
 
 ```bash
-cat backup.sql | docker compose exec -T db psql -U arkane -d arkane_zone
+cat backup.sql | docker compose exec -T db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
 ```
 
 Si vas a restaurar sobre una base existente, detén primero el backend para evitar conexiones activas:
 
 ```bash
 docker compose stop backend frontend
-cat backup.sql | docker compose exec -T db psql -U arkane -d arkane_zone
+cat backup.sql | docker compose exec -T db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
 docker compose start backend frontend
 ```
 
@@ -270,7 +271,7 @@ docker compose -f compose.yaml -f compose.prod.yaml up -d --build
 El override de producción:
 
 - Ejecuta el backend con **Gunicorn** (workers y timeout configurables).
-- Sirve el frontend compilado con **Nginx sin privilegios**.
+- Sirve el frontend compilado con **Nginx oficial**; los procesos *worker* corren como usuario no privilegiado.
 - Fuerza `DEBUG=False` y mantiene `SECURE_SSL_REDIRECT=False` dentro del contenedor para que el healthcheck HTTP funcione detrás de un proxy TLS.
 - Usa `restart: always`.
 
@@ -362,11 +363,11 @@ Comprobado en un entorno limpio con Docker Compose:
 
 - No subir `.env`, credenciales, tokens ni claves. Usa [`.env.example`](.env.example) como plantilla.
 - Cambia todos los valores de ejemplo antes de ejecutar en cualquier entorno compartido.
-- Las imágenes usan versiones explícitas (`postgres:16.4-alpine`, `node:22.14.0-alpine`, `python:3.12.9-slim`, `dpage/pgadmin4:8.14`, `nginxinc/nginx-unprivileged:1.27-alpine`).
-- Backend y frontend se ejecutan con usuarios no privilegiados.
+- Las imágenes usan versiones explícitas (`postgres:16.4-alpine`, `node:22.14.0-alpine`, `python:3.12.9-slim`, `dpage/pgadmin4:8.14`, `nginx:1.27-alpine`).
+- Backend y frontend (Vite) se ejecutan con usuarios no privilegiados; en Nginx los *workers* no privilegiados manejan las peticiones.
 - Los cambios de infraestructura, modelo de datos o configuración de producción deben revisarse con el equipo.
 
 ## Rama e issue
 
-- Rama de trabajo: `feature/AZ-S1-22-docker-compose`.
+- Rama de trabajo: `feature/docker-compose-standardization`.
 - Issue: **AZ-S1-22 — Containerizar frontend, backend y base de datos con Docker Compose**.

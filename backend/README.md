@@ -1,6 +1,6 @@
-# Arkane Zone — Backend (Django)
+# Arcakane Zone — Backend (Django)
 
-Aplicación backend del sistema Arkane Zone. Contiene el modelo de datos, las reglas de negocio, la autenticación, el panel administrativo y la lógica de catálogo, carrito, pedidos, pagos, reportes y soporte.
+Aplicación backend del sistema Arcakane Zone. Contiene el modelo de datos, las reglas de negocio, la autenticación, el panel administrativo y la lógica de catálogo, carrito, pedidos, pagos, reportes y soporte.
 
 > **Estado actual:** el backend sirve la interfaz existente con Django Templates + HTMX **y** una API REST/JSON versionada en `/api/v1/`. Ambas capas comparten modelos, servicios, permisos y reglas de negocio. La documentación del contrato está en [`docs/api/API.md`](../docs/api/API.md).
 

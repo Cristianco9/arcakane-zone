@@ -7,7 +7,7 @@ from cuentas.models import Rol
 
 
 class Command(BaseCommand):
-    help = "Pobla la base de datos con datos de prueba para Arkane Zone."
+    help = "Pobla la base de datos con datos de prueba para Arcakane Zone."
 
     def handle(self, *args, **kwargs):
         roles_creados = self._seed_roles()

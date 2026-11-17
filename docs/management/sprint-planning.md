@@ -5,7 +5,7 @@
 | Campo | Información |
 |---|---|
 | Código del documento | ACT-SP-002 |
-| Proyecto | Arkane Zone |
+| Proyecto | Arcakane Zone |
 | Sprint | Sprint 2 |
 | Fecha | 2026-11-16 (prevista) |
 | Hora de inicio | 21:00 |
@@ -71,7 +71,7 @@ La asignación de responsables la define el equipo junto con el Scrum Master dur
 | TASK-207 | Inicializar el proyecto Next.js con TypeScript en `frontend/` usando `create-next-app` (US-203). | Luisa Maria Noreña Rueda | AZ-S2-01 | 4 h |
 | TASK-208 | Configurar Tailwind CSS, ESLint, Prettier y estructura de carpetas (`components`, `app`/`pages`, `lib`, `styles`) (US-203). | Luisa Maria Noreña Rueda | AZ-S2-01 | 3 h |
 | TASK-209 | Configurar variables de entorno y capa de acceso a la API de Django (fetch/axios) con manejo de errores (US-203). | Luisa Maria Noreña Rueda | AZ-S2-01 | 4 h |
-| TASK-210 | Crear el layout global, navbar y footer en React, replicando la paleta azul de Arkane Zone (US-204). | Juan José Pérez Arana | AZ-S2-02 | 5 h |
+| TASK-210 | Crear el layout global, navbar y footer en React, replicando la paleta azul de Arcakane Zone (US-204). | Juan José Pérez Arana | AZ-S2-02 | 5 h |
 | TASK-211 | Crear componentes reutilizables: `VideojuegoCard`, `Button`, `Input`, `Table`, `Badge` con TypeScript y props tipadas (US-204). | Juan José Pérez Arana | AZ-S2-02 | 6 h |
 | TASK-212 | Configurar Jest + Testing Library y escribir pruebas de los componentes reutilizables (US-204). | Juan José Pérez Arana | AZ-S2-02 | 3 h |
 | TASK-213 | Documentar el frontend en `frontend/README.md` y guía de contribución (US-204). | Cristian Camilo Cortés Ortiz | AZ-S2-02 | 2 h |
@@ -99,7 +99,7 @@ La asignación de responsables la define el equipo junto con el Scrum Master dur
 **US-203**
 
 - [ ] Proyecto Next.js inicializado con TypeScript en `frontend/`.
-- [ ] Tailwind CSS configurado con la paleta azul de Arkane Zone.
+- [ ] Tailwind CSS configurado con la paleta azul de Arcakane Zone.
 - [ ] ESLint y Prettier configurados y funcionando.
 - [ ] Estructura de carpetas definida (`components`, `app`/`pages`, `lib`, `styles`).
 - [ ] Variables de entorno configuradas y capa de API funcional contra Django.

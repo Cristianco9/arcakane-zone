@@ -157,7 +157,7 @@ LOGOUT_REDIRECT_URL = "/cuentas/login/"
 # Correo: backend de consola para desarrollo (imprime el enlace de reseteo en la terminal).
 # En producción cambiar por smtp.EmailBackend y configurar SMTP.
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-DEFAULT_FROM_EMAIL = "Arkane Zone <noreply@arkanezone.co>"
+DEFAULT_FROM_EMAIL = "Arcakane Zone <noreply@arkanezone.co>"
 
 # CSRF: permite peticiones desde el dominio de Render en producción.
 CSRF_TRUSTED_ORIGINS = env.list(
@@ -227,8 +227,8 @@ if not DEBUG:
 
 # django-unfold — paleta azul eléctrico (valores en RGB sin #)
 UNFOLD = {
-    "SITE_TITLE": "Arkane Zone",
-    "SITE_HEADER": "Arkane Zone Admin",
+    "SITE_TITLE": "Arcakane Zone",
+    "SITE_HEADER": "Arcakane Zone Admin",
     "SITE_URL": "/",
     "COLORS": {
         "primary": {

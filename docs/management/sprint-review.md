@@ -5,7 +5,7 @@
 | Campo | Información |
 |---|---|
 | Código del documento | ACT-SR-002 |
-| Proyecto | Arkane Zone |
+| Proyecto | Arcakane Zone |
 | Sprint | Sprint 2 |
 | Fecha de revisión | 2026-11-30 (prevista) |
 | Hora de inicio | 21:00 |

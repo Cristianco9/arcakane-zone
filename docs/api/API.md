@@ -1,4 +1,4 @@
-# API REST de Arkane Zone
+# API REST de Arcakane Zone
 
 API JSON versionada que expone los recursos del sistema sin reemplazar la
 interfaz HTML existente. El sitio con Django Templates + HTMX sigue disponible
