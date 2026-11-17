@@ -1,0 +1,83 @@
+"""Vistas base de la API: raíz, healthcheck y rutas no encontradas."""
+from django.http import JsonResponse
+from rest_framework.permissions import AllowAny
+from rest_framework.reverse import reverse
+from rest_framework.views import APIView
+
+from ..exceptions import respuesta_exitosa
+
+
+class ApiRootView(APIView):
+    """Índice navegable de los recursos disponibles en la versión 1."""
+
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        def url(nombre):
+            return reverse(nombre, request=request)
+
+        recursos = {
+            "catalogo": {
+                "categorias": url("categoria-list"),
+                "plataformas": url("plataforma-list"),
+                "generos": url("genero-list"),
+                "videojuegos": url("videojuego-list"),
+                "ofertas": url("oferta-list"),
+            },
+            "compras": {
+                "carrito": url("carrito"),
+                "items_carrito": url("carrito-items"),
+                "pedidos": url("pedido-list"),
+                "pagos": url("pago-list"),
+                "ventas": url("venta-list"),
+            },
+            "cuentas": {
+                "registro": url("auth-registro"),
+                "login": url("auth-login"),
+                "logout": url("auth-logout"),
+                "perfil": url("auth-me"),
+                "cambiar_password": url("auth-cambiar-password"),
+                "csrf": url("auth-csrf"),
+                "usuarios": url("usuario-list"),
+                "roles": url("rol-list"),
+            },
+            "soporte": {
+                "contactos": url("contacto-list"),
+                "mayor_informacion": url("soporte-mayor-informacion"),
+            },
+            "reportes": {
+                "dashboard": url("reporte-dashboard"),
+                "ventas": url("reporte-ventas"),
+                "inventario": url("reporte-inventario"),
+                "videojuegos": url("reporte-videojuegos"),
+            },
+            "health": url("api-health"),
+        }
+        return respuesta_exitosa(
+            {"version": "v1", "recursos": recursos},
+            message="API REST de Arkane Zone",
+        )
+
+
+class HealthView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        return respuesta_exitosa({"status": "ok", "version": "v1"})
+
+
+class ApiNotFoundView(APIView):
+    permission_classes = [AllowAny]
+
+    def dispatch(self, request, *args, **kwargs):
+        return JsonResponse(
+            {
+                "success": False,
+                "error": {
+                    "code": "no_encontrado",
+                    "message": "El recurso solicitado no existe.",
+                },
+            },
+            status=404,
+            json_dumps_params={"ensure_ascii": False},
+        )

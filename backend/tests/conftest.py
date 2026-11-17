@@ -90,11 +90,11 @@ def oferta(db, videojuego, plataforma):
 
 
 @pytest.fixture
-def oferta_agotada(db, videojuego, plataforma):
-    """Oferta publicada pero sin stock."""
+def oferta_agotada(db, videojuego, plataforma_alternativa):
+    """Oferta publicada pero sin stock, en una plataforma distinta."""
     return OfertaVideojuego.objects.create(
         videojuego=videojuego,
-        plataforma=plataforma,
+        plataforma=plataforma_alternativa,
         precio_vigente=Decimal("60000"),
         stock=0,
         sku="AZ-0002-001",
