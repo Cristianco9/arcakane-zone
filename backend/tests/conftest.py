@@ -7,8 +7,12 @@ from django.db import DatabaseError, transaction
 
 from catalogo.models import (
     Categoria,
+    ClasificacionEdad,
+    Desarrolladora,
+    Distribuidora,
     EstadoPublicacion,
     Genero,
+    Idioma,
     OfertaVideojuego,
     Plataforma,
     Videojuego,
@@ -91,6 +95,53 @@ def roles_catalogo(db):
             pass
 
 
+# ── Catálogos maestros (AZ-S1-20) ────────────────────────────────────────────
+
+CLASIFICACIONES_EDAD = [
+    ("3", "PEGI 3", 3),
+    ("7", "PEGI 7", 7),
+    ("12", "PEGI 12", 12),
+    ("16", "PEGI 16", 16),
+    ("18", "PEGI 18", 18),
+]
+IDIOMAS_BASE = [
+    ("es", "Español"),
+    ("en", "Inglés"),
+    ("fr", "Francés"),
+    ("de", "Alemán"),
+    ("it", "Italiano"),
+    ("pt", "Portugués"),
+    ("ja", "Japonés"),
+    ("ko", "Coreano"),
+    ("zh", "Chino"),
+    ("ru", "Ruso"),
+]
+
+
+@pytest.fixture(autouse=True)
+def catalogos_maestros(db):
+    """Siembra idempotente de clasificaciones e idiomas base (AZ-S1-20).
+
+    Las pruebas transaccionales hacen flush y los vacían; esta fixture los
+    repone antes de cada prueba. Si el esquema aún no tiene las tablas (p. ej.
+    durante pruebas de migraciones intermedias), no hace nada.
+    """
+    try:
+        with transaction.atomic():
+            for codigo, nombre, orden in CLASIFICACIONES_EDAD:
+                ClasificacionEdad.objects.get_or_create(
+                    codigo=codigo,
+                    defaults={"nombre": nombre, "orden": orden},
+                )
+            for codigo, nombre in IDIOMAS_BASE:
+                Idioma.objects.get_or_create(
+                    codigo=codigo, defaults={"nombre": nombre}
+                )
+    except (DatabaseError, TypeError):
+        # Esquema intermedio (tabla inexistente o sin las columnas nuevas).
+        pass
+
+
 @pytest.fixture
 def rol_cliente(db):
     try:
@@ -152,6 +203,49 @@ def plataforma_alternativa(db):
 @pytest.fixture
 def genero(db):
     return Genero.objects.create(nombre="RPG")
+
+
+@pytest.fixture
+def desarrolladora(db):
+    return Desarrolladora.objects.create(
+        codigo="rockstar-games", nombre="Rockstar Games"
+    )
+
+
+@pytest.fixture
+def desarrolladora_alternativa(db):
+    return Desarrolladora.objects.create(
+        codigo="cd-projekt-red", nombre="CD Projekt Red"
+    )
+
+
+@pytest.fixture
+def distribuidora(db):
+    return Distribuidora.objects.create(
+        codigo="sony-interactive", nombre="Sony Interactive Entertainment"
+    )
+
+
+@pytest.fixture
+def distribuidora_alternativa(db):
+    return Distribuidora.objects.create(
+        codigo="bandai-namco", nombre="Bandai Namco"
+    )
+
+
+@pytest.fixture
+def clasificacion_edad(db):
+    return ClasificacionEdad.objects.get(codigo="12")
+
+
+@pytest.fixture
+def idioma(db):
+    return Idioma.objects.get(codigo="es")
+
+
+@pytest.fixture
+def idioma_alternativo(db):
+    return Idioma.objects.get(codigo="en")
 
 
 @pytest.fixture
