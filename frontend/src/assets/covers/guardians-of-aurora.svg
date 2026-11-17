@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-label="Portada de Guardians of Aurora">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#042f2e"/>
+      <stop offset="0.5" stop-color="#115e59"/>
+      <stop offset="1" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="aurora" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#5eead4" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#5eead4" stop-opacity="0.8"/>
+      <stop offset="1" stop-color="#a78bfa" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="1000" fill="url(#bg)"/>
+  <path d="M-40 300c180-140 330 100 520-40s300 20 360-30v180c-120 70-260-40-400 60S120 500-40 560V300Z" fill="url(#aurora)" opacity="0.55"/>
+  <path d="M400 310 620 410v190c0 140-95 230-220 275-125-45-220-135-220-275V410l220-100Z" fill="#062e32" stroke="#5eead4" stroke-width="7"/>
+  <path d="M400 370 555 445v145c0 95-65 160-155 197-90-37-155-102-155-197V445l155-75Z" fill="#0f766e" opacity="0.35"/>
+  <path d="M400 440v230M315 505l170 100M485 505 315 605" stroke="#ecfeff" stroke-width="9" stroke-linecap="round" opacity="0.9"/>
+  <circle cx="400" cy="555" r="42" fill="#ccfbf1"/>
+  <text x="400" y="155" text-anchor="middle" fill="#ecfeff" font-family="Segoe UI, sans-serif" font-size="58" font-weight="800" letter-spacing="4">GUARDIANS</text>
+  <text x="400" y="220" text-anchor="middle" fill="#5eead4" font-family="Segoe UI, sans-serif" font-size="44" font-weight="700" letter-spacing="10">OF AURORA</text>
+  <text x="400" y="940" text-anchor="middle" fill="#99f6e4" font-family="Segoe UI, sans-serif" font-size="23" letter-spacing="5">THE LIGHT REMEMBERS</text>
+</svg>
