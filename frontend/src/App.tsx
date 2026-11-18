@@ -1,41 +1,43 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense } from "react";
+import { HashRouter, Route, Routes } from "react-router-dom";
+import { LoadingFallback } from "./app/LoadingFallback";
+import { NotFoundPage } from "./app/NotFoundPage";
+import { routes } from "./app/routes";
+import { PageLayout } from "./components/layout/PageLayout";
 
-type EstadoApi = "verificando" | "conectada" | "no-disponible";
+const HomePage = lazy(() =>
+  import("./features/catalog/pages/HomePage").then((module) => ({ default: module.HomePage })),
+);
+const ProductsPage = lazy(() =>
+  import("./features/catalog/pages/ProductsPage").then((module) => ({
+    default: module.ProductsPage,
+  })),
+);
+const CatalogPage = lazy(() =>
+  import("./features/catalog/pages/CatalogPage").then((module) => ({
+    default: module.CatalogPage,
+  })),
+);
+const ProductDetailPage = lazy(() =>
+  import("./features/catalog/pages/ProductDetailPage").then((module) => ({
+    default: module.ProductDetailPage,
+  })),
+);
 
-const mensajes: Record<EstadoApi, string> = {
-  verificando: "Verificando la API…",
-  conectada: "API REST conectada",
-  "no-disponible": "API REST no disponible",
-};
-
-export default function App() {
-  const [estado, setEstado] = useState<EstadoApi>("verificando");
-
-  useEffect(() => {
-    let activo = true;
-
-    fetch("/api/v1/health/")
-      .then((respuesta) => {
-        if (activo) setEstado(respuesta.ok ? "conectada" : "no-disponible");
-      })
-      .catch(() => {
-        if (activo) setEstado("no-disponible");
-      });
-
-    return () => {
-      activo = false;
-    };
-  }, []);
-
+export function App() {
   return (
-    <main>
-      <h1>Arcakane Zone</h1>
-      <p>Frontend ejecutándose en Docker.</p>
-      <p>{mensajes[estado]}</p>
-      <p>
-        La API está disponible en <code>/api/v1/</code> y el sitio HTML en{" "}
-        <code>/</code> del backend.
-      </p>
-    </main>
+    <HashRouter>
+      <PageLayout>
+        <Suspense fallback={<LoadingFallback />}>
+          <Routes>
+            <Route path={routes.home} element={<HomePage />} />
+            <Route path={routes.products} element={<ProductsPage />} />
+            <Route path={routes.catalog} element={<CatalogPage />} />
+            <Route path={`${routes.products}/:productId`} element={<ProductDetailPage />} />
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Suspense>
+      </PageLayout>
+    </HashRouter>
   );
 }

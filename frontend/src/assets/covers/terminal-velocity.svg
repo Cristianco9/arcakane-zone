@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-label="Portada de Terminal Velocity">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#450a0a"/>
+      <stop offset="0.55" stop-color="#b91c1c"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="1000" fill="url(#bg)"/>
+  <g stroke="#fca5a5" stroke-width="8" stroke-linecap="round" opacity="0.45">
+    <path d="M80 420h420M40 480h500M120 540h420M60 600h360M160 660h300"/>
+  </g>
+  <path d="M400 300 610 540 400 780 190 540 400 300Z" fill="#7f1d1d" stroke="#fecaca" stroke-width="8"/>
+  <path d="M400 370 548 540 400 710 252 540 400 370Z" fill="#dc2626" opacity="0.65"/>
+  <path d="M400 450 475 540 400 630 325 540 400 450Z" fill="#fef2f2"/>
+  <path d="M400 490v100M350 540h100" stroke="#7f1d1d" stroke-width="10" stroke-linecap="round"/>
+  <text x="400" y="165" text-anchor="middle" fill="#fef2f2" font-family="Segoe UI, sans-serif" font-size="52" font-weight="800" letter-spacing="6">TERMINAL</text>
+  <text x="400" y="230" text-anchor="middle" fill="#fca5a5" font-family="Segoe UI, sans-serif" font-size="60" font-weight="700" letter-spacing="10">VELOCITY</text>
+  <text x="400" y="930" text-anchor="middle" fill="#fecaca" font-family="Segoe UI, sans-serif" font-size="24" letter-spacing="5">NO BRAKES. NO MERCY.</text>
+</svg>

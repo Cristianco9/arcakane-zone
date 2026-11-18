@@ -1,0 +1,13 @@
+export * from "./types";
+export * from "./catalog";
+export * from "./data/mockData";
+export { CategoryFilterBar } from "./components/CategoryFilterBar";
+export { ProductCard } from "./components/ProductCard";
+export { ProductFiltersBar } from "./components/ProductFiltersBar";
+export { ProductGrid } from "./components/ProductGrid";
+export { ProductOffers } from "./components/ProductOffers";
+export { ProductSpecs } from "./components/ProductSpecs";
+export { HomePage } from "./pages/HomePage";
+export { ProductsPage } from "./pages/ProductsPage";
+export { CatalogPage } from "./pages/CatalogPage";
+export { ProductDetailPage } from "./pages/ProductDetailPage";

@@ -20,7 +20,10 @@ COPY --chown=node:node . .
 
 EXPOSE 8080
 
-CMD ["npm", "run", "dev"]
+# Vite escucha por defecto en localhost:5173 (IPv6). En Docker debe enlazarse
+# a 0.0.0.0 y usar FRONTEND_PORT para que el mapeo y el healthcheck funcionen.
+# Se usa shell para expandir la variable de entorno.
+CMD ["sh", "-c", "npm run dev -- --host 0.0.0.0 --port ${FRONTEND_PORT:-8080}"]
 
 # ── Build: genera los archivos estáticos ─────────────────────────────────────
 FROM base AS build
