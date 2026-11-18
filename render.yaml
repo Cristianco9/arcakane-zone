@@ -21,3 +21,7 @@ services:
           type: web
           name: arkane-zone
           property: host
+      # Orígenes del frontend si se despliega en otro dominio y consume la API
+      # directamente (sin proxy /api). Ej: https://arkane-zone.vercel.app
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false

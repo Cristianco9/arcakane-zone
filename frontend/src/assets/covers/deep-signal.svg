@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-label="Portada de Deep Signal">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0.8" y2="1">
+      <stop offset="0" stop-color="#020617"/>
+      <stop offset="0.6" stop-color="#0c4a6e"/>
+      <stop offset="1" stop-color="#020617"/>
+    </linearGradient>
+    <radialGradient id="sonar">
+      <stop offset="0" stop-color="#22d3ee" stop-opacity="0.6"/>
+      <stop offset="1" stop-color="#22d3ee" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="800" height="1000" fill="url(#bg)"/>
+  <circle cx="400" cy="540" r="280" fill="url(#sonar)"/>
+  <g fill="none" stroke="#67e8f9" opacity="0.5">
+    <circle cx="400" cy="540" r="90" stroke-width="5"/>
+    <circle cx="400" cy="540" r="160" stroke-width="4"/>
+    <circle cx="400" cy="540" r="230" stroke-width="3"/>
+  </g>
+  <path d="M400 540 555 380" stroke="#a5f3fc" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="555" cy="380" r="18" fill="#f0abfc"/>
+  <g fill="#164e63" opacity="0.9">
+    <path d="M120 760h560l-60 90H180l-60-90Z"/>
+    <path d="M280 670h240l40 90H240l40-90Z"/>
+  </g>
+  <text x="400" y="160" text-anchor="middle" fill="#ecfeff" font-family="Segoe UI, sans-serif" font-size="70" font-weight="800" letter-spacing="8">DEEP</text>
+  <text x="400" y="230" text-anchor="middle" fill="#67e8f9" font-family="Segoe UI, sans-serif" font-size="54" font-weight="700" letter-spacing="12">SIGNAL</text>
+  <text x="400" y="935" text-anchor="middle" fill="#a5f3fc" font-family="Segoe UI, sans-serif" font-size="24" letter-spacing="5">LISTEN TO THE ABYSS</text>
+</svg>
