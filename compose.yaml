@@ -1,0 +1,164 @@
+name: ${COMPOSE_PROJECT_NAME:?COMPOSE_PROJECT_NAME is required}
+
+# Stack base (desarrollo). Producción:
+#   docker compose -f compose.yaml -f compose.prod.yaml up -d --build
+#
+# Todas las credenciales, hosts, puertos y modos vienen del .env de la raíz.
+# Copia .env.example a .env y rellena los valores antes de levantar el stack.
+
+services:
+  db:
+    image: postgres:16.4-alpine
+    container_name: ${COMPOSE_PROJECT_NAME}-db
+    restart: ${RESTART_POLICY:?RESTART_POLICY is required}
+    command: ["postgres", "-p", "${POSTGRES_PORT:?POSTGRES_PORT is required}"]
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      PGDATA: /var/lib/postgresql/data/pgdata
+      TZ: ${TZ:?TZ is required}
+    ports:
+      - "${POSTGRES_PUBLISHED_PORT:?POSTGRES_PUBLISHED_PORT is required}:${POSTGRES_PORT:?POSTGRES_PORT is required}"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - arkane_net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -h 127.0.0.1 -p ${POSTGRES_PORT:?POSTGRES_PORT is required} -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\"",
+        ]
+      interval: ${HEALTHCHECK_INTERVAL:?HEALTHCHECK_INTERVAL is required}
+      timeout: ${HEALTHCHECK_TIMEOUT:?HEALTHCHECK_TIMEOUT is required}
+      retries: ${HEALTHCHECK_RETRIES:?HEALTHCHECK_RETRIES is required}
+      start_period: ${HEALTHCHECK_START_PERIOD:?HEALTHCHECK_START_PERIOD is required}
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: runtime
+    image: ${COMPOSE_PROJECT_NAME}-backend:${IMAGE_TAG:?IMAGE_TAG is required}
+    container_name: ${COMPOSE_PROJECT_NAME}-backend
+    restart: ${RESTART_POLICY:?RESTART_POLICY is required}
+    command:
+      [
+        "python",
+        "manage.py",
+        "runserver",
+        "0.0.0.0:${BACKEND_PORT:?BACKEND_PORT is required}",
+      ]
+    environment:
+      SECRET_KEY: ${DJANGO_SECRET_KEY:?DJANGO_SECRET_KEY is required}
+      DEBUG: ${DJANGO_DEBUG:?DJANGO_DEBUG is required}
+      ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:?DJANGO_ALLOWED_HOSTS is required}
+      CSRF_TRUSTED_ORIGINS: ${DJANGO_CSRF_TRUSTED_ORIGINS:-}
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-}
+      POSTGRES_DB: ${POSTGRES_DB:?POSTGRES_DB is required}
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      POSTGRES_HOST: ${POSTGRES_HOST:?POSTGRES_HOST is required}
+      POSTGRES_PORT: ${POSTGRES_PORT:?POSTGRES_PORT is required}
+      SECURE_SSL_REDIRECT: ${SECURE_SSL_REDIRECT:?SECURE_SSL_REDIRECT is required}
+      USE_X_FORWARDED_HOST: ${USE_X_FORWARDED_HOST:?USE_X_FORWARDED_HOST is required}
+      RUN_MIGRATIONS: ${RUN_MIGRATIONS:?RUN_MIGRATIONS is required}
+      COLLECTSTATIC: ${COLLECTSTATIC:?COLLECTSTATIC is required}
+      SEED_CATALOGO: ${SEED_CATALOGO:?SEED_CATALOGO is required}
+      TZ: ${TZ:?TZ is required}
+    ports:
+      - "${BACKEND_PUBLISHED_PORT:?BACKEND_PUBLISHED_PORT is required}:${BACKEND_PORT:?BACKEND_PORT is required}"
+    volumes:
+      - backend_media:/app/media
+      - backend_static:/app/staticfiles
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - arkane_net
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "python",
+          "-c",
+          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:${BACKEND_PORT:?BACKEND_PORT is required}/api/v1/health/', timeout=5)",
+        ]
+      interval: ${HEALTHCHECK_INTERVAL:?HEALTHCHECK_INTERVAL is required}
+      timeout: ${HEALTHCHECK_TIMEOUT:?HEALTHCHECK_TIMEOUT is required}
+      retries: ${HEALTHCHECK_RETRIES:?HEALTHCHECK_RETRIES is required}
+      start_period: ${BACKEND_HEALTHCHECK_START_PERIOD:?BACKEND_HEALTHCHECK_START_PERIOD is required}
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    image: ${COMPOSE_PROJECT_NAME}-frontend:${IMAGE_TAG:?IMAGE_TAG is required}
+    container_name: ${COMPOSE_PROJECT_NAME}-frontend
+    restart: ${RESTART_POLICY:?RESTART_POLICY is required}
+    environment:
+      FRONTEND_PORT: ${FRONTEND_PORT:?FRONTEND_PORT is required}
+      # Dentro de la red interna se usa el nombre de servicio, nunca localhost.
+      VITE_DEV_PROXY_TARGET: http://${BACKEND_HOST:?BACKEND_HOST is required}:${BACKEND_PORT:?BACKEND_PORT is required}
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:?VITE_API_BASE_URL is required}
+      TZ: ${TZ:?TZ is required}
+    ports:
+      - "${FRONTEND_PUBLISHED_PORT:?FRONTEND_PUBLISHED_PORT is required}:${FRONTEND_PORT:?FRONTEND_PORT is required}"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - arkane_net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://127.0.0.1:${FRONTEND_PORT:?FRONTEND_PORT is required}/ >/dev/null || exit 1",
+        ]
+      interval: ${HEALTHCHECK_INTERVAL:?HEALTHCHECK_INTERVAL is required}
+      timeout: ${HEALTHCHECK_TIMEOUT:?HEALTHCHECK_TIMEOUT is required}
+      retries: ${HEALTHCHECK_RETRIES:?HEALTHCHECK_RETRIES is required}
+      start_period: ${FRONTEND_HEALTHCHECK_START_PERIOD:?FRONTEND_HEALTHCHECK_START_PERIOD is required}
+
+  pgadmin:
+    image: dpage/pgadmin4:8.14
+    container_name: ${COMPOSE_PROJECT_NAME}-pgadmin
+    restart: ${RESTART_POLICY:?RESTART_POLICY is required}
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:?PGADMIN_DEFAULT_EMAIL is required}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:?PGADMIN_DEFAULT_PASSWORD is required}
+      PGADMIN_LISTEN_PORT: ${PGADMIN_PORT:?PGADMIN_PORT is required}
+      PGADMIN_CONFIG_SERVER_MODE: "True"
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: ${PGADMIN_MASTER_PASSWORD_REQUIRED:?PGADMIN_MASTER_PASSWORD_REQUIRED is required}
+      TZ: ${TZ:?TZ is required}
+    ports:
+      - "${PGADMIN_PUBLISHED_PORT:?PGADMIN_PUBLISHED_PORT is required}:${PGADMIN_PORT:?PGADMIN_PORT is required}"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - arkane_net
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget -qO- http://127.0.0.1:${PGADMIN_PORT:?PGADMIN_PORT is required}/misc/ping >/dev/null || exit 1",
+        ]
+      interval: ${HEALTHCHECK_INTERVAL:?HEALTHCHECK_INTERVAL is required}
+      timeout: ${HEALTHCHECK_TIMEOUT:?HEALTHCHECK_TIMEOUT is required}
+      retries: ${HEALTHCHECK_RETRIES:?HEALTHCHECK_RETRIES is required}
+      start_period: ${PGADMIN_HEALTHCHECK_START_PERIOD:?PGADMIN_HEALTHCHECK_START_PERIOD is required}
+
+networks:
+  arkane_net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  pgadmin_data:
+  backend_media:
+  backend_static:

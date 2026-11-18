@@ -2,6 +2,7 @@ services:
   - type: web
     name: arkane-zone
     runtime: python
+    rootDir: backend
     buildCommand: "./build.sh"
     startCommand: "gunicorn arkane_zone.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
     envVars:
@@ -20,3 +21,7 @@ services:
           type: web
           name: arkane-zone
           property: host
+      # Orígenes del frontend si se despliega en otro dominio y consume la API
+      # directamente (sin proxy /api). Ej: https://arkane-zone.vercel.app
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false

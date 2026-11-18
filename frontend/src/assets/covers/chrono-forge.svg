@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-label="Portada de Chrono Forge">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2c1608"/>
+      <stop offset="0.55" stop-color="#7c2d12"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="1000" fill="url(#bg)"/>
+  <g fill="none" stroke="#fbbf24" stroke-width="10" opacity="0.55">
+    <circle cx="400" cy="530" r="210"/>
+    <circle cx="400" cy="530" r="155"/>
+    <circle cx="400" cy="530" r="70"/>
+  </g>
+  <g stroke="#fed7aa" stroke-width="14" stroke-linecap="round" opacity="0.85">
+    <path d="M400 320v60M400 680v60M190 530h60M550 530h60M252 382l42 42M506 636l42 42M548 382l-42 42M294 636l-42 42"/>
+  </g>
+  <path d="M400 460 455 530 400 600 345 530 400 460Z" fill="#fbbf24"/>
+  <path d="M400 480v100M350 530h100" stroke="#451a03" stroke-width="9" stroke-linecap="round"/>
+  <text x="400" y="170" text-anchor="middle" fill="#fff7ed" font-family="Segoe UI, sans-serif" font-size="68" font-weight="800" letter-spacing="6">CHRONO</text>
+  <text x="400" y="238" text-anchor="middle" fill="#fbbf24" font-family="Segoe UI, sans-serif" font-size="56" font-weight="700" letter-spacing="14">FORGE</text>
+  <text x="400" y="930" text-anchor="middle" fill="#fdba74" font-family="Segoe UI, sans-serif" font-size="24" letter-spacing="5">SHAPE THE TIMELINE</text>
+</svg>

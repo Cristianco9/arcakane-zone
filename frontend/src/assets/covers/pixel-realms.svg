@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 1000" role="img" aria-label="Portada de Pixel Realms">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#312e81"/>
+      <stop offset="0.6" stop-color="#6d28d9"/>
+      <stop offset="1" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="1000" fill="url(#bg)"/>
+  <g fill="#facc15" opacity="0.9">
+    <rect x="140" y="300" width="80" height="80"/>
+    <rect x="580" y="300" width="80" height="80"/>
+    <rect x="220" y="380" width="80" height="80"/>
+    <rect x="500" y="380" width="80" height="80"/>
+    <rect x="300" y="460" width="200" height="80"/>
+  </g>
+  <g fill="#34d399">
+    <rect x="300" y="540" width="80" height="80"/>
+    <rect x="420" y="540" width="80" height="80"/>
+    <rect x="380" y="620" width="40" height="80"/>
+  </g>
+  <g fill="#f472b6">
+    <rect x="220" y="700" width="80" height="80"/>
+    <rect x="500" y="700" width="80" height="80"/>
+    <rect x="300" y="780" width="200" height="80"/>
+  </g>
+  <g fill="#e0e7ff" opacity="0.7">
+    <rect x="80" y="160" width="16" height="16"/>
+    <rect x="700" y="220" width="16" height="16"/>
+    <rect x="120" y="840" width="16" height="16"/>
+    <rect x="660" y="820" width="16" height="16"/>
+  </g>
+  <text x="400" y="120" text-anchor="middle" fill="#faf5ff" font-family="Segoe UI, sans-serif" font-size="64" font-weight="800" letter-spacing="4">PIXEL</text>
+  <text x="400" y="950" text-anchor="middle" fill="#ddd6fe" font-family="Segoe UI, sans-serif" font-size="28" font-weight="700" letter-spacing="10">REALMS</text>
+</svg>
