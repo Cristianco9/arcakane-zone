@@ -55,7 +55,7 @@ class ApiRootView(APIView):
         }
         return respuesta_exitosa(
             {"version": "v1", "recursos": recursos},
-            message="API REST de Arkane Zone",
+            message="API REST de Arcakane Zone",
         )
 
 

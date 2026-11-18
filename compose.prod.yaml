@@ -10,10 +10,10 @@
 
 services:
   db:
-    restart: always
+    restart: ${PROD_RESTART_POLICY:?PROD_RESTART_POLICY is required}
 
   backend:
-    restart: always
+    restart: ${PROD_RESTART_POLICY:?PROD_RESTART_POLICY is required}
     command:
       [
         "gunicorn",
@@ -21,9 +21,9 @@ services:
         "--bind",
         "0.0.0.0:${BACKEND_PORT:-8000}",
         "--workers",
-        "${BACKEND_WORKERS:-2}",
+        "${BACKEND_WORKERS:?BACKEND_WORKERS is required}",
         "--timeout",
-        "${BACKEND_TIMEOUT:-120}",
+        "${BACKEND_TIMEOUT:?BACKEND_TIMEOUT is required}",
         "--access-logfile",
         "-",
         "--error-logfile",
@@ -34,18 +34,18 @@ services:
       SECURE_SSL_REDIRECT: ${SECURE_SSL_REDIRECT:-False}
 
   frontend:
-    restart: always
+    restart: ${PROD_RESTART_POLICY:?PROD_RESTART_POLICY is required}
     build:
       target: production
       args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-/api}
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:?VITE_API_BASE_URL is required}
     environment:
-      BACKEND_HOST: ${BACKEND_HOST:-backend}
-      BACKEND_PORT: ${BACKEND_PORT:-8000}
-      FRONTEND_PORT: ${FRONTEND_PORT:-8080}
+      BACKEND_HOST: ${BACKEND_HOST:?BACKEND_HOST is required}
+      BACKEND_PORT: ${BACKEND_PORT:?BACKEND_PORT is required}
+      FRONTEND_PORT: ${FRONTEND_PORT:?FRONTEND_PORT is required}
 
   pgadmin:
-    restart: always
+    restart: ${PROD_RESTART_POLICY:?PROD_RESTART_POLICY is required}
     environment:
       # En producción pgAdmin exige una master password adicional.
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "True"

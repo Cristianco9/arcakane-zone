@@ -1,4 +1,4 @@
-# API REST de Arkane Zone
+# API REST de Arcakane Zone
 
 API JSON versionada que expone los recursos del sistema sin reemplazar la
 interfaz HTML existente. El sitio con Django Templates + HTMX sigue disponible
@@ -8,6 +8,8 @@ en sus rutas de siempre.
 - **Raíz navegable:** `GET /api/v1/` (devuelve las URLs de todos los recursos)
 - **Salud:** `GET /api/v1/health/`
 - **Formato:** JSON con UTF-8 y barra final obligatoria en las rutas.
+- **Postman:** [`Arcakane_Zone.postman_collection.json`](./Arcakane_Zone.postman_collection.json)
+  incluye todos los endpoints con credenciales demo y variables automáticas.
 
 `/api/` redirige a `/api/v1/` y `/api/catalogo/` redirige a
 `/api/v1/catalogo/videojuegos/` por compatibilidad.
@@ -19,7 +21,7 @@ La API acepta dos mecanismos:
 1. **Token de DRF**
 
    ```http
-   Authorization: Bearer <token>
+   Authorization: Token <token>
    ```
 
    El token se obtiene en `POST /api/v1/auth/login/` o
@@ -221,7 +223,7 @@ curl -s http://localhost:8000/api/v1/catalogo/videojuegos/?q=zelda
 
 ```bash
 curl -s -X POST http://localhost:8000/api/v1/pagos/ \
-  -H "Authorization: Bearer $TOKEN" \
+  -H "Authorization: Token $TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"pedido": 12}'
 ```
