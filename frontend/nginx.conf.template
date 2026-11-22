@@ -10,10 +10,11 @@ server {
     root /usr/share/nginx/html;
     index index.html;
 
-    # El navegador llama a /api/... y Nginx lo reenvía al backend por la red
-    # interna de Docker usando el nombre de servicio "backend".
+    # El navegador consume /api/v1/...; Nginx reenvía el prefijo completo al
+    # backend usando el nombre de servicio de la red interna de Docker.
+    # Sin barra final en proxy_pass para NO quitar el prefijo /api.
     location /api/ {
-        proxy_pass http://${BACKEND_HOST}:${BACKEND_PORT}/;
+        proxy_pass http://${BACKEND_HOST}:${BACKEND_PORT};
         proxy_http_version 1.1;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
@@ -21,6 +22,7 @@ server {
         proxy_set_header X-Forwarded-Proto $forwarded_proto;
     }
 
+    # SPA: cualquier ruta desconocida devuelve index.html.
     location / {
         try_files $uri $uri/ /index.html;
     }

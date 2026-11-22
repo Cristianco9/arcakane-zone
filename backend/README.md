@@ -1,8 +1,8 @@
-# Arkane Zone — Backend (Django)
+# Arcakane Zone — Backend (Django)
 
-Aplicación backend del sistema Arkane Zone. Contiene el modelo de datos, las reglas de negocio, la autenticación, el panel administrativo y la lógica de catálogo, carrito, pedidos, pagos, reportes y soporte.
+Aplicación backend del sistema Arcakane Zone. Contiene el modelo de datos, las reglas de negocio, la autenticación, el panel administrativo y la lógica de catálogo, carrito, pedidos, pagos, reportes y soporte.
 
-> **Estado actual:** el backend sigue sirviendo la interfaz con Django Templates + HTMX. La separación definitiva se completará cuando el frontend consuma una API JSON. Hoy las rutas existentes devuelven HTML; **todavía no existe una API REST/JSON formal**.
+> **Estado actual:** el backend sirve la interfaz existente con Django Templates + HTMX **y** una API REST/JSON versionada en `/api/v1/`. Ambas capas comparten modelos, servicios, permisos y reglas de negocio. La documentación del contrato está en [`docs/api/API.md`](../docs/api/API.md).
 
 ## Docker
 
@@ -42,8 +42,9 @@ backend/
 ├── pagos/                # Pago simulado, pagos y ventas
 ├── reportes/             # Dashboard y reportes (solo staff)
 ├── soporte/              # Contacto, solicitud de información y ayuda
-├── templates/            # Templates Django (interfaz temporal)
-├── tests/                # Pruebas de carrito, pagos, cancelación y autorización
+├── api/                  # API REST: serializers, vistas, rutas, permisos y errores
+├── templates/            # Templates Django (interfaz HTML)
+├── tests/                # Pruebas de API, carrito, pagos, cancelación y autorización
 ├── manage.py
 ├── requirements.txt
 ├── pytest.ini
@@ -92,6 +93,7 @@ cp .env.example .env
 | `DEBUG` | No | `True` en desarrollo; por defecto `False`. |
 | `ALLOWED_HOSTS` | No | Lista separada por comas. Por defecto `localhost,127.0.0.1,backend`. |
 | `CSRF_TRUSTED_ORIGINS` | No | Orígenes permitidos para CSRF. En Render se agrega automáticamente el host público. |
+| `CORS_ALLOWED_ORIGINS` | No | Orígenes permitidos para CORS (lista separada por comas). Solo hace falta si el frontend llama a la API sin el proxy `/api`. |
 | `SECURE_SSL_REDIRECT` | No | Fuerza HTTPS cuando `DEBUG=False`; por defecto `True`. En Docker se pone `False` porque TLS termina en el proxy. |
 | `USE_X_FORWARDED_HOST` | No | Usa `X-Forwarded-Host` detrás de un proxy; por defecto `False`. |
 | `RENDER_EXTERNAL_HOSTNAME` | No | La define Render; se agrega a `ALLOWED_HOSTS` y `CSRF_TRUSTED_ORIGINS`. |
@@ -137,15 +139,17 @@ python manage.py runserver
 La suite usa `arkane_zone/settings_test.py`, que cambia la base de datos a SQLite en memoria y usa hashing rápido de contraseñas.
 
 ```bash
-# Dependencias de desarrollo (aún no están declaradas en requirements.txt)
-pip install pytest pytest-django
+# Dependencias de desarrollo y pruebas
+pip install -r requirements-dev.txt
 
 SECRET_KEY=test-key DATABASE_URL=sqlite:///db.sqlite3 DEBUG=True pytest
 ```
 
-Estado verificado de la suite: **47 pruebas**, todas pasan con `DEBUG=True`.
+Estado verificado de la suite: **130 pruebas**, todas pasan. Incluye pruebas de
+la API REST (`tests/test_api_*.py`) y las pruebas originales de la interfaz HTML.
 
-> **Limitación conocida:** `settings_test.py` hereda `settings.py`; con `DEBUG=False` se activa `SECURE_SSL_REDIRECT` y 14 pruebas de autorización fallan por recibir un `301` en lugar de `302`. Además, `pytest` y `pytest-django` no están en `requirements.txt`. Ambas cosas están registradas como hallazgos del Sprint 1 y deben corregirse en un issue posterior.
+`settings_test.py` fuerza `DEBUG=True`, desactiva las redirecciones HTTPS y usa
+SQLite en memoria, por lo que la suite es independiente del entorno.
 
 ## Rutas principales
 
@@ -168,6 +172,33 @@ Estado verificado de la suite: **47 pruebas**, todas pasan con `DEBUG=True`.
 | `/soporte/ayuda/` | Centro de ayuda |
 | `/admin/` | Panel administrativo con django-unfold |
 
+## API REST
+
+- **Base:** `/api/v1/` (raíz navegable en `GET /api/v1/`).
+- **Salud:** `GET /api/v1/health/`.
+- **Autenticación:** token de DRF (`Authorization: Bearer <token>`) o sesión de
+  Django con `X-CSRFToken`.
+- **Respuestas:** sobre uniforme `{"success": true, "data": ...}` y errores
+  `{"success": false, "error": {"code", "message", "details"}}`.
+- **Paginación:** `?page=1&page_size=20`; búsqueda `?q=`; orden `?ordering=`.
+
+Recursos principales: catálogo, carrito, pedidos, pagos, ventas, reportes,
+soporte, usuarios y roles. El detalle de rutas, cuerpos y códigos de estado está
+en [`docs/api/API.md`](../docs/api/API.md).
+
+```bash
+# Token
+curl -s -X POST http://localhost:8000/api/v1/auth/login/ \
+  -H "Content-Type: application/json" \
+  -d '{"username":"cliente","password":"secreto"}'
+
+# Catálogo público
+curl -s "http://localhost:8000/api/v1/catalogo/videojuegos/?q=zelda"
+```
+
+La API y el sitio HTML comparten servicios, por lo que una regla de negocio
+(cancelación, checkout, descuento de stock) se comporta igual por ambas vías.
+
 ## Despliegue en Render
 
 El blueprint está en la raíz del repositorio: [`../render.yaml`](../render.yaml).
@@ -189,21 +220,22 @@ El blueprint está en la raíz del repositorio: [`../render.yaml`](../render.yam
 - **Migraciones:** actualmente se ejecutan durante el build. Evaluar un `preDeployCommand` antes de un despliegue con más de una instancia.
 - **Validación:** ejecutar `python manage.py check --deploy` antes de cada despliegue.
 
-## Transición al frontend separado
+## Convivencia con el frontend
 
-Cuando se implemente el frontend:
+La API está disponible para que el frontend React consuma los recursos de forma
+desacoplada, mientras las plantillas HTML siguen funcionando como respaldo y
+para el panel administrativo:
 
-1. Definir el contrato de la API (endpoints, serialización y errores).
-2. Elegir la estrategia de autenticación (sesión/cookies o tokens) y configurar CORS/CSRF.
-3. Exponer endpoints JSON para catálogo, carrito, pedidos, pagos, reportes y soporte.
-4. Reemplazar gradualmente `backend/templates/` por las vistas del frontend.
-5. Mantener `/admin/` en Django para la administración interna.
-
-Hasta que ese trabajo exista, este backend debe seguir funcionando como aplicación Django completa.
+1. El frontend usa `/api/v1/...` mediante el proxy de Vite/Nginx, sin CORS en
+   el flujo normal.
+2. Los clientes externos pueden autenticarse con token de DRF.
+3. La administración interna permanece en `/admin/` con django-unfold.
+4. Las plantillas se pueden retirar gradualmente sin tocar la lógica de negocio.
 
 ## Documentación relacionada
 
 - [README principal](../README.md)
+- [API REST](../docs/api/API.md)
 - [Auditoría inicial](../docs/audit/INITIAL-AUDIT.md)
 - [Plan del Sprint 1](../docs/sprints/SPRINT-1.md)
-- [Frontend (pendiente)](../frontend/README.md)
+- [Frontend](../frontend/README.md)

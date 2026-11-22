@@ -1,1 +1,59 @@
 @import "tailwindcss";
+
+@theme {
+  --color-ink-950: #060913;
+  --color-ink-900: #0b1120;
+  --color-ink-800: #121a2e;
+  --color-ink-700: #1b2640;
+  --color-ink-600: #273551;
+
+  --color-brand-100: #ede9fe;
+  --color-brand-200: #ddd6fe;
+  --color-brand-300: #c4b5fd;
+  --color-brand-400: #a78bfa;
+  --color-brand-500: #8b5cf6;
+  --color-brand-600: #7c3aed;
+
+  --color-aqua-300: #67e8f9;
+  --color-aqua-400: #22d3ee;
+  --color-aqua-500: #06b6d4;
+
+  --font-display: "Segoe UI", "Inter", system-ui, sans-serif;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100svh;
+    background-color: var(--color-ink-950);
+    background-image:
+      radial-gradient(circle at 12% -10%, rgba(139, 92, 246, 0.2), transparent 36rem),
+      radial-gradient(circle at 88% 0%, rgba(34, 211, 238, 0.1), transparent 32rem);
+    background-attachment: fixed;
+    color: #dbe2f0;
+    font-family: var(--font-display);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #root {
+    display: flex;
+    min-height: 100svh;
+    flex-direction: column;
+  }
+
+  ::selection {
+    background-color: var(--color-brand-500);
+    color: #fff;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand-400);
+    outline-offset: 3px;
+  }
+}

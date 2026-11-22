@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>{% block title %}Arkane Zone{% endblock %}</title>
+  <title>{% block title %}Arcakane Zone{% endblock %}</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     /* ── Paleta azul oscuro — reemplaza morado y gris neutro ── */
@@ -75,7 +75,7 @@
 
   <!-- Navbar -->
   <nav class="bg-gray-900 border-b border-purple-800 px-6 py-3 flex items-center justify-between">
-    <a href="{% url 'catalogo:lista' %}" class="text-2xl font-bold text-purple-400 tracking-wide">Arkane Zone</a>
+    <a href="{% url 'catalogo:lista' %}" class="text-2xl font-bold text-purple-400 tracking-wide">Arcakane Zone</a>
     <div class="flex items-center gap-4 text-sm">
       {% if user.is_authenticated %}
         <a href="{% url 'catalogo:lista' %}" class="hover:text-purple-300">Catálogo</a>
@@ -128,7 +128,7 @@
 
   <footer class="bg-gray-900 border-t border-gray-800 py-5 px-6">
     <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs text-gray-500">
-      <span>&copy; {% now "Y" %} Arkane Zone — Zarzal, Colombia</span>
+      <span>&copy; {% now "Y" %} Arcakane Zone — Zarzal, Colombia</span>
       <div class="flex gap-5">
         <a href="{% url 'soporte:contacto' %}" class="hover:text-purple-400 transition">Contáctenos</a>
         <a href="{% url 'soporte:mayor_informacion' %}" class="hover:text-purple-400 transition">Mayor información</a>

@@ -1,44 +1,46 @@
 # syntax=docker/dockerfile:1
 
-# Imagen base oficial de Node.js, con versión fija para builds reproducibles.
+# Versión fija de Node compatible con Vite 8 (requiere Node >= 20.19).
 FROM node:22.14.0-alpine AS base
 
 WORKDIR /app
 
-ENV NPM_CONFIG_UPDATE_NOTIFIER=false \
-    NPM_CONFIG_FUND=false
+RUN mkdir -p /app && chown -R node:node /app
+USER node
 
-COPY package.json package-lock.json ./
-RUN npm ci
+COPY --chown=node:node package.json package-lock.json ./
+RUN npm ci --no-audit --no-fund
 
-COPY . .
-RUN chown -R node:node /app
-
-# ── Desarrollo: servidor Vite con recarga en caliente ────────────────────────
+# ── Desarrollo: Vite dev server con HMR ──────────────────────────────────────
 FROM base AS development
 
 ENV NODE_ENV=development
-USER node
-EXPOSE 8080
-CMD ["npm", "run", "dev"]
 
-# ── Build de producción ──────────────────────────────────────────────────────
+COPY --chown=node:node . .
+
+EXPOSE 8080
+
+# Vite escucha por defecto en localhost:5173 (IPv6). En Docker debe enlazarse
+# a 0.0.0.0 y usar FRONTEND_PORT para que el mapeo y el healthcheck funcionen.
+# Se usa shell para expandir la variable de entorno.
+CMD ["sh", "-c", "npm run dev -- --host 0.0.0.0 --port ${FRONTEND_PORT:-8080}"]
+
+# ── Build: genera los archivos estáticos ─────────────────────────────────────
 FROM base AS build
 
+ENV NODE_ENV=production
+
+COPY --chown=node:node . .
+
 ARG VITE_API_BASE_URL=/api
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
+
 RUN npm run build
 
-# ── Producción: Nginx sin privilegios sirviendo el bundle estático ───────────
-FROM nginxinc/nginx-unprivileged:1.27-alpine AS production
+# ── Producción: Nginx sirve el SPA y hace de proxy inverso de /api ───────────
+FROM nginx:1.27-alpine AS production
 
-# El entrypoint oficial de Nginx sustituye estas variables en la plantilla
-# y genera /etc/nginx/conf.d/default.conf.
-ENV BACKEND_HOST=backend \
-    BACKEND_PORT=8000 \
-    FRONTEND_PORT=8080
-
-COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 COPY --from=build /app/dist /usr/share/nginx/html
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 
 EXPOSE 8080

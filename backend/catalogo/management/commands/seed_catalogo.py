@@ -21,7 +21,7 @@ from pedidos.models import EstadoPedido
 
 
 class Command(BaseCommand):
-    help = "Pobla la base de datos con datos de prueba para Arkane Zone."
+    help = "Pobla la base de datos con datos de prueba para Arcakane Zone."
 
     def handle(self, *args, **kwargs):
         estados_creados = self._seed_estados()

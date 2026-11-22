@@ -26,6 +26,11 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # API REST
+    "corsheaders",
+    "rest_framework",
+    "rest_framework.authtoken",
+    "api",
     # Apps del proyecto
     "cuentas",
     "catalogo",
@@ -39,12 +44,16 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",  # debe ir justo después de SecurityMiddleware
+    # CORS debe ejecutarse antes de CommonMiddleware.
+    "corsheaders.middleware.CorsMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    # Garantiza respuestas JSON ante errores no controlados dentro de /api/.
+    "api.middleware.ApiErrorMiddleware",
 ]
 
 ROOT_URLCONF = "arkane_zone.urls"
@@ -149,7 +158,7 @@ LOGOUT_REDIRECT_URL = "/cuentas/login/"
 # Correo: backend de consola para desarrollo (imprime el enlace de reseteo en la terminal).
 # En producción cambiar por smtp.EmailBackend y configurar SMTP.
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-DEFAULT_FROM_EMAIL = "Arkane Zone <noreply@arkanezone.co>"
+DEFAULT_FROM_EMAIL = "Arcakane Zone <noreply@arkanezone.co>"
 
 # CSRF: permite peticiones desde el dominio de Render en producción.
 CSRF_TRUSTED_ORIGINS = env.list(
@@ -163,6 +172,45 @@ CSRF_TRUSTED_ORIGINS = env.list(
 )
 if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
+
+# ── API REST ─────────────────────────────────────────────────────────────────
+# Autenticación por token (clientes desacoplados) y por sesión/cookie
+# (misma sesión que usa el sitio y el admin de Django).
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework.authentication.TokenAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
+    ],
+    # Por defecto todo exige autenticación; cada vista pública lo declara.
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.IsAuthenticated",
+    ],
+    "DEFAULT_RENDERER_CLASSES": [
+        "api.renderers.EnvelopeJSONRenderer",
+    ],
+    "DEFAULT_PAGINATION_CLASS": "api.pagination.StandardResultsSetPagination",
+    "PAGE_SIZE": 20,
+    "EXCEPTION_HANDLER": "api.exceptions.api_exception_handler",
+    # Respuestas JSON legibles (tildes y eñes sin escapes).
+    "UNICODE_JSON": True,
+    "COMPACT_JSON": False,
+    # Los importes viajan como cadenas decimales para no perder precisión.
+    "COERCE_DECIMAL_TO_STRING": True,
+}
+
+# CORS: el frontend puede vivir en otro origen (por ejemplo, un dominio
+# distinto en Render). Con el proxy /api de Vite/Nginx no hace falta, pero
+# se deja configurable para integraciones directas.
+CORS_ALLOWED_ORIGINS = env.list(
+    "CORS_ALLOWED_ORIGINS",
+    default=[
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:8080",
+        "http://127.0.0.1:8080",
+    ],
+)
+CORS_ALLOW_CREDENTIALS = True
 
 # Detrás de un proxy inverso (Nginx, Render, etc.) que termina TLS.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
@@ -180,8 +228,8 @@ if not DEBUG:
 
 # django-unfold — paleta azul eléctrico (valores en RGB sin #)
 UNFOLD = {
-    "SITE_TITLE": "Arkane Zone",
-    "SITE_HEADER": "Arkane Zone Admin",
+    "SITE_TITLE": "Arcakane Zone",
+    "SITE_HEADER": "Arcakane Zone Admin",
     "SITE_URL": "/",
     "COLORS": {
         "primary": {
