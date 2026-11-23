@@ -18,14 +18,18 @@ en sus rutas de siempre.
 
 La API acepta dos mecanismos:
 
-1. **Token de DRF**
+1. **Token propio con vencimiento**
 
    ```http
-   Authorization: Token <token>
+   Authorization: Token <clave>
    ```
 
-   El token se obtiene en `POST /api/v1/auth/login/` o
-   `POST /api/v1/auth/registro/`.
+   La clave se obtiene en `POST /api/v1/auth/login/` o
+   `POST /api/v1/auth/registro/` y se devuelve junto a `expires_at`.
+   Vigencia por defecto: 7 días, configurable con `API_TOKEN_TTL_DAYS`.
+   Un token inexistente o vencido responde `401 no_autenticado`.
+   **Los tokens antiguos de `rest_framework.authtoken` ya no son válidos:** hay
+   que iniciar sesión de nuevo para obtener una clave del modelo propio.
 
 2. **Sesión/cookie de Django**
 
@@ -109,7 +113,9 @@ negocio `administrador`.
 |---|---|---|
 | `POST` | `/api/v1/auth/registro/` | `username`, `email`, `password`, `password_confirm` y datos opcionales |
 | `POST` | `/api/v1/auth/login/` | `username`, `password` |
-| `POST` | `/api/v1/auth/logout/` | Invalida el token presentado y cierra la sesión |
+| `POST` | `/api/v1/auth/logout/` | Revoca solo el token de esta sesión y cierra la sesión |
+| `POST` | `/api/v1/auth/token/refresh/` | Rota el token vigente; devuelve `token` y `expires_at` |
+| `POST` | `/api/v1/auth/logout-all/` | Revoca todos los tokens del usuario y cierra la sesión |
 | `GET` | `/api/v1/auth/csrf/` | Devuelve `csrfToken` y crea la cookie |
 | `GET` | `/api/v1/auth/me/` | Perfil del usuario autenticado |
 | `PATCH`/`PUT` | `/api/v1/auth/me/` | Actualiza el perfil |
@@ -122,11 +128,28 @@ Respuesta de login y registro:
   "success": true,
   "data": {
     "usuario": { "id": 1, "username": "cliente", "...": "..." },
-    "token": "9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b"
+    "token": "KiJ8mRb4K9tnGY1_3YKw8HFZqA9Ydx3v4OgbXwrH8sc",
+    "expires_at": "2026-11-29T18:30:00Z"
   },
   "message": "Sesión iniciada correctamente."
 }
 ```
+
+### Vencimiento, renovación y cierre global
+
+- Cada login o registro emite una clave nueva; varias sesiones pueden coexistir.
+- `expires_at` indica el vencimiento en ISO 8601. La vigencia la define
+  `API_TOKEN_TTL_DAYS` (días, defecto `7`, mínimo `1`).
+- `POST /api/v1/auth/token/refresh/` exige un token vigente en la cabecera,
+  revoca esa clave y devuelve una nueva con su `expires_at`. La clave anterior
+  pasa a dar `401 no_autenticado`.
+- `POST /api/v1/auth/logout-all/` revoca todos los tokens del usuario;
+  `POST /api/v1/auth/logout/` solo revoca el usado en esa petición.
+- Cambiar la contraseña por cualquier vía (API, formulario web, reseteo o
+  admin) revoca todos los tokens del usuario. Si Django vuelve a hashear la
+  contraseña al iniciar sesión por un cambio de algoritmo, también se revocan
+  los tokens anteriores; la clave emitida en ese mismo login sigue válida porque
+  se genera después de autenticar.
 
 ### Catálogo
 
