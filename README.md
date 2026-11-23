@@ -170,6 +170,12 @@ Toda la configuración está centralizada en el `.env` de la raíz. El Compose n
 | PostgreSQL | `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_PUBLISHED_PORT` |
 | pgAdmin | `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD`, `PGADMIN_PORT`, `PGADMIN_PUBLISHED_PORT`, `PGADMIN_MASTER_PASSWORD_REQUIRED` |
 | Frontend | `FRONTEND_PORT`, `FRONTEND_PUBLISHED_PORT`, `VITE_API_BASE_URL` |
+| Throttling / caché | `CACHE_TABLE`, `REDIS_URL`, `THROTTLE_NUM_PROXIES`, `THROTTLE_RATE_*`, `LOGIN_MAX_FAILED_ATTEMPTS`, `LOGIN_FAILURE_WINDOW_SECONDS`, `LOGIN_LOCKOUT_SECONDS` |
+
+Los contadores de la API usan una tabla de PostgreSQL (`django_cache`) creada
+automáticamente por el entrypoint con `createcachetable`; para usar Redis
+define `REDIS_URL` (requiere el paquete `redis`). Las respuestas `429` llevan
+cabecera `Retry-After`; el contrato está en [`docs/api/API.md`](docs/api/API.md).
 
 Los valores de `.env.example` son ficticios y solo ilustran el formato. En producción usa secretos reales gestionados fuera del repositorio.
 
