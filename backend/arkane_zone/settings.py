@@ -154,10 +154,57 @@ LOGIN_URL = "/cuentas/login/"
 LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/cuentas/login/"
 
-# Correo: backend de consola para desarrollo (imprime el enlace de reseteo en la terminal).
-# En producción cambiar por smtp.EmailBackend y configurar SMTP.
-EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
-DEFAULT_FROM_EMAIL = "Arcakane Zone <noreply@arkanezone.co>"
+# ── Correo y recuperación de contraseña ───────────────────────────────────────
+# En desarrollo se mantiene el backend de consola: el enlace se imprime en la
+# terminal. Si se define EMAIL_HOST se pasa a SMTP salvo override explícito.
+def configuracion_correo_desde_entorno() -> dict:
+    """Resuelve SMTP, validez del token y URL del enlace del correo."""
+    host = env("EMAIL_HOST", default="")
+    backend_defecto = (
+        "django.core.mail.backends.smtp.EmailBackend"
+        if host
+        else "django.core.mail.backends.console.EmailBackend"
+    )
+    return {
+        "EMAIL_BACKEND": env("EMAIL_BACKEND", default=backend_defecto),
+        "EMAIL_HOST": host,
+        "EMAIL_PORT": env.int("EMAIL_PORT", default=25),
+        "EMAIL_HOST_USER": env("EMAIL_HOST_USER", default=""),
+        "EMAIL_HOST_PASSWORD": env("EMAIL_HOST_PASSWORD", default=""),
+        "EMAIL_USE_TLS": env.bool("EMAIL_USE_TLS", default=False),
+        "EMAIL_USE_SSL": env.bool("EMAIL_USE_SSL", default=False),
+        "EMAIL_TIMEOUT": env.int("EMAIL_TIMEOUT", default=10),
+        "DEFAULT_FROM_EMAIL": env(
+            "DEFAULT_FROM_EMAIL", default="Arcakane Zone <noreply@arkanezone.co>"
+        ),
+        "PASSWORD_RESET_TIMEOUT": max(1, env.int("PASSWORD_RESET_TIMEOUT", default=3600)),
+        "FRONTEND_BASE_URL": env(
+            "FRONTEND_BASE_URL", default="http://localhost:5173"
+        ).rstrip("/"),
+        "PASSWORD_RESET_FRONTEND_PATH": env(
+            "PASSWORD_RESET_FRONTEND_PATH",
+            default="/restablecer-contrasena/{uid}/{token}",
+        ),
+        "PASSWORD_RESET_MAX_EMAILS_PER_HOUR": max(
+            1, env.int("PASSWORD_RESET_MAX_EMAILS_PER_HOUR", default=3)
+        ),
+    }
+
+
+_correo = configuracion_correo_desde_entorno()
+EMAIL_BACKEND = _correo["EMAIL_BACKEND"]
+EMAIL_HOST = _correo["EMAIL_HOST"]
+EMAIL_PORT = _correo["EMAIL_PORT"]
+EMAIL_HOST_USER = _correo["EMAIL_HOST_USER"]
+EMAIL_HOST_PASSWORD = _correo["EMAIL_HOST_PASSWORD"]
+EMAIL_USE_TLS = _correo["EMAIL_USE_TLS"]
+EMAIL_USE_SSL = _correo["EMAIL_USE_SSL"]
+EMAIL_TIMEOUT = _correo["EMAIL_TIMEOUT"]
+DEFAULT_FROM_EMAIL = _correo["DEFAULT_FROM_EMAIL"]
+PASSWORD_RESET_TIMEOUT = _correo["PASSWORD_RESET_TIMEOUT"]
+FRONTEND_BASE_URL = _correo["FRONTEND_BASE_URL"]
+PASSWORD_RESET_FRONTEND_PATH = _correo["PASSWORD_RESET_FRONTEND_PATH"]
+PASSWORD_RESET_MAX_EMAILS_PER_HOUR = _correo["PASSWORD_RESET_MAX_EMAILS_PER_HOUR"]
 
 # CSRF: permite peticiones desde el dominio de Render en producción.
 CSRF_TRUSTED_ORIGINS = env.list(
@@ -234,6 +281,7 @@ REST_FRAMEWORK = {
         "login": tasa_desde_entorno("LOGIN", "10/min"),
         "registro": tasa_desde_entorno("REGISTRO", "5/hour"),
         "contacto": tasa_desde_entorno("CONTACTO", "5/hour"),
+        "password_reset": tasa_desde_entorno("PASSWORD_RESET", "5/hour"),
     },
     "NUM_PROXIES": THROTTLE_NUM_PROXIES,
     # Respuestas JSON legibles (tildes y eñes sin escapes).

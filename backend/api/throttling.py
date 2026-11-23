@@ -93,6 +93,18 @@ def ip_del_cliente(request):
     return direcciones[-min(num_proxies, len(direcciones))]
 
 
+class PasswordResetRateThrottle(ScopeFijoRateThrottle):
+    """Scope ``password_reset``: siempre por IP, incluso con sesión activa."""
+
+    scope = "password_reset"
+
+    def get_cache_key(self, request, view):
+        return self.cache_format % {
+            "scope": self.scope,
+            "ident": ip_del_cliente(request),
+        }
+
+
 def _hash_login(request, username):
     """Hash de usuario normalizado + IP; nunca guarda la contraseña."""
     usuario = str(username or "").strip().lower()

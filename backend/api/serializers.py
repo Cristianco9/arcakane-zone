@@ -5,6 +5,7 @@ que ya existen en ``pedidos.services`` y ``pagos.services`` se reutilizan tal
 cual para no duplicar comportamiento entre las vistas HTML y la API.
 """
 from django.contrib.auth import password_validation
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from rest_framework import serializers
 
@@ -19,6 +20,8 @@ from cuentas.models import Rol, Usuario
 from pagos.models import Pago, Venta
 from pedidos.models import DetallePedido, Pedido
 from soporte.models import Contacto
+
+from .password_reset import TokenResetInvalido, resolver_usuario
 
 
 # ── Catálogo ─────────────────────────────────────────────────────────────────
@@ -524,6 +527,33 @@ class CambioPasswordSerializer(serializers.Serializer):
             )
         except Exception as exc:
             raise serializers.ValidationError({"new_password": list(exc.messages)}) from exc
+        return attrs
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField(required=False, allow_blank=True, trim_whitespace=False)
+    token = serializers.CharField(required=False, allow_blank=True, trim_whitespace=False)
+    new_password = serializers.CharField(write_only=True, trim_whitespace=False)
+    new_password_confirm = serializers.CharField(write_only=True, trim_whitespace=False)
+
+    def validate(self, attrs):
+        uid, token = attrs.get("uid"), attrs.get("token")
+        if not uid or not token:
+            raise TokenResetInvalido()
+        if attrs["new_password"] != attrs["new_password_confirm"]:
+            raise serializers.ValidationError(
+                {"new_password_confirm": "Las contraseñas nuevas no coinciden."}
+            )
+        usuario = resolver_usuario(uid, token)
+        try:
+            password_validation.validate_password(attrs["new_password"], usuario)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError({"new_password": list(exc.messages)}) from exc
+        attrs["usuario"] = usuario
         return attrs
 
 
