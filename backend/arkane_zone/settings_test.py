@@ -28,3 +28,13 @@ PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 
 # Desactiva el backend real de correo durante tests
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+
+# La suite no depende del entorno: usa el TTL por defecto salvo override.
+API_TOKEN_TTL_DAYS = 7
+
+# Las vistas del admin renderizan estáticos; en tests no hay collectstatic
+# ni manifiesto de WhiteNoise, así que usamos el almacenamiento simple.
+STORAGES = {
+    "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+    "staticfiles": {"BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"},
+}
