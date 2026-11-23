@@ -28,3 +28,23 @@ PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]
 
 # Desactiva el backend real de correo durante tests
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+
+# Throttling: caché aislada y límites altos por defecto. Cada prueba que
+# necesita un límite concreto lo activa con `override_settings`.
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+        "LOCATION": "arkane-zone-tests",
+    }
+}
+REST_FRAMEWORK = {
+    **REST_FRAMEWORK,
+    "DEFAULT_THROTTLE_CLASSES": [],
+    "DEFAULT_THROTTLE_RATES": {
+        scope: None for scope in REST_FRAMEWORK["DEFAULT_THROTTLE_RATES"]
+    },
+}
+THROTTLE_NUM_PROXIES = 0
+LOGIN_MAX_FAILED_ATTEMPTS = 1_000_000
+LOGIN_FAILURE_WINDOW_SECONDS = 900
+LOGIN_LOCKOUT_SECONDS = 900
