@@ -41,14 +41,85 @@ La API acepta dos mecanismos:
 
 | Recurso | Acceso |
 |---|---|
-| Catálogo (categorías, plataformas, géneros, videojuegos, ofertas) | Lectura pública; escritura solo administrador |
+| Catálogo (categorías, plataformas, géneros, videojuegos, ofertas) | Lectura pública; escritura administrador o `gestor_inventario` |
+| Inventario (movimientos y ajustes) | administrador o `gestor_inventario` |
 | Carrito, pedidos, pagos | Usuario autenticado; dueño del recurso o administrador |
-| Ventas, reportes, usuarios y roles | Solo administrador |
-| Contacto | Creación pública; lectura de los propios mensajes o todos para administrador |
+| Ventas, usuarios y roles | Solo administrador |
+| Reportes | Solo administrador, salvo `/reportes/inventario/`, que también admite `gestor_inventario` |
+| Contacto | Creación pública; lectura de los propios mensajes, o de todos para `administrador` y `soporte`; gestión administrador o `soporte` |
 | Solicitud de información | Pública |
 
-Se considera administrador al usuario con `is_staff=True` o con el rol de
-negocio `administrador`.
+Los roles de negocio se identifican por `Rol.codigo`: `administrador`,
+`gestor_inventario`, `soporte` y `cliente`. Se asignan a cada usuario mediante
+la tabla puente `UsuarioRol` (`usuario.roles.add(rol)`); un usuario puede tener
+varios roles y basta cualquiera de los permitidos para pasar. Los roles
+`gestor_inventario` y `soporte` los crean la migración de datos
+`cuentas/0008_roles_rbac.py`, el comando `seed_catalogo` y las fixtures de
+pruebas, todos de forma idempotente.
+
+Se considera administrador al usuario con `is_staff=True`, `is_superuser=True`
+o con el rol de negocio `administrador`: los tres son equivalentes a efectos de
+esta API (el acceso al admin de Django no cambia). Una petición anónima a una
+ruta protegida responde `401 no_autenticado`; una autenticada sin el rol
+necesario responde `403 permiso_denegado`, con el sobre de error descrito más
+abajo. Las reglas efectivas por ruta y método son:
+
+<!-- INICIO MATRIZ RBAC -->
+| Ruta | GET | POST | PUT/PATCH | DELETE | Nota |
+|---|---|---|---|---|---|
+| `/api/v1/` | público | público | público | público |  |
+| `/api/v1/health/` | público | público | público | público |  |
+| `/api/v1/{ruta}` | público | público | público | público | JSON 404 |
+| `/api/v1/auth/registro/` | público | público | público | público |  |
+| `/api/v1/auth/login/` | público | público | público | público |  |
+| `/api/v1/auth/logout/` | autenticado | autenticado | autenticado | autenticado |  |
+| `/api/v1/auth/me/` | autenticado | autenticado | autenticado | autenticado |  |
+| `/api/v1/auth/me/password/` | autenticado | autenticado | autenticado | autenticado |  |
+| `/api/v1/auth/csrf/` | público | público | público | público |  |
+| `/api/v1/carrito/` | autenticado | autenticado | autenticado | autenticado | propietario |
+| `/api/v1/carrito/items/` | autenticado | autenticado | autenticado | autenticado | propietario |
+| `/api/v1/carrito/items/{pk}/` | autenticado | autenticado | autenticado | autenticado | propietario |
+| `/api/v1/inventario/ajustes/` | administrador, gestor_inventario | administrador, gestor_inventario | administrador, gestor_inventario | administrador, gestor_inventario |  |
+| `/api/v1/reportes/dashboard/` | administrador | administrador | administrador | administrador |  |
+| `/api/v1/reportes/ventas/` | administrador | administrador | administrador | administrador |  |
+| `/api/v1/reportes/inventario/` | administrador, gestor_inventario | administrador, gestor_inventario | administrador, gestor_inventario | administrador, gestor_inventario |  |
+| `/api/v1/reportes/videojuegos/` | administrador | administrador | administrador | administrador |  |
+| `/api/v1/soporte/mayor-informacion/` | público | público | público | público |  |
+| `/api/v1/catalogo/categorias/` | público | administrador, gestor_inventario | administrador, gestor_inventario | administrador, gestor_inventario |  |
+| `/api/v1/catalogo/categorias/{pk}/` | público | administrador, gestor_inventario | administrador, gestor_inventario | administrador, gestor_inventario |  |
+| `/api/v1/catalogo/plataformas/` | público | administrador, gestor_inventario | administrador, gestor_inventario | administrador, gestor_inventario |  |
+| `/api/v1/catalogo/plataformas/{pk}/` | público | administrador, gestor_inventario | administrador, gestor_inventario | administrador, gestor_inventario |  |
+| `/api/v1/catalogo/generos/` | público | administrador, gestor_inventario | administrador, gestor_inventario | administrador, gestor_inventario |  |
+| `/api/v1/catalogo/generos/{pk}/` | público | administrador, gestor_inventario | administrador, gestor_inventario | administrador, gestor_inventario |  |
+| `/api/v1/catalogo/videojuegos/` | público | administrador, gestor_inventario | administrador, gestor_inventario | administrador, gestor_inventario |  |
+| `/api/v1/catalogo/videojuegos/{pk}/` | público | administrador, gestor_inventario | administrador, gestor_inventario | administrador, gestor_inventario |  |
+| `/api/v1/catalogo/videojuegos/{pk}/ofertas/` | público | administrador, gestor_inventario | administrador, gestor_inventario | administrador, gestor_inventario | acción `ofertas` (GET público) |
+| `/api/v1/catalogo/ofertas/` | público | administrador, gestor_inventario | administrador, gestor_inventario | administrador, gestor_inventario |  |
+| `/api/v1/catalogo/ofertas/{pk}/` | público | administrador, gestor_inventario | administrador, gestor_inventario | administrador, gestor_inventario |  |
+| `/api/v1/catalogo/ofertas/{pk}/movimientos/` | administrador, gestor_inventario | administrador, gestor_inventario | administrador, gestor_inventario | administrador, gestor_inventario | acción `movimientos` |
+| `/api/v1/inventario/movimientos/` | administrador, gestor_inventario | administrador, gestor_inventario | administrador, gestor_inventario | administrador, gestor_inventario |  |
+| `/api/v1/inventario/movimientos/{pk}/` | administrador, gestor_inventario | administrador, gestor_inventario | administrador, gestor_inventario | administrador, gestor_inventario |  |
+| `/api/v1/pedidos/` | autenticado | autenticado | autenticado | autenticado | propietario |
+| `/api/v1/pedidos/{pk}/` | autenticado | autenticado | autenticado | autenticado | propietario |
+| `/api/v1/pedidos/{pk}/cancelar/` | autenticado | autenticado | autenticado | autenticado | propietario |
+| `/api/v1/pagos/` | autenticado | autenticado | autenticado | autenticado | propietario |
+| `/api/v1/pagos/{pk}/` | autenticado | autenticado | autenticado | autenticado | propietario |
+| `/api/v1/ventas/` | administrador | administrador | administrador | administrador |  |
+| `/api/v1/ventas/{pk}/` | administrador | administrador | administrador | administrador |  |
+| `/api/v1/soporte/contactos/` | administrador, soporte, cliente | público | administrador, soporte | administrador, soporte | propietario |
+| `/api/v1/soporte/contactos/{pk}/` | administrador, soporte, cliente | público | administrador, soporte | administrador, soporte | propietario |
+| `/api/v1/usuarios/` | administrador | administrador | administrador | administrador |  |
+| `/api/v1/usuarios/{pk}/` | administrador | administrador | administrador | administrador |  |
+| `/api/v1/roles/` | administrador | administrador | administrador | administrador |  |
+| `/api/v1/roles/{pk}/` | administrador | administrador | administrador | administrador |  |
+<!-- FIN MATRIZ RBAC -->
+
+La tabla se genera desde `api/rbac.py` con `generar_tabla_markdown()`;
+`tests/test_api_rbac.py` comprueba que coincide con esta sección y que todas las
+rutas tienen política explícita. Las celdas `propietario` indican que, además
+del rol, el usuario solo puede actuar sobre sus propios recursos (o cualquiera
+si es administrador); las acciones `ofertas` y `movimientos` se detallan en su
+nota.
 
 ## Sobre de respuesta
 
