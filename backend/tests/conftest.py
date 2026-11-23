@@ -25,7 +25,7 @@ from inventario.models import (
     MovimientoInventarioOfertaVideojuego,
     TipoMovimientoInventario,
 )
-from pagos.models import EstadoIntentoPago
+from pagos.models import EstadoIntentoPago, IntentoPago
 from pedidos.models import DetallePedido, EstadoPedido, Pedido
 
 
@@ -74,7 +74,8 @@ def estados_catalogo(db):
 
 # ── Roles (AZ-S1-18) ─────────────────────────────────────────────────────────
 
-ROLES_BASE = [("cliente", "Cliente"), ("administrador", "Administrador")]
+# Los nombres conservan el texto histórico expuesto por la API v1.
+ROLES_BASE = [("cliente", "cliente"), ("administrador", "administrador")]
 
 
 @pytest.fixture(autouse=True)
@@ -147,7 +148,7 @@ def rol_cliente(db):
     try:
         return Rol.objects.get(codigo="cliente")
     except Exception:
-        return Rol.objects.create(codigo="cliente", nombre="Cliente")
+        return Rol.objects.create(codigo="cliente", nombre="cliente")
 
 
 @pytest.fixture
@@ -155,7 +156,7 @@ def rol_admin(db):
     try:
         return Rol.objects.get(codigo="administrador")
     except Exception:
-        return Rol.objects.create(codigo="administrador", nombre="Administrador")
+        return Rol.objects.create(codigo="administrador", nombre="administrador")
 
 
 # ── Usuarios ─────────────────────────────────────────────────────────────────
@@ -294,6 +295,17 @@ def pedido_con_item(db, usuario_cliente, oferta):
         precio_unitario=oferta.precio_vigente,
     )
     return pedido
+
+
+@pytest.fixture
+def intento_aprobado(db, pedido_con_item):
+    """Intento aprobado para construir ventas en pruebas de reportes."""
+    return IntentoPago.objects.create(
+        pedido=pedido_con_item,
+        importe=pedido_con_item.total,
+        estado_id="aprobado",
+        referencia=f"AP-{uuid.uuid4().hex[:8].upper()}",
+    )
 
 
 # ── Inventario (AZ-S1-14) ──────────────────────────────────────────────────────
