@@ -74,8 +74,17 @@ def estados_catalogo(db):
 
 # ── Roles (AZ-S1-18) ─────────────────────────────────────────────────────────
 
-# Los nombres conservan el texto histórico expuesto por la API v1.
-ROLES_BASE = [("cliente", "cliente"), ("administrador", "administrador")]
+# Los nombres base conservan el texto histórico expuesto por la API v1.
+ROLES_BASE = [
+    ("cliente", "cliente", ""),
+    ("administrador", "administrador", ""),
+    (
+        "gestor_inventario",
+        "Gestor de inventario",
+        "Gestiona el catálogo y el libro mayor de inventario.",
+    ),
+    ("soporte", "Soporte", "Atiende y gestiona los mensajes de contacto."),
+]
 
 
 @pytest.fixture(autouse=True)
@@ -85,11 +94,12 @@ def roles_catalogo(db):
     Las pruebas transaccionales hacen flush y los vacían; esta fixture los
     repone. Tolerante a esquemas intermedios durante pruebas de migraciones.
     """
-    for codigo, nombre in ROLES_BASE:
+    for codigo, nombre, descripcion in ROLES_BASE:
         try:
             with transaction.atomic():
                 Rol.objects.get_or_create(
-                    codigo=codigo, defaults={"nombre": nombre}
+                    codigo=codigo,
+                    defaults={"nombre": nombre, "descripcion": descripcion},
                 )
         except (DatabaseError, TypeError):
             # Esquema intermedio (p. ej. sin columna codigo) o tabla inexistente.
@@ -159,6 +169,16 @@ def rol_admin(db):
         return Rol.objects.create(codigo="administrador", nombre="administrador")
 
 
+@pytest.fixture
+def rol_soporte(db):
+    return Rol.objects.get(codigo="soporte")
+
+
+@pytest.fixture
+def rol_gestor_inventario(db):
+    return Rol.objects.get(codigo="gestor_inventario")
+
+
 # ── Usuarios ─────────────────────────────────────────────────────────────────
 
 @pytest.fixture
@@ -182,6 +202,41 @@ def usuario_admin(db, rol_admin):
     )
     u.roles.add(rol_admin)
     return u
+
+
+@pytest.fixture
+def usuario_soporte(db, rol_soporte):
+    u = Usuario.objects.create_user(
+        username="soporte_test", password="pass1234!", email="soporte@test.com"
+    )
+    u.roles.add(rol_soporte)
+    return u
+
+
+@pytest.fixture
+def usuario_gestor_inventario(db, rol_gestor_inventario):
+    u = Usuario.objects.create_user(
+        username="gestor_test", password="pass1234!", email="gestor@test.com"
+    )
+    u.roles.add(rol_gestor_inventario)
+    return u
+
+
+@pytest.fixture
+def usuario_staff_sin_rol(db):
+    return Usuario.objects.create_user(
+        username="staff_sin_rol_test",
+        password="pass1234!",
+        email="staff@test.com",
+        is_staff=True,
+    )
+
+
+@pytest.fixture
+def usuario_sin_rol(db):
+    return Usuario.objects.create_user(
+        username="sin_rol_test", password="pass1234!", email="sinrol@test.com"
+    )
 
 
 # ── Catálogo ─────────────────────────────────────────────────────────────────
