@@ -114,3 +114,13 @@ def pedido_con_item(db, usuario_cliente, oferta):
         precio_unitario=oferta.precio_vigente,
     )
     return pedido
+
+
+@pytest.fixture(autouse=True)
+def cache_aislada():
+    """Cada prueba empieza y termina con la caché de LocMem vacía."""
+    from django.core.cache import cache
+
+    cache.clear()
+    yield
+    cache.clear()
