@@ -20,6 +20,7 @@ from rest_framework.exceptions import (
 from rest_framework.response import Response
 from rest_framework.views import exception_handler
 
+from .observabilidad import request_id_actual
 from .throttling import BloqueoLogin
 
 logger = logging.getLogger(__name__)
@@ -117,7 +118,19 @@ def api_exception_handler(exc, context):
 
     response = exception_handler(exc, context)
     if response is None:
-        logger.exception("Error no controlado en la API", exc_info=exc)
+        peticion = (context or {}).get("request")
+        logger.exception(
+            "Error no controlado en la API",
+            exc_info=exc,
+            extra={
+                "evento": "api_error_no_controlado",
+                "request_id": request_id_actual(),
+                "metodo": getattr(peticion, "method", None),
+                "ruta": getattr(peticion, "path", None),
+                "status_code": 500,
+                "ip": getattr(peticion, "META", {}).get("REMOTE_ADDR"),
+            },
+        )
         return respuesta_error(
             "error_interno",
             "Ocurrió un error interno al procesar la solicitud.",

@@ -1,12 +1,49 @@
 from pathlib import Path
+
 import environ
+from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.Env(DEBUG=(bool, False))
 environ.Env.read_env(BASE_DIR / ".env")
 
-SECRET_KEY = env("SECRET_KEY")
+
+def _validar_secret_key(valor: str, debug: bool) -> str:
+    """Rechaza claves vacías o de ejemplo antes de arrancar en producción."""
+    clave = (valor or "").strip()
+    if not clave:
+        raise ImproperlyConfigured(
+            "SECRET_KEY está vacía. Genera una clave real con: openssl rand -hex 32"
+        )
+
+    # La suite usa settings_test.py con claves cortas a propósito; el módulo
+    # de producción sí exige una clave con entropía suficiente para `check --deploy`.
+    es_test = env("DJANGO_SETTINGS_MODULE", default="").endswith("settings_test")
+    if debug or es_test:
+        return clave
+
+    ejemplos = {
+        "cambia-esto-por-una-clave-larga-y-aleatoria",
+        "replace-with-a-long-random-secret-key",
+        "test-key",
+        "secret",
+        "changeme",
+    }
+    if (
+        clave in ejemplos
+        or clave.startswith("django-insecure-")
+        or len(clave) < 50
+        or len(set(clave)) < 5
+    ):
+        raise ImproperlyConfigured(
+            "SECRET_KEY es de ejemplo o demasiado débil para producción. "
+            "Genera una clave real con: openssl rand -hex 32"
+        )
+    return clave
+
+
+SECRET_KEY = _validar_secret_key(env("SECRET_KEY", default=""), env("DEBUG"))
 DEBUG = env("DEBUG")
 ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=["localhost", "127.0.0.1", "backend"])
 
@@ -42,6 +79,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    # Debe ir primero: cubre también a SecurityMiddleware y garantiza que
+    # todo log de la API tenga un request_id y toda respuesta lo devuelva.
+    "api.middleware.RequestIdMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",  # debe ir justo después de SecurityMiddleware
     # CORS debe ejecutarse antes de CommonMiddleware.
@@ -270,15 +310,72 @@ CORS_ALLOW_CREDENTIALS = True
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 USE_X_FORWARDED_HOST = env.bool("USE_X_FORWARDED_HOST", default=False)
 
-# Seguridad adicional en producción (no aplica en local con DEBUG=True).
-# En Docker el healthcheck interno viaja por HTTP, por eso SECURE_SSL_REDIRECT
-# se puede desactivar dentro del contenedor cuando TLS termina en el proxy.
-if not DEBUG:
-    SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=True)
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+# ── Endurecimiento HTTP y cookies ────────────────────────────────────────────
+# Detrás del proxy, Nginx/Render envían X-Forwarded-Proto: https, por lo que
+# SECURE_SSL_REDIRECT puede permanecer activo sin romper el tráfico legítimo.
+# El healthcheck interno envía esa misma cabecera (ver compose.yaml).
+# En desarrollo (`DEBUG=True`) se desactiva para no romper el runserver local.
+SECURE_SSL_REDIRECT = env.bool("SECURE_SSL_REDIRECT", default=not DEBUG)
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = env("SESSION_COOKIE_SAMESITE", default="Lax")
+CSRF_COOKIE_SAMESITE = env("CSRF_COOKIE_SAMESITE", default="Lax")
+SECURE_CONTENT_TYPE_NOSNIFF = True
+SECURE_REFERRER_POLICY = env("SECURE_REFERRER_POLICY", default="same-origin")
+X_FRAME_OPTIONS = "DENY"
+
+SECURE_HSTS_SECONDS = env.int("SECURE_HSTS_SECONDS", default=31536000)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = env.bool(
+    "SECURE_HSTS_INCLUDE_SUBDOMAINS", default=True
+)
+# `preload` solo debe enviarse cuando se piensa someter el dominio a la lista
+# de precarga de HSTS. Se puede desactivar con SECURE_HSTS_PRELOAD=False.
+SECURE_HSTS_PRELOAD = env.bool("SECURE_HSTS_PRELOAD", default=True)
+
+# ── Observabilidad (AZ-S2-BE-09) ─────────────────────────────────────────────
+# `LOG_LEVEL=DEBUG` en desarrollo; en producción se emite consola JSON por
+# stdout para que la plataforma (Docker/Render) lo recolecte sin archivos.
+LOG_LEVEL = env("LOG_LEVEL", default="INFO").upper()
+if LOG_LEVEL not in {"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"}:
+    LOG_LEVEL = "INFO"
+
+_FORMATTER = "json" if not DEBUG else "texto"
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "filters": {
+        "request_context": {"()": "api.observabilidad.RequestContextFilter"},
+    },
+    "formatters": {
+        "json": {"()": "api.observabilidad.JsonFormatter"},
+        "texto": {"()": "api.observabilidad.TextoFormatter"},
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "stream": "ext://sys.stdout",
+            "level": LOG_LEVEL,
+            "formatter": _FORMATTER,
+            "filters": ["request_context"],
+        }
+    },
+    "root": {"handlers": ["console"], "level": LOG_LEVEL},
+    "loggers": {
+        "django": {
+            "handlers": ["console"],
+            "level": "INFO",
+            "filters": ["request_context"],
+            "propagate": False,
+        },
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "filters": ["request_context"],
+            "propagate": False,
+        },
+    },
+}
 
 # django-unfold — paleta azul eléctrico (valores en RGB sin #)
 UNFOLD = {
