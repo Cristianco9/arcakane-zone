@@ -93,7 +93,7 @@ cp .env.example .env
 
 | Variable | Obligatoria | Descripción |
 |---|---|---|
-| `SECRET_KEY` | Sí | Clave secreta de Django. No debe compartirse ni versionarse. |
+| `SECRET_KEY` | Sí | Clave secreta de Django. No debe compartirse ni versionarse. Con `DEBUG=False` se exige una clave real de al menos 50 caracteres; la arranque falla si está vacía o es de ejemplo (`openssl rand -hex 32`). |
 | `DATABASE_URL` | Condicional | URL de conexión PostgreSQL, por ejemplo `postgres://usuario:clave@host:5432/db`. Si no se define, se usan las variables `POSTGRES_*`. |
 | `API_TOKEN_TTL_DAYS` | No | Días de vigencia de los tokens de API; por defecto `7` (mínimo `1`). |
 | `POSTGRES_DB` | Condicional | Nombre de la base de datos cuando se usa el fallback de Docker Compose. |
@@ -105,8 +105,12 @@ cp .env.example .env
 | `ALLOWED_HOSTS` | No | Lista separada por comas. Por defecto `localhost,127.0.0.1,backend`. |
 | `CSRF_TRUSTED_ORIGINS` | No | Orígenes permitidos para CSRF. En Render se agrega automáticamente el host público. |
 | `CORS_ALLOWED_ORIGINS` | No | Orígenes permitidos para CORS (lista separada por comas). Solo hace falta si el frontend llama a la API sin el proxy `/api`. |
-| `SECURE_SSL_REDIRECT` | No | Fuerza HTTPS cuando `DEBUG=False`; por defecto `True`. En Docker se pone `False` porque TLS termina en el proxy. |
+| `SECURE_SSL_REDIRECT` | No | Fuerza HTTPS cuando `DEBUG=False`; por defecto `True` en producción y `False` en desarrollo. El proxy debe enviar `X-Forwarded-Proto: https`. |
 | `USE_X_FORWARDED_HOST` | No | Usa `X-Forwarded-Host` detrás de un proxy; por defecto `False`. |
+| `SECURE_REFERRER_POLICY` | No | Política de `Referrer-Policy`; por defecto `same-origin`. |
+| `SESSION_COOKIE_SAMESITE` | No | Política `SameSite` de la cookie de sesión; por defecto `Lax`. |
+| `SECURE_HSTS_PRELOAD` | No | Añade `preload` a HSTS; por defecto `True`. Desactívalo si el dominio no se va a someter a la lista de precarga. |
+| `LOG_LEVEL` | No | Nivel de logs (`INFO` por defecto). Con `DEBUG=False` se emite JSON en `stdout`. |
 | `RENDER_EXTERNAL_HOSTNAME` | No | La define Render; se agrega a `ALLOWED_HOSTS` y `CSRF_TRUSTED_ORIGINS`. |
 | `AWS_ACCESS_KEY_ID` | No | Si se define, activa almacenamiento S3 para medios. |
 | `AWS_SECRET_ACCESS_KEY` | No | Credencial S3. |
@@ -198,7 +202,8 @@ SQLite en memoria, por lo que la suite es independiente del entorno.
 ## API REST
 
 - **Base:** `/api/v1/` (raíz navegable en `GET /api/v1/`).
-- **Salud:** `GET /api/v1/health/`.
+- **Salud:** `GET /api/v1/health/` (*liveness*) y `GET /api/v1/health/ready/` (*readiness*, consulta la BD y responde `503` si falla).
+- **Trazabilidad:** cada respuesta `/api/` devuelve `X-Request-ID` (se acepta la cabecera del cliente); el mismo valor se incluye en los logs JSON de producción y en los errores `500`.
 - **Autenticación:** token propio con vencimiento
   (`Authorization: Token <clave>`) o sesión de Django con `X-CSRFToken`.
   Login y registro devuelven `token` y `expires_at`; existen
@@ -237,9 +242,11 @@ El blueprint está en la raíz del repositorio: [`../render.yaml`](../render.yam
 - `rootDir: backend`: Render ejecuta los comandos dentro de esta carpeta.
 - Build: `./build.sh`.
   - Instala `requirements.txt`.
+  - Ejecuta `python manage.py check --deploy`.
   - Ejecuta `collectstatic --no-input`.
   - Ejecuta `migrate`.
 - Start: `gunicorn arkane_zone.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120`.
+- Healthcheck: `healthCheckPath: /api/v1/health/ready/`.
 - Estáticos: WhiteNoise con `CompressedManifestStaticFilesStorage`.
 - Variables sensibles: `SECRET_KEY`, `DATABASE_URL` y `ALLOWED_HOSTS` se configuran manualmente en Render (`sync: false`).
 
@@ -247,9 +254,10 @@ El blueprint está en la raíz del repositorio: [`../render.yaml`](../render.yam
 
 - **Medios:** si no se configuran las variables `AWS_*`, las portadas y fotos se guardan en el sistema de archivos local de Render, que es efímero. Además, `/media/` solo se sirve con `DEBUG=True`. Para producción se debe configurar S3/Supabase Storage o aceptar explícitamente la limitación.
 - **Correo:** `EMAIL_BACKEND` está fijado al backend de consola. El reseteo de contraseña no envía correos reales y los enlaces quedan en los logs. Configurar SMTP antes de habilitar recuperación de contraseña en producción.
-- **Proxy HTTPS:** `SECURE_PROXY_SSL_HEADER` está configurado para confiar en `X-Forwarded-Proto`. En Docker, `SECURE_SSL_REDIRECT` se desactiva dentro del contenedor porque TLS termina en el proxy inverso; el healthcheck interno usa HTTP.
+- **Proxy HTTPS:** `SECURE_PROXY_SSL_HEADER` está configurado para confiar en `X-Forwarded-Proto`. Con `DEBUG=False`, `SECURE_SSL_REDIRECT` queda activo; el proxy (y el healthcheck interno de Compose) debe enviar esa cabecera con valor `https`.
+- **Readiness:** `healthCheckPath` de Render y el healthcheck de Compose apuntan a `/api/v1/health/ready/`; no a `/health/`.
 - **Migraciones:** actualmente se ejecutan durante el build. Evaluar un `preDeployCommand` antes de un despliegue con más de una instancia.
-- **Validación:** ejecutar `python manage.py check --deploy` antes de cada despliegue.
+- **Validación:** `build.sh` y la CI ejecutan `python manage.py check --deploy` con `DEBUG=False`; debe terminar sin advertencias.
 
 ## Convivencia con el frontend
 

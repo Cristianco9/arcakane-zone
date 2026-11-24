@@ -192,7 +192,7 @@ Toda la configuración está centralizada en el `.env` de la raíz. El Compose n
 |---|---|
 | Proyecto | `COMPOSE_PROJECT_NAME`, `IMAGE_TAG`, `TZ`, `RESTART_POLICY`, `PROD_RESTART_POLICY` |
 | Healthchecks | `HEALTHCHECK_INTERVAL`, `HEALTHCHECK_TIMEOUT`, `HEALTHCHECK_RETRIES`, `HEALTHCHECK_START_PERIOD`, `BACKEND_HEALTHCHECK_START_PERIOD`, `FRONTEND_HEALTHCHECK_START_PERIOD`, `PGADMIN_HEALTHCHECK_START_PERIOD` |
-| Backend | `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `CORS_ALLOWED_ORIGINS`, `API_TOKEN_TTL_DAYS`, `SECURE_SSL_REDIRECT`, `USE_X_FORWARDED_HOST`, `BACKEND_HOST`, `BACKEND_PORT`, `BACKEND_PUBLISHED_PORT`, `BACKEND_WORKERS`, `BACKEND_TIMEOUT`, `RUN_MIGRATIONS`, `COLLECTSTATIC`, `SEED_CATALOGO` |
+| Backend | `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `CORS_ALLOWED_ORIGINS`, `API_TOKEN_TTL_DAYS`, `SECURE_SSL_REDIRECT`, `USE_X_FORWARDED_HOST`, `SECURE_REFERRER_POLICY`, `SESSION_COOKIE_SAMESITE`, `SECURE_HSTS_PRELOAD`, `LOG_LEVEL`, `BACKEND_HOST`, `BACKEND_PORT`, `BACKEND_PUBLISHED_PORT`, `BACKEND_WORKERS`, `BACKEND_TIMEOUT`, `RUN_MIGRATIONS`, `COLLECTSTATIC`, `SEED_CATALOGO` |
 | PostgreSQL | `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_PUBLISHED_PORT` |
 | pgAdmin | `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD`, `PGADMIN_PORT`, `PGADMIN_PUBLISHED_PORT`, `PGADMIN_MASTER_PASSWORD_REQUIRED` |
 | Frontend | `FRONTEND_PORT`, `FRONTEND_PUBLISHED_PORT`, `VITE_API_BASE_URL` |
@@ -202,6 +202,13 @@ Los contadores de la API usan una tabla de PostgreSQL (`django_cache`) creada
 automáticamente por el entrypoint con `createcachetable`; para usar Redis
 define `REDIS_URL` (requiere el paquete `redis`). Las respuestas `429` llevan
 cabecera `Retry-After`; el contrato está en [`docs/api/API.md`](docs/api/API.md).
+
+En producción los logs de la API son JSON en `stdout` (`LOG_LEVEL=INFO` por
+defecto) e incluyen `X-Request-ID`, método, ruta, estado, duración, IP y usuario.
+La clave se devuelve en cada respuesta y se registra también en los errores
+`500`. `backend/build.sh` ejecuta `python manage.py check --deploy` antes de
+desplegar y el workflow de CI `.github/workflows/backend.yml` ejecuta `pytest` y
+ese mismo check con `DEBUG=False` y una clave sintética válida.
 
 Los valores de `.env.example` son ficticios y solo ilustran el formato. En producción usa secretos reales gestionados fuera del repositorio.
 
@@ -304,14 +311,15 @@ El override de producción:
 
 - Ejecuta el backend con **Gunicorn** (workers y timeout configurables).
 - Sirve el frontend compilado con **Nginx oficial**; los procesos *worker* corren como usuario no privilegiado.
-- Fuerza `DEBUG=False` y mantiene `SECURE_SSL_REDIRECT=False` dentro del contenedor para que el healthcheck HTTP funcione detrás de un proxy TLS.
+- Fuerza `DEBUG=False`, mantiene activas las redirecciones HTTPS y confía en `X-Forwarded-Proto`; el healthcheck interno envía esa cabecera para no ser redirigido.
+- Usa `/api/v1/health/ready/` como healthcheck: verifica la base de datos y devuelve `503` si no responde.
 - Usa `restart: always`.
 
 Antes de usarlo:
 
 1. Define `DJANGO_DEBUG=False` y secretos fuertes en `.env`.
 2. Agrega tu dominio a `DJANGO_ALLOWED_HOSTS` y `DJANGO_CSRF_TRUSTED_ORIGINS`. Si el frontend consume la API sin el proxy `/api`, agrégalo también a `CORS_ALLOWED_ORIGINS`.
-3. Termina TLS en un proxy inverso externo (Nginx, Caddy, balanceador cloud).
+3. Termina TLS en un proxy inverso externo (Nginx, Caddy, balanceador cloud) y verifica que reenvíe `X-Forwarded-Proto: https`; es obligatorio con `SECURE_SSL_REDIRECT=True`.
 4. Para secretos de producción, usa **Docker secrets** (Swarm) o el gestor de secretos de tu plataforma; no los guardes en `.env` versionado ni en el repositorio.
 5. **Medios:** con `DEBUG=False` Django no sirve `/media/`. Configura S3/Supabase Storage (variables `AWS_*`) o sirve el volumen `backend_media` desde tu proxy inverso.
 6. **pgAdmin:** en producción se exige una *master password* adicional en el primer acceso.
@@ -376,6 +384,7 @@ Comprobado en un entorno limpio con Docker Compose:
 - `GET /` del backend responde `200`.
 - `GET /` del frontend responde `200`.
 - `GET /api/v1/health/` a través del frontend responde `200` (proxy interno hacia `backend` conservando `/api`).
+- `GET /api/v1/health/ready/` responde `200` con la BD disponible y `503` si se detiene `db`.
 - `GET /misc/ping` de pgAdmin responde `200` desde dentro del contenedor.
 - Conectividad backend → PostgreSQL verificada con `manage.py shell`.
 - Persistencia verificada: se creó un registro, se ejecutó `docker compose down` (sin `-v`), se volvió a levantar el stack y el registro seguía presente.

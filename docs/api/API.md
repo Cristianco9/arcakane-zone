@@ -6,7 +6,7 @@ en sus rutas de siempre.
 
 - **Base:** `/api/v1/`
 - **Raíz navegable:** `GET /api/v1/` (devuelve las URLs de todos los recursos)
-- **Salud:** `GET /api/v1/health/`
+- **Salud:** `GET /api/v1/health/` (*liveness*) y `GET /api/v1/health/ready/` (*readiness*)
 - **Formato:** JSON con UTF-8 y barra final obligatoria en las rutas.
 - **Postman:** [`Arcakane_Zone.postman_collection.json`](./Arcakane_Zone.postman_collection.json)
   incluye todos los endpoints con credenciales demo y variables automáticas.
@@ -19,6 +19,27 @@ y se conservaron todos los existentes. Los campos históricos marcados como
 *deprecated* siguen devolviendo un único valor determinista; las listas nuevas
 son la forma preferida. El sobre de respuesta y los códigos HTTP de esta guía
 no cambian.
+
+## Salud y trazabilidad
+
+| Ruta | Uso | Respuesta correcta | Respuesta con fallo |
+|---|---|---|---|
+| `GET /api/v1/health/` | *Liveness*: el proceso responde | `200 {"status":"ok","version":"v1"}` | — |
+| `GET /api/v1/health/ready/` | *Readiness*: la base de datos responde | `200 {"status":"ready","database":"ok","version":"v1"}` | `503 bd_no_disponible` |
+
+`health/ready/` ejecuta `SELECT 1` contra la conexión real de Django. Es pública
+y no usa autenticación ni *throttling*: si la base de datos cae, esos mecanismos
+no deben convertir el healthcheck en un `500` y ocultar la causa. Docker Compose
+y Render la usan como healthcheck; cuando la BD no responde, el servicio se
+marca no saludable y no recibe tráfico.
+
+Todas las respuestas bajo `/api/` incluyen la cabecera `X-Request-ID`. Si el
+cliente envía un `X-Request-ID` válido, se reutiliza; si no, se genera un UUID.
+Ese mismo valor se registra en los logs de la petición, junto con método, ruta,
+código de estado, duración, IP y usuario autenticado. Los errores `500` se
+registran con ese contexto para poder correlacionar el log con la petición. En
+producción (`DEBUG=False`) los logs son JSON en `stdout`; en desarrollo son texto.
+El nivel se controla con `LOG_LEVEL` (`INFO` por defecto).
 
 ## Autenticación y autorización
 
@@ -73,6 +94,7 @@ abajo. Las reglas efectivas por ruta y método son:
 |---|---|---|---|---|---|
 | `/api/v1/` | público | público | público | público |  |
 | `/api/v1/health/` | público | público | público | público |  |
+| `/api/v1/health/ready/` | público | público | público | público |  |
 | `/api/v1/{ruta}` | público | público | público | público | JSON 404 |
 | `/api/v1/auth/registro/` | público | público | público | público |  |
 | `/api/v1/auth/login/` | público | público | público | público |  |
