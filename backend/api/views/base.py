@@ -31,6 +31,10 @@ class ApiRootView(APIView):
                 "pagos": url("pago-list"),
                 "ventas": url("venta-list"),
             },
+            "inventario": {
+                "movimientos": url("movimiento-inventario-list"),
+                "ajustes": url("inventario-ajuste"),
+            },
             "cuentas": {
                 "registro": url("auth-registro"),
                 "login": url("auth-login"),

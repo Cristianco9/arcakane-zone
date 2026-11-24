@@ -26,6 +26,7 @@ from .views.catalogo import (
     PlataformaViewSet,
     VideojuegoViewSet,
 )
+from .views.inventario import AjusteInventarioView, MovimientoInventarioViewSet
 from .views.pagos import PagoViewSet, VentaViewSet
 from .views.pedidos import PedidoViewSet
 from .views.reportes import (
@@ -43,6 +44,11 @@ router.register("catalogo/plataformas", PlataformaViewSet, basename="plataforma"
 router.register("catalogo/generos", GeneroViewSet, basename="genero")
 router.register("catalogo/videojuegos", VideojuegoViewSet, basename="videojuego")
 router.register("catalogo/ofertas", OfertaVideojuegoViewSet, basename="oferta")
+router.register(
+    "inventario/movimientos",
+    MovimientoInventarioViewSet,
+    basename="movimiento-inventario",
+)
 router.register("pedidos", PedidoViewSet, basename="pedido")
 router.register("pagos", PagoViewSet, basename="pago")
 router.register("ventas", VentaViewSet, basename="venta")
@@ -71,6 +77,12 @@ urlpatterns = [
         "carrito/items/<int:pk>/",
         CarritoItemDetalleView.as_view(),
         name="carrito-item-detalle",
+    ),
+    # Inventario (solo administración)
+    path(
+        "inventario/ajustes/",
+        AjusteInventarioView.as_view(),
+        name="inventario-ajuste",
     ),
     # Reportes (solo staff)
     path("reportes/dashboard/", DashboardView.as_view(), name="reporte-dashboard"),

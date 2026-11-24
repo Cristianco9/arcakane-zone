@@ -310,6 +310,36 @@ def intento_aprobado(db, pedido_con_item):
 
 # ── Inventario (AZ-S1-14) ──────────────────────────────────────────────────────
 
+TIPOS_INVENTARIO = [
+    ("ENTRADA", "Entrada", "entrada"),
+    ("SALIDA", "Salida", "salida"),
+    ("AJUSTE", "Ajuste", "ajuste"),
+]
+MOTIVOS_INVENTARIO = [
+    ("VENTA", "Venta"),
+    ("DEVOLUCION", "Devolución"),
+    ("AJUSTE_FISICO", "Ajuste físico"),
+    ("CARGA_INICIAL", "Carga inicial"),
+]
+
+
+@pytest.fixture(autouse=True)
+def catalogos_inventario(db):
+    """Siembra idempotente de tipos y motivos del libro mayor."""
+    try:
+        with transaction.atomic():
+            for codigo, nombre, naturaleza in TIPOS_INVENTARIO:
+                TipoMovimientoInventario.objects.get_or_create(
+                    codigo=codigo,
+                    defaults={"nombre": nombre, "naturaleza": naturaleza},
+                )
+            for codigo, nombre in MOTIVOS_INVENTARIO:
+                MotivoMovimientoInventario.objects.get_or_create(
+                    codigo=codigo, defaults={"nombre": nombre}
+                )
+    except DatabaseError:
+        pass
+
 
 @pytest.fixture
 def tipo_entrada(db):
@@ -353,4 +383,32 @@ def movimiento_entrada(oferta, tipo_entrada):
         saldo_anterior=10,
         saldo_posterior=15,
         clave_idempotencia=f"test-entrada-{uuid.uuid4()}",
+    )
+
+
+@pytest.fixture
+def motivo_ajuste_fisico(db):
+    return MotivoMovimientoInventario.objects.get_or_create(
+        codigo="AJUSTE_FISICO", defaults={"nombre": "Ajuste físico"}
+    )[0]
+
+
+@pytest.fixture
+def motivo_carga_inicial(db):
+    return MotivoMovimientoInventario.objects.get_or_create(
+        codigo="CARGA_INICIAL", defaults={"nombre": "Carga inicial"}
+    )[0]
+
+
+@pytest.fixture
+def movimiento_salida(oferta, tipo_salida, motivo_venta):
+    """Salida de 2 unidades coherente con el stock inicial de la oferta."""
+    return MovimientoInventarioOfertaVideojuego.objects.create(
+        oferta=oferta,
+        tipo_movimiento=tipo_salida,
+        motivo=motivo_venta,
+        cantidad=2,
+        saldo_anterior=10,
+        saldo_posterior=8,
+        clave_idempotencia=f"test-salida-{uuid.uuid4()}",
     )

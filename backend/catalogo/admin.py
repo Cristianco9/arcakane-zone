@@ -1,5 +1,9 @@
+from uuid import uuid4
+
 from django.contrib import admin
 from unfold.admin import ModelAdmin, TabularInline
+
+from api.inventario_service import registrar_ajuste
 
 from .models import (
     Categoria,
@@ -17,6 +21,27 @@ from .models import (
     VideojuegoGenero,
     VideojuegoIdioma,
 )
+
+
+def _aplicar_delta_stock(request, oferta_id, delta, carga_inicial=False):
+    """Enruta un cambio de stock del admin por el servicio del libro mayor."""
+    if delta == 0:
+        return
+    oferta = OfertaVideojuego.objects.get(pk=oferta_id)
+    usuario = request.user if getattr(request.user, "is_authenticated", False) else None
+    registrar_ajuste(
+        oferta=oferta,
+        cantidad=delta,
+        motivo_codigo="CARGA_INICIAL" if carga_inicial else "AJUSTE_FISICO",
+        usuario=usuario,
+        nota=(
+            "Carga inicial de stock desde el admin"
+            if carga_inicial
+            else "Ajuste de stock desde el admin"
+        ),
+        clave_idempotencia=f"admin-stock-{uuid4().hex}",
+        carga_inicial=carga_inicial,
+    )
 
 
 @admin.register(Categoria)
@@ -157,6 +182,35 @@ class VideojuegoAdmin(ModelAdmin):
             )
         )
 
+    def save_formset(self, request, form, formset, change):
+        # El inline de ofertas permite editar stock: se guarda con Django y se
+        # redirige el delta por el ledger para que quede un solo movimiento.
+        if getattr(formset, "model", None) is not OfertaVideojuego:
+            return super().save_formset(request, form, formset, change)
+
+        anteriores = {}
+        for inline_form in formset.forms:
+            if inline_form.instance.pk and "stock" in (inline_form.changed_data or []):
+                anteriores[inline_form.instance.pk] = (
+                    OfertaVideojuego.objects.values_list("stock", flat=True).get(
+                        pk=inline_form.instance.pk
+                    )
+                )
+
+        super().save_formset(request, form, formset, change)
+
+        for oferta in getattr(formset, "new_objects", []):
+            if oferta.stock:
+                deseado = oferta.stock
+                OfertaVideojuego.objects.filter(pk=oferta.pk).update(stock=0)
+                _aplicar_delta_stock(request, oferta.pk, deseado, carga_inicial=True)
+
+        for pk, anterior in anteriores.items():
+            actual = OfertaVideojuego.objects.values_list("stock", flat=True).get(pk=pk)
+            if actual != anterior:
+                OfertaVideojuego.objects.filter(pk=pk).update(stock=anterior)
+                _aplicar_delta_stock(request, pk, actual - anterior)
+
     @admin.display(description="Categorías")
     def categorias_lista(self, obj):
         return ", ".join(categoria.nombre for categoria in obj.categorias.all())
@@ -184,3 +238,24 @@ class OfertaVideojuegoAdmin(ModelAdmin):
     ]
     search_fields = ["sku", "videojuego__titulo"]
     list_editable = ["precio_vigente", "stock", "estado_publicacion"]
+
+    def save_model(self, request, obj, form, change):
+        # Tanto el formulario como el list_editable pasan por aquí. Se guarda
+        # el resto de campos con Django y el stock se aplica via ledger.
+        if change and obj.pk:
+            anterior = OfertaVideojuego.objects.values_list("stock", flat=True).get(
+                pk=obj.pk
+            )
+            deseado = obj.stock
+            if deseado != anterior:
+                obj.stock = anterior
+                super().save_model(request, obj, form, change)
+                _aplicar_delta_stock(request, obj.pk, deseado - anterior)
+                return
+        elif not change and obj.stock:
+            deseado = obj.stock
+            obj.stock = 0
+            super().save_model(request, obj, form, change)
+            _aplicar_delta_stock(request, obj.pk, deseado, carga_inicial=True)
+            return
+        super().save_model(request, obj, form, change)

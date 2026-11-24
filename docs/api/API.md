@@ -218,6 +218,67 @@ completó): `monto` conserva su nombre histórico y se mapea desde
 en `intentos_pago`. Los textos de `estado` (`aprobado`, `rechazado`,
 `pendiente`) también provienen del `codigo` del catálogo.
 
+### Inventario (solo administrador)
+
+| Método | Ruta | Notas |
+|---|---|---|
+| `GET` | `/api/v1/inventario/movimientos/` | Libro mayor completo; filtros y paginación |
+| `GET` | `/api/v1/inventario/movimientos/{id}/` | Detalle de un movimiento |
+| `POST` | `/api/v1/inventario/ajustes/` | Ajuste manual de stock |
+| `GET` | `/api/v1/catalogo/ofertas/{id}/movimientos/` | Trazabilidad de una oferta; `404` si no existe |
+
+Los movimientos son de solo lectura: `PUT`/`PATCH`/`DELETE` responden `405`
+con `error.code = metodo_no_permitido`. Los filtros comunes de la lista y de la
+trazabilidad son `oferta`, `tipo`, `motivo`, `pedido`, `usuario`, `desde` y
+`hasta`. `oferta`, `pedido` y `usuario` son IDs; `tipo` y `motivo` aceptan su
+`codigo` (`ENTRADA`, `SALIDA`, `VENTA`, `AJUSTE_FISICO`, …) o su ID. `desde` y
+`hasta` aceptan ISO 8601 con o sin hora (`2026-11-22T10:30:00Z`); si solo se da
+la fecha, `desde` es medianoche y `hasta` es el final del día. Un rango
+invertido o un filtro inválido responde `400` (`datos_invalidos`). El orden es
+siempre determinista: más reciente primero (`-fecha_hora`, `-pk`), con la misma
+paginación (`page`, `page_size`) del resto de la API.
+
+Ejemplo de elemento del historial:
+
+```json
+{
+  "id": 12,
+  "oferta": 3,
+  "oferta_sku": "AZ-0001-001",
+  "tipo": "ENTRADA",
+  "motivo": "AJUSTE_FISICO",
+  "cantidad": 3,
+  "unidad": "unidad",
+  "saldo_anterior": 10,
+  "saldo_posterior": 13,
+  "fecha_hora": "2026-11-22T15:30:00Z",
+  "usuario": "admin",
+  "usuario_responsable": 1,
+  "detalle_pedido": null,
+  "pedido": null,
+  "observacion": "Conteo de caja",
+  "clave_idempotencia": "clave-abc"
+}
+```
+
+El cuerpo del ajuste es `{ "oferta": 3, "cantidad": -2, "motivo": "AJUSTE_FISICO",
+"nota": "Merma" }`. `cantidad` es un entero distinto de cero: positivo suma
+(`ENTRADA`) y negativo resta (`SALIDA`); `nota` es opcional y se guarda como
+`observacion`. El usuario autenticado queda registrado como responsable. El
+encabezado opcional `Idempotency-Key` evita aplicar dos veces el mismo ajuste:
+repetir la clave devuelve el movimiento original sin volver a cambiar el stock.
+
+Un ajuste que dejaría el stock negativo responde `409` con
+`error.code = stock_insuficiente` y un mensaje claro; no se cambia el stock ni
+se crea el movimiento. Las validaciones de entrada responden `400` con
+`error.code = datos_invalidos` y el detalle por campo.
+
+Cada pago aprobado genera una `SALIDA` por línea con motivo `VENTA`, el detalle
+de pedido y el cliente como responsable; los cambios de stock desde el admin
+usan `AJUSTE_FISICO` (o `CARGA_INICIAL` al dar de alta una oferta). La
+cancelación de pedidos pendientes no modifica el stock y, por ello, no añade
+movimientos.
+
 ### Reportes (solo administrador)
 
 | Método | Ruta | Filtros |

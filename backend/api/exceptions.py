@@ -4,6 +4,7 @@ from typing import Any
 
 from django.db import IntegrityError
 from django.db.models.deletion import ProtectedError
+from django.http import Http404
 from rest_framework import status
 from rest_framework.exceptions import (
     APIException,
@@ -93,6 +94,8 @@ def _codigo_y_mensaje(exc) -> tuple[str, str]:
 
 def api_exception_handler(exc, context):
     """Convierte cualquier excepción en el sobre de error JSON de la API."""
+    if isinstance(exc, Http404):
+        exc = NotFound(str(exc))
     if isinstance(exc, ProtectedError):
         return respuesta_error(
             "conflicto",

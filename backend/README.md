@@ -118,6 +118,17 @@ python manage.py createsuperuser
 
 `seed_catalogo` crea roles, categorías, plataformas, géneros y 15 videojuegos de ejemplo. Es idempotente para los datos que ya existen.
 
+### Conciliación de inventario
+
+`verificar_inventario` es de solo lectura: compara `OfertaVideojuego.stock` con la suma de movimientos del libro mayor, imprime un resumen y las discrepancias (oferta, stock registrado, suma y diferencia), y termina con código distinto de cero si hay diferencias.
+
+```bash
+python manage.py verificar_inventario
+python manage.py verificar_inventario --oferta 12
+```
+
+La suma aplica `ENTRADA` (`+`), `SALIDA` (`-`) y `AJUSTE`/`CARGA_INICIAL` (fija el saldo de apertura o reconteo). Un stock inicial cargado fuera del libro mayor aparece como diferencia; el comando nunca corrige nada.
+
 Para un smoke test local con SQLite se puede usar una URL temporal, sin modificar `.env`:
 
 ```bash
@@ -182,8 +193,9 @@ SQLite en memoria, por lo que la suite es independiente del entorno.
   `{"success": false, "error": {"code", "message", "details"}}`.
 - **Paginación:** `?page=1&page_size=20`; búsqueda `?q=`; orden `?ordering=`.
 
-Recursos principales: catálogo, carrito, pedidos, pagos, ventas, reportes,
-soporte, usuarios y roles. El detalle de rutas, cuerpos y códigos de estado está
+Recursos principales: catálogo, carrito, pedidos, pagos, ventas, inventario
+(movimientos y ajustes), reportes, soporte, usuarios y roles. El detalle de
+rutas, cuerpos y códigos de estado está
 en [`docs/api/API.md`](../docs/api/API.md).
 
 ```bash
