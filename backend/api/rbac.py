@@ -86,6 +86,7 @@ def _simple(nombre, ruta, regla, nota=""):
 MATRIZ = [
     _simple("api-root", "", PUBLICO),
     _simple("api-health", "health/", PUBLICO),
+    _simple("api-health-ready", "health/ready/", PUBLICO),
     _simple("api-not-found", "{ruta}", PUBLICO, nota="JSON 404"),
     _simple("auth-registro", "auth/registro/", PUBLICO),
     _simple("auth-login", "auth/login/", PUBLICO),

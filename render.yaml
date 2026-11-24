@@ -5,6 +5,8 @@ services:
     rootDir: backend
     buildCommand: "./build.sh"
     startCommand: "gunicorn arkane_zone.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120"
+    # Readiness real: falla si la base de datos no responde (AZ-S2-BE-09).
+    healthCheckPath: /api/v1/health/ready/
     envVars:
       - key: PYTHON_VERSION
         value: 3.12.0
@@ -12,6 +14,8 @@ services:
         sync: false          # se configura manualmente en el panel de Render
       - key: DEBUG
         value: "False"
+      - key: LOG_LEVEL
+        value: INFO
       - key: DATABASE_URL
         sync: false          # se configura manualmente en el panel de Render
       - key: ALLOWED_HOSTS

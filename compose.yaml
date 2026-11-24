@@ -63,6 +63,10 @@ services:
       POSTGRES_PORT: ${POSTGRES_PORT:?POSTGRES_PORT is required}
       SECURE_SSL_REDIRECT: ${SECURE_SSL_REDIRECT:?SECURE_SSL_REDIRECT is required}
       USE_X_FORWARDED_HOST: ${USE_X_FORWARDED_HOST:?USE_X_FORWARDED_HOST is required}
+      SECURE_REFERRER_POLICY: ${SECURE_REFERRER_POLICY:-same-origin}
+      SESSION_COOKIE_SAMESITE: ${SESSION_COOKIE_SAMESITE:-Lax}
+      SECURE_HSTS_PRELOAD: ${SECURE_HSTS_PRELOAD:-True}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
       CACHE_TABLE: ${CACHE_TABLE:-django_cache}
       REDIS_URL: ${REDIS_URL:-}
       THROTTLE_NUM_PROXIES: ${THROTTLE_NUM_PROXIES:-0}
@@ -94,7 +98,7 @@ services:
           "CMD",
           "python",
           "-c",
-          "import urllib.request; urllib.request.urlopen('http://127.0.0.1:${BACKEND_PORT:?BACKEND_PORT is required}/api/v1/health/', timeout=5)",
+          "import urllib.request; req = urllib.request.Request('http://127.0.0.1:${BACKEND_PORT:?BACKEND_PORT is required}/api/v1/health/ready/', headers={'X-Forwarded-Proto': 'https'}); urllib.request.urlopen(req, timeout=5)",
         ]
       interval: ${HEALTHCHECK_INTERVAL:?HEALTHCHECK_INTERVAL is required}
       timeout: ${HEALTHCHECK_TIMEOUT:?HEALTHCHECK_TIMEOUT is required}

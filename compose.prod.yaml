@@ -5,8 +5,9 @@
 #   - DJANGO_DEBUG=False en .env
 #   - secretos fuertes y reales en .env (o Docker secrets, ver README)
 #   - DJANGO_ALLOWED_HOSTS con el dominio público
-#   - TLS terminado en un proxy inverso externo (SECURE_SSL_REDIRECT=False
-#     dentro del contenedor para que el healthcheck HTTP funcione)
+#   - TLS terminado en un proxy inverso externo que envía X-Forwarded-Proto;
+#     SECURE_SSL_REDIRECT permanece activo y el healthcheck interno envía
+#     esa cabecera al consultar /api/v1/health/ready/
 
 services:
   db:
@@ -31,7 +32,6 @@ services:
       ]
     environment:
       DEBUG: "False"
-      SECURE_SSL_REDIRECT: ${SECURE_SSL_REDIRECT:-False}
 
   frontend:
     restart: ${PROD_RESTART_POLICY:?PROD_RESTART_POLICY is required}

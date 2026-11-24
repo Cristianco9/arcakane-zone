@@ -1,10 +1,15 @@
-"""Vistas base de la API: raíz, healthcheck y rutas no encontradas."""
+"""Vistas base de la API: raíz, healthchecks y rutas no encontradas."""
+import logging
+
+from django.db import DatabaseError, connection
 from django.http import JsonResponse
 from rest_framework.permissions import AllowAny
 from rest_framework.reverse import reverse
 from rest_framework.views import APIView
 
-from ..exceptions import respuesta_exitosa
+from ..exceptions import respuesta_error, respuesta_exitosa
+
+logger = logging.getLogger(__name__)
 
 
 class ApiRootView(APIView):
@@ -55,7 +60,10 @@ class ApiRootView(APIView):
                 "inventario": url("reporte-inventario"),
                 "videojuegos": url("reporte-videojuegos"),
             },
-            "health": url("api-health"),
+            "health": {
+                "live": url("api-health"),
+                "ready": url("api-health-ready"),
+            },
         }
         return respuesta_exitosa(
             {"version": "v1", "recursos": recursos},
@@ -64,10 +72,43 @@ class ApiRootView(APIView):
 
 
 class HealthView(APIView):
+    """Liveness: solo confirma que el proceso de la API está respondiendo."""
+
     permission_classes = [AllowAny]
 
     def get(self, request):
         return respuesta_exitosa({"status": "ok", "version": "v1"})
+
+
+class HealthReadyView(APIView):
+    """Readiness: confirma que la base de datos está disponible.
+
+    No usa autenticación ni throttling: un fallo de BD en esos mecanismos
+    convertiría el healthcheck en un 500 y ocultaría la causa real.
+    """
+
+    permission_classes = [AllowAny]
+    authentication_classes = []
+    throttle_classes = []
+
+    def get(self, request):
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1")
+                cursor.fetchone()
+        except DatabaseError as exc:
+            logger.warning(
+                "health_ready: la base de datos no responde",
+                extra={"evento": "health_ready_fallo", "bd_error": str(exc)},
+            )
+            return respuesta_error(
+                "bd_no_disponible",
+                "La base de datos no está disponible.",
+                status_code=503,
+            )
+        return respuesta_exitosa(
+            {"status": "ready", "database": "ok", "version": "v1"}
+        )
 
 
 class ApiNotFoundView(APIView):

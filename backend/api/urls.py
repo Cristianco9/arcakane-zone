@@ -19,7 +19,7 @@ from .views.auth import (
     RegistroView,
     TokenRefreshView,
 )
-from .views.base import ApiNotFoundView, ApiRootView, HealthView
+from .views.base import ApiNotFoundView, ApiRootView, HealthReadyView, HealthView
 from .views.carrito import CarritoItemDetalleView, CarritoItemsView, CarritoView
 from .views.catalogo import (
     CategoriaViewSet,
@@ -61,6 +61,7 @@ router.register("roles", RolViewSet, basename="rol")
 urlpatterns = [
     path("", ApiRootView.as_view(), name="api-root"),
     path("health/", HealthView.as_view(), name="api-health"),
+    path("health/ready/", HealthReadyView.as_view(), name="api-health-ready"),
     # Autenticación y perfil
     path("auth/registro/", RegistroView.as_view(), name="auth-registro"),
     path("auth/login/", LoginView.as_view(), name="auth-login"),
