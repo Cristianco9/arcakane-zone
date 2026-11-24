@@ -102,6 +102,7 @@ Las respuestas `429` usan el sobre estándar con
 | `login` | `POST /auth/login/` | `10/min` | IP |
 | `registro` | `POST /auth/registro/` | `5/hour` | IP |
 | `contacto` | Creación de contactos y solicitudes de información | `5/hour` | IP |
+| `password_reset` | Solicitud y confirmación de restablecimiento | `5/hour` | IP |
 
 Ejemplo de respuesta `429`:
 
@@ -137,6 +138,7 @@ Django); con `0`, una cabecera falsificada no puede cambiar la clave.
 | HTTP | `code` habitual | Cuándo ocurre |
 |---|---|---|
 | `400` | `datos_invalidos` | Validación de entrada |
+| `400` | `token_invalido` | Enlace de restablecimiento inválido o vencido |
 | `401` | `no_autenticado` / `credenciales_invalidas` | Falta autenticación o login incorrecto |
 | `402` | `pago_rechazado` | La pasarela simulada rechazó el pago |
 | `403` | `permiso_denegado` | El usuario no tiene el rol requerido |
@@ -166,6 +168,8 @@ Django); con `0`, una cabecera falsificada no puede cambiar la clave.
 | `GET` | `/api/v1/auth/me/` | Perfil del usuario autenticado |
 | `PATCH`/`PUT` | `/api/v1/auth/me/` | Actualiza el perfil |
 | `POST` | `/api/v1/auth/me/password/` | `old_password`, `new_password`, `new_password_confirm` |
+| `POST` | `/api/v1/auth/password-reset/` | `email`; siempre `200` neutro |
+| `POST` | `/api/v1/auth/password-reset/confirm/` | `uid`, `token`, `new_password`, `new_password_confirm` |
 
 Respuesta de login y registro:
 
@@ -179,6 +183,66 @@ Respuesta de login y registro:
   "message": "Sesión iniciada correctamente."
 }
 ```
+
+### Recuperación de contraseña
+
+Solicitud (`POST /api/v1/auth/password-reset/`):
+
+```http
+POST /api/v1/auth/password-reset/
+Content-Type: application/json
+
+{"email": "cliente@test.com"}
+```
+
+Siempre devuelve `200` con el mismo sobre, exista o no la cuenta:
+
+```json
+{
+  "success": true,
+  "data": null,
+  "message": "Si la cuenta existe y está activa, enviamos un enlace para restablecer la contraseña."
+}
+```
+
+Solo se envía correo a cuentas activas con contraseña utilizable (una por
+cuenta si varias comparten el correo). Un correo con formato inválido sí da
+`400 datos_invalidos`. El enlace usa `FRONTEND_BASE_URL` más
+`PASSWORD_RESET_FRONTEND_PATH`; por defecto:
+`http://localhost:5173/restablecer-contrasena/{uid}/{token}`. El frontend debe
+tomar `uid` y `token` de la ruta y enviarlos a la confirmación.
+
+Confirmación (`POST /api/v1/auth/password-reset/confirm/`):
+
+```http
+POST /api/v1/auth/password-reset/confirm/
+Content-Type: application/json
+
+{
+  "uid": "MQ",
+  "token": "c1e9bc-abc...",
+  "new_password": "NuevaClave#2026",
+  "new_password_confirm": "NuevaClave#2026"
+}
+```
+
+- Éxito: `200`, sobre estándar y
+  `"message": "Contraseña restablecida correctamente."`. No inicia sesión y
+  revoca los tokens de API previos del usuario.
+- `uid` inválido, token manipulado o vencido: `400 token_invalido`, sin
+  distinguir la causa.
+- Contraseña débil o distinta de la confirmación: `400 datos_invalidos` con
+  `error.details` en `new_password` o `new_password_confirm`.
+
+El token es el generador estándar de Django: **un solo uso** (deja de valer al
+cambiar la contraseña) y vence a los `PASSWORD_RESET_TIMEOUT` segundos
+(`3600` por defecto, ~60 minutos). Ambos endpoints comparten el scope
+`password_reset` (`5/hour` por IP, `THROTTLE_RATE_PASSWORD_RESET`): al
+superarlo devuelven `429` con `Retry-After`. Además hay un tope silencioso de
+`PASSWORD_RESET_MAX_EMAILS_PER_HOUR` envíos por correo normalizado (`3` por
+defecto): al alcanzarse se sigue respondiendo el mismo `200` pero no se envía
+correo. El SMTP se configura con `EMAIL_*` y `DEFAULT_FROM_EMAIL`; sin
+`EMAIL_HOST` se usa el backend de consola en desarrollo.
 
 ### Catálogo
 

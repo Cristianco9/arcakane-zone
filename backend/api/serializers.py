@@ -23,6 +23,8 @@ from pagos.models import IntentoPago, Venta
 from pedidos.models import DetallePedido, EstadoPedido, Pedido
 from soporte.models import Contacto
 
+from .password_reset import TokenResetInvalido, resolver_usuario
+
 
 def _ordenados_por_nombre(gestor):
     """Ordena en Python para reutilizar el ``prefetch_related`` del viewset."""
@@ -755,6 +757,33 @@ class CambioPasswordSerializer(serializers.Serializer):
             )
         except Exception as exc:
             raise serializers.ValidationError({"new_password": list(exc.messages)}) from exc
+        return attrs
+
+
+class PasswordResetRequestSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+
+
+class PasswordResetConfirmSerializer(serializers.Serializer):
+    uid = serializers.CharField(required=False, allow_blank=True, trim_whitespace=False)
+    token = serializers.CharField(required=False, allow_blank=True, trim_whitespace=False)
+    new_password = serializers.CharField(write_only=True, trim_whitespace=False)
+    new_password_confirm = serializers.CharField(write_only=True, trim_whitespace=False)
+
+    def validate(self, attrs):
+        uid, token = attrs.get("uid"), attrs.get("token")
+        if not uid or not token:
+            raise TokenResetInvalido()
+        if attrs["new_password"] != attrs["new_password_confirm"]:
+            raise serializers.ValidationError(
+                {"new_password_confirm": "Las contraseñas nuevas no coinciden."}
+            )
+        usuario = resolver_usuario(uid, token)
+        try:
+            password_validation.validate_password(attrs["new_password"], usuario)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError({"new_password": list(exc.messages)}) from exc
+        attrs["usuario"] = usuario
         return attrs
 
 

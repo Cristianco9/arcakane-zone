@@ -54,3 +54,9 @@ THROTTLE_NUM_PROXIES = 0
 LOGIN_MAX_FAILED_ATTEMPTS = 1_000_000
 LOGIN_FAILURE_WINDOW_SECONDS = 900
 LOGIN_LOCKOUT_SECONDS = 900
+
+# Recuperación de contraseña: valores deterministas, sin depender del entorno.
+PASSWORD_RESET_TIMEOUT = 3600
+FRONTEND_BASE_URL = "http://localhost:5173"
+PASSWORD_RESET_FRONTEND_PATH = "/restablecer-contrasena/{uid}/{token}"
+PASSWORD_RESET_MAX_EMAILS_PER_HOUR = 3
