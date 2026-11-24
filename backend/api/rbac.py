@@ -224,6 +224,24 @@ MATRIZ = [
     ),
     _simple("usuario-list", "usuarios/", ROL_ADMIN),
     _simple("usuario-detail", "usuarios/{pk}/", ROL_ADMIN),
+    _simple(
+        "usuario-activar",
+        "usuarios/{pk}/activar/",
+        ROL_ADMIN,
+        nota="acción `activar`",
+    ),
+    _simple(
+        "usuario-desactivar",
+        "usuarios/{pk}/desactivar/",
+        ROL_ADMIN,
+        nota="acción `desactivar`",
+    ),
+    _simple(
+        "usuario-auditoria",
+        "usuarios/{pk}/auditoria/",
+        ROL_ADMIN,
+        nota="acción `auditoria`",
+    ),
     _simple("rol-list", "roles/", ROL_ADMIN),
     _simple("rol-detail", "roles/{pk}/", ROL_ADMIN),
 ]

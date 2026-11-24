@@ -4,8 +4,10 @@ Los serializadores concentran la validación de entrada. Las reglas de negocio
 que ya existen en ``pedidos.services`` y ``pagos.services`` se reutilizan tal
 cual para no duplicar comportamiento entre las vistas HTML y la API.
 """
+import re
+
 from django.contrib.auth import password_validation
-from django.core.exceptions import ObjectDoesNotExist
+from django.core.exceptions import ObjectDoesNotExist, ValidationError as DjangoValidationError
 from django.db import transaction
 from rest_framework import serializers
 
@@ -18,7 +20,7 @@ from catalogo.models import (
     VideojuegoCategoria,
     VideojuegoGenero,
 )
-from cuentas.models import Rol, Usuario
+from cuentas.models import AuditoriaCuenta, Rol, Usuario
 from inventario.models import MotivoMovimientoInventario, MovimientoInventarioOfertaVideojuego
 from pagos.models import IntentoPago, Venta
 from pedidos.models import DetallePedido, EstadoPedido, Pedido
@@ -621,6 +623,214 @@ class UsuarioSerializer(serializers.ModelSerializer):
     def get_rol_nombre(self, obj):
         primero = _primero_por_nombre(obj.roles)
         return primero.codigo if primero is not None else None
+
+
+class UsuarioAdminCreateSerializer(serializers.ModelSerializer):
+    """Alta de usuarios internos con contraseña y uno o más roles."""
+
+    password = serializers.CharField(write_only=True, trim_whitespace=False)
+    password_confirm = serializers.CharField(write_only=True, trim_whitespace=False)
+    roles = serializers.PrimaryKeyRelatedField(
+        queryset=Rol.objects.all(), many=True, required=False
+    )
+    rol = serializers.PrimaryKeyRelatedField(
+        queryset=Rol.objects.all(), required=False, write_only=True
+    )
+
+    class Meta:
+        model = Usuario
+        fields = [
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "telefono",
+            "direccion",
+            "roles",
+            "rol",
+            "password",
+            "password_confirm",
+        ]
+        extra_kwargs = {
+            "username": {"validators": []},
+            "first_name": {"required": False},
+            "last_name": {"required": False},
+            "telefono": {"required": False},
+            "direccion": {"required": False},
+        }
+
+    def validate_username(self, value):
+        if Usuario.objects.filter(username__iexact=value).exists():
+            raise serializers.ValidationError("Ya existe un usuario con ese nombre.")
+        return value
+
+    def validate_email(self, value):
+        if Usuario.objects.filter(email__iexact=value).exists():
+            raise serializers.ValidationError(
+                "Ya existe una cuenta con ese correo electrónico."
+            )
+        return value
+
+    def validate(self, attrs):
+        if attrs["password"] != attrs["password_confirm"]:
+            raise serializers.ValidationError(
+                {"password_confirm": "Las contraseñas no coinciden."}
+            )
+
+        if "roles" in attrs and "rol" in attrs:
+            raise serializers.ValidationError(
+                {"roles": "Usa 'roles' o 'rol', pero no ambos."}
+            )
+        if "rol" in attrs:
+            attrs["roles"] = [attrs.pop("rol")]
+        if not attrs.get("roles"):
+            raise serializers.ValidationError(
+                {"roles": "Debe asignar al menos un rol."}
+            )
+
+        candidato = Usuario(
+            username=attrs.get("username", ""),
+            email=attrs.get("email", ""),
+            first_name=attrs.get("first_name", ""),
+            last_name=attrs.get("last_name", ""),
+        )
+        try:
+            password_validation.validate_password(attrs["password"], candidato)
+        except DjangoValidationError as exc:
+            raise serializers.ValidationError(
+                {"password": list(exc.messages)}
+            ) from exc
+        return attrs
+
+
+class UsuarioAdminUpdateSerializer(serializers.ModelSerializer):
+    """Edición administrativa de datos, roles y estado (``is_active``)."""
+
+    roles = serializers.PrimaryKeyRelatedField(
+        queryset=Rol.objects.all(), many=True, required=False
+    )
+    rol = serializers.PrimaryKeyRelatedField(
+        queryset=Rol.objects.all(), required=False, write_only=True
+    )
+
+    class Meta:
+        model = Usuario
+        fields = [
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "telefono",
+            "direccion",
+            "is_active",
+            "roles",
+            "rol",
+        ]
+        extra_kwargs = {
+            "username": {"validators": [], "required": False},
+            "email": {"required": False},
+        }
+
+    def validate_username(self, value):
+        if (
+            Usuario.objects.filter(username__iexact=value)
+            .exclude(pk=self.instance.pk)
+            .exists()
+        ):
+            raise serializers.ValidationError("Ya existe un usuario con ese nombre.")
+        return value
+
+    def validate_email(self, value):
+        if (
+            Usuario.objects.filter(email__iexact=value)
+            .exclude(pk=self.instance.pk)
+            .exists()
+        ):
+            raise serializers.ValidationError(
+                "Ya existe una cuenta con ese correo electrónico."
+            )
+        return value
+
+    def validate(self, attrs):
+        if "roles" in attrs and "rol" in attrs:
+            raise serializers.ValidationError(
+                {"roles": "Usa 'roles' o 'rol', pero no ambos."}
+            )
+        if "rol" in attrs:
+            attrs["roles"] = [attrs.pop("rol")]
+        if "roles" in attrs and not attrs["roles"]:
+            raise serializers.ValidationError(
+                {"roles": "Debe asignar al menos un rol."}
+            )
+        return attrs
+
+
+class RolAdminSerializer(serializers.ModelSerializer):
+    """Escritura administrativa del catálogo de roles."""
+
+    class Meta:
+        model = Rol
+        fields = ["id", "codigo", "nombre", "descripcion", "activo"]
+        extra_kwargs = {
+            "codigo": {"validators": []},
+            "descripcion": {"required": False},
+            "activo": {"required": False},
+        }
+
+    def validate_codigo(self, value):
+        codigo = value.strip().lower()
+        if not re.fullmatch(r"[a-z][a-z0-9_]*", codigo):
+            raise serializers.ValidationError(
+                "El código debe empezar por una letra y usar solo letras "
+                "minúsculas, números y guiones bajos."
+            )
+        return codigo
+
+    def validate_nombre(self, value):
+        nombre = value.strip()
+        if not nombre:
+            raise serializers.ValidationError("El nombre no puede estar vacío.")
+        return nombre
+
+    def validate(self, attrs):
+        codigo = attrs.get("codigo", getattr(self.instance, "codigo", None))
+        nombre = attrs.get("nombre", getattr(self.instance, "nombre", None))
+        existentes = Rol.objects.all()
+        if self.instance is not None:
+            existentes = existentes.exclude(pk=self.instance.pk)
+        if codigo and existentes.filter(codigo__iexact=codigo).exists():
+            raise serializers.ValidationError(
+                {"codigo": "Ya existe un rol con ese código."}
+            )
+        if nombre and existentes.filter(nombre__iexact=nombre).exists():
+            raise serializers.ValidationError(
+                {"nombre": "Ya existe un rol con ese nombre."}
+            )
+        return attrs
+
+
+class AuditoriaCuentaSerializer(serializers.ModelSerializer):
+    actor_username = serializers.CharField(source="actor.username", read_only=True)
+    usuario_username = serializers.CharField(
+        source="usuario_afectado.username", read_only=True
+    )
+    accion_nombre = serializers.CharField(source="get_accion_display", read_only=True)
+
+    class Meta:
+        model = AuditoriaCuenta
+        fields = [
+            "id",
+            "accion",
+            "accion_nombre",
+            "actor",
+            "actor_username",
+            "usuario_afectado",
+            "usuario_username",
+            "detalles",
+            "direccion_ip",
+            "fecha_hora",
+        ]
+        read_only_fields = fields
 
 
 class PerfilSerializer(serializers.ModelSerializer):
