@@ -73,9 +73,12 @@ def test_roles_solo_para_administradores(usuario_cliente, usuario_admin):
 
     assert cliente.status_code == 403
     assert admin.status_code == 200
+    # Desde AZ-S2-BE-07 también se siembran los roles de negocio del RBAC.
     assert {r["nombre"] for r in admin.json()["data"]} == {
         "cliente",
         "administrador",
+        "gestor_inventario",
+        "soporte",
     }
 
 

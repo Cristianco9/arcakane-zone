@@ -74,8 +74,17 @@ def estados_catalogo(db):
 
 # ── Roles (AZ-S1-18) ─────────────────────────────────────────────────────────
 
-# Los nombres conservan el texto histórico expuesto por la API v1.
-ROLES_BASE = [("cliente", "cliente"), ("administrador", "administrador")]
+# Los nombres base conservan el texto histórico expuesto por la API v1.
+ROLES_BASE = [
+    ("cliente", "cliente", ""),
+    ("administrador", "administrador", ""),
+    (
+        "gestor_inventario",
+        "Gestor de inventario",
+        "Gestiona el catálogo y el libro mayor de inventario.",
+    ),
+    ("soporte", "Soporte", "Atiende y gestiona los mensajes de contacto."),
+]
 
 
 @pytest.fixture(autouse=True)
@@ -85,11 +94,12 @@ def roles_catalogo(db):
     Las pruebas transaccionales hacen flush y los vacían; esta fixture los
     repone. Tolerante a esquemas intermedios durante pruebas de migraciones.
     """
-    for codigo, nombre in ROLES_BASE:
+    for codigo, nombre, descripcion in ROLES_BASE:
         try:
             with transaction.atomic():
                 Rol.objects.get_or_create(
-                    codigo=codigo, defaults={"nombre": nombre}
+                    codigo=codigo,
+                    defaults={"nombre": nombre, "descripcion": descripcion},
                 )
         except (DatabaseError, TypeError):
             # Esquema intermedio (p. ej. sin columna codigo) o tabla inexistente.
@@ -159,6 +169,16 @@ def rol_admin(db):
         return Rol.objects.create(codigo="administrador", nombre="administrador")
 
 
+@pytest.fixture
+def rol_soporte(db):
+    return Rol.objects.get(codigo="soporte")
+
+
+@pytest.fixture
+def rol_gestor_inventario(db):
+    return Rol.objects.get(codigo="gestor_inventario")
+
+
 # ── Usuarios ─────────────────────────────────────────────────────────────────
 
 @pytest.fixture
@@ -182,6 +202,41 @@ def usuario_admin(db, rol_admin):
     )
     u.roles.add(rol_admin)
     return u
+
+
+@pytest.fixture
+def usuario_soporte(db, rol_soporte):
+    u = Usuario.objects.create_user(
+        username="soporte_test", password="pass1234!", email="soporte@test.com"
+    )
+    u.roles.add(rol_soporte)
+    return u
+
+
+@pytest.fixture
+def usuario_gestor_inventario(db, rol_gestor_inventario):
+    u = Usuario.objects.create_user(
+        username="gestor_test", password="pass1234!", email="gestor@test.com"
+    )
+    u.roles.add(rol_gestor_inventario)
+    return u
+
+
+@pytest.fixture
+def usuario_staff_sin_rol(db):
+    return Usuario.objects.create_user(
+        username="staff_sin_rol_test",
+        password="pass1234!",
+        email="staff@test.com",
+        is_staff=True,
+    )
+
+
+@pytest.fixture
+def usuario_sin_rol(db):
+    return Usuario.objects.create_user(
+        username="sin_rol_test", password="pass1234!", email="sinrol@test.com"
+    )
 
 
 # ── Catálogo ─────────────────────────────────────────────────────────────────
@@ -310,6 +365,36 @@ def intento_aprobado(db, pedido_con_item):
 
 # ── Inventario (AZ-S1-14) ──────────────────────────────────────────────────────
 
+TIPOS_INVENTARIO = [
+    ("ENTRADA", "Entrada", "entrada"),
+    ("SALIDA", "Salida", "salida"),
+    ("AJUSTE", "Ajuste", "ajuste"),
+]
+MOTIVOS_INVENTARIO = [
+    ("VENTA", "Venta"),
+    ("DEVOLUCION", "Devolución"),
+    ("AJUSTE_FISICO", "Ajuste físico"),
+    ("CARGA_INICIAL", "Carga inicial"),
+]
+
+
+@pytest.fixture(autouse=True)
+def catalogos_inventario(db):
+    """Siembra idempotente de tipos y motivos del libro mayor."""
+    try:
+        with transaction.atomic():
+            for codigo, nombre, naturaleza in TIPOS_INVENTARIO:
+                TipoMovimientoInventario.objects.get_or_create(
+                    codigo=codigo,
+                    defaults={"nombre": nombre, "naturaleza": naturaleza},
+                )
+            for codigo, nombre in MOTIVOS_INVENTARIO:
+                MotivoMovimientoInventario.objects.get_or_create(
+                    codigo=codigo, defaults={"nombre": nombre}
+                )
+    except DatabaseError:
+        pass
+
 
 @pytest.fixture
 def tipo_entrada(db):
@@ -353,4 +438,32 @@ def movimiento_entrada(oferta, tipo_entrada):
         saldo_anterior=10,
         saldo_posterior=15,
         clave_idempotencia=f"test-entrada-{uuid.uuid4()}",
+    )
+
+
+@pytest.fixture
+def motivo_ajuste_fisico(db):
+    return MotivoMovimientoInventario.objects.get_or_create(
+        codigo="AJUSTE_FISICO", defaults={"nombre": "Ajuste físico"}
+    )[0]
+
+
+@pytest.fixture
+def motivo_carga_inicial(db):
+    return MotivoMovimientoInventario.objects.get_or_create(
+        codigo="CARGA_INICIAL", defaults={"nombre": "Carga inicial"}
+    )[0]
+
+
+@pytest.fixture
+def movimiento_salida(oferta, tipo_salida, motivo_venta):
+    """Salida de 2 unidades coherente con el stock inicial de la oferta."""
+    return MovimientoInventarioOfertaVideojuego.objects.create(
+        oferta=oferta,
+        tipo_movimiento=tipo_salida,
+        motivo=motivo_venta,
+        cantidad=2,
+        saldo_anterior=10,
+        saldo_posterior=8,
+        clave_idempotencia=f"test-salida-{uuid.uuid4()}",
     )

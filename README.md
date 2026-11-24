@@ -116,6 +116,18 @@ curl -s -X POST http://localhost:5173/api/v1/auth/login/ \
 - Contrato completo: [`docs/api/API.md`](docs/api/API.md).
 - El frontend consulta `/api/v1/health/` para mostrar el estado de la API.
 
+El acceso por rol (RBAC) se rige por `Rol.codigo` (`administrador`,
+`gestor_inventario`, `soporte`, `cliente`), asignado con `UsuarioRol` o
+`usuario.roles.add(rol)`. `administrador`, `is_staff` e `is_superuser` pasan
+siempre; el catálogo es público en lectura y editable por administrador o
+`gestor_inventario`, el inventario y sus reportes permiten a esos dos roles,
+`soporte` gestiona los contactos y `cliente` solo lee los suyos. Una ruta
+protegida sin sesión responde `401 no_autenticado` y con sesión sin rol
+responde `403 permiso_denegado`. `gestor_inventario` y `soporte` los siembra la
+migración de datos `cuentas/0008_roles_rbac.py` y `seed_catalogo`; la matriz
+completa por método está en `docs/api/API.md` y su fuente única en
+`backend/api/rbac.py`.
+
 ### Registrar PostgreSQL en pgAdmin
 
 1. Abre <http://localhost:5050> e inicia sesión con `PGADMIN_DEFAULT_EMAIL` y `PGADMIN_DEFAULT_PASSWORD`.

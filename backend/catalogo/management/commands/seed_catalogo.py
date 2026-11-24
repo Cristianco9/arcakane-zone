@@ -2,6 +2,7 @@ from datetime import date
 
 from django.core.management.base import BaseCommand
 
+from api.rbac import ROLES_NUEVOS
 from catalogo.models import (
     Categoria,
     ClasificacionEdad,
@@ -82,11 +83,16 @@ class Command(BaseCommand):
 
     # ------------------------------------------------------------------
     def _seed_roles(self):
-        """Siembra idempotente de roles base alineada al código estable (AZ-S1-18)."""
+        """Siembra idempotente de roles base y de negocio (AZ-S1-18, AZ-S2-BE-07)."""
         creados = 0
-        for codigo, nombre in [("cliente", "Cliente"), ("administrador", "Administrador")]:
+        base = [("cliente", "Cliente", ""), ("administrador", "Administrador", "")]
+        filas = base + [
+            (rol["codigo"], rol["nombre"], rol["descripcion"]) for rol in ROLES_NUEVOS
+        ]
+        for codigo, nombre, descripcion in filas:
             _, nuevo = Rol.objects.get_or_create(
-                codigo=codigo, defaults={"nombre": nombre}
+                codigo=codigo,
+                defaults={"nombre": nombre, "descripcion": descripcion},
             )
             if nuevo:
                 creados += 1

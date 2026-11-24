@@ -3,6 +3,7 @@ import uuid
 
 from django.db import transaction
 
+from api.inventario_service import StockInsuficiente, registrar_movimiento
 from catalogo.models import OfertaVideojuego
 from pedidos.models import Pedido
 
@@ -31,6 +32,27 @@ def procesar_pago_simulado(pedido: Pedido) -> tuple[bool, str]:
     aprobado = random.random() < 0.9  # 90% de probabilidad de aprobación
     referencia = str(uuid.uuid4())[:8].upper()
 
+    if aprobado:
+        # Cada línea descuenta su stock y escribe SU movimiento en la misma
+        # transacción, con el cliente como responsable y trazabilidad al detalle.
+        try:
+            for detalle in detalles:
+                registrar_movimiento(
+                    oferta=ofertas[detalle.oferta_id],
+                    cantidad=detalle.cantidad,
+                    tipo_codigo="SALIDA",
+                    motivo_codigo="VENTA",
+                    usuario=pedido.cliente,
+                    detalle_pedido=detalle,
+                    clave_idempotencia=f"venta-detalle-{detalle.pk}",
+                    observacion=f"Venta del pedido #{pedido.pk}",
+                )
+        except StockInsuficiente as exc:
+            return False, str(exc)
+
+        pedido.estado_id = "pagado"
+        pedido.save(update_fields=["estado"])
+
     intento = IntentoPago.objects.create(
         pedido=pedido,
         importe=pedido.total,
@@ -40,15 +62,6 @@ def procesar_pago_simulado(pedido: Pedido) -> tuple[bool, str]:
     )
 
     if aprobado:
-        # Descontar stock de cada oferta
-        for detalle in detalles:
-            oferta = ofertas[detalle.oferta_id]
-            oferta.stock -= detalle.cantidad
-            oferta.save(update_fields=["stock"])
-
-        pedido.estado_id = "pagado"
-        pedido.save(update_fields=["estado"])
-
         Venta.objects.create(
             pedido=pedido, intento_aprobado=intento, total=pedido.total
         )

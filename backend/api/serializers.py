@@ -19,6 +19,7 @@ from catalogo.models import (
     VideojuegoGenero,
 )
 from cuentas.models import Rol, Usuario
+from inventario.models import MotivoMovimientoInventario, MovimientoInventarioOfertaVideojuego
 from pagos.models import IntentoPago, Venta
 from pedidos.models import DetallePedido, EstadoPedido, Pedido
 from soporte.models import Contacto
@@ -807,3 +808,67 @@ class SolicitudInformacionSerializer(serializers.Serializer):
     nombre = serializers.CharField(max_length=150)
     email = serializers.EmailField()
     telefono = serializers.CharField(max_length=20, required=False, allow_blank=True)
+
+
+# ── Inventario (AZ-S2-BE-03) ─────────────────────────────────────────────────
+
+class MovimientoInventarioSerializer(serializers.ModelSerializer):
+    """Movimiento del libro mayor; nunca se escribe desde la API."""
+
+    tipo = serializers.CharField(source="tipo_movimiento.codigo", read_only=True)
+    motivo = serializers.SerializerMethodField()
+    usuario = serializers.SerializerMethodField()
+    oferta_sku = serializers.CharField(source="oferta.sku", read_only=True)
+    pedido = serializers.SerializerMethodField()
+
+    class Meta:
+        model = MovimientoInventarioOfertaVideojuego
+        fields = [
+            "id",
+            "oferta",
+            "oferta_sku",
+            "tipo",
+            "motivo",
+            "cantidad",
+            "unidad",
+            "saldo_anterior",
+            "saldo_posterior",
+            "fecha_hora",
+            "usuario",
+            "usuario_responsable",
+            "detalle_pedido",
+            "pedido",
+            "observacion",
+            "clave_idempotencia",
+        ]
+        read_only_fields = fields
+
+    def get_motivo(self, obj):
+        return obj.motivo.codigo if obj.motivo_id else None
+
+    def get_usuario(self, obj):
+        return obj.usuario_responsable.username if obj.usuario_responsable_id else None
+
+    def get_pedido(self, obj):
+        return obj.detalle_pedido.pedido_id if obj.detalle_pedido_id else None
+
+
+class AjusteInventarioSerializer(serializers.Serializer):
+    """Cuerpo de ``POST /inventario/ajustes/``."""
+
+    oferta = serializers.PrimaryKeyRelatedField(queryset=OfertaVideojuego.objects.all())
+    cantidad = serializers.IntegerField()
+    motivo = serializers.SlugRelatedField(
+        slug_field="codigo",
+        queryset=MotivoMovimientoInventario.objects.filter(activo=True),
+        error_messages={
+            "does_not_exist": "El motivo no existe o no está activo.",
+            "incorrect_type": "El motivo debe ser su código (p. ej. AJUSTE_FISICO).",
+        },
+    )
+    nota = serializers.CharField(required=False, allow_blank=True, default="")
+
+    def validate_cantidad(self, valor):
+        if valor == 0:
+            raise serializers.ValidationError("La cantidad debe ser distinta de cero.")
+        return valor
