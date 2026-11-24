@@ -23,6 +23,13 @@ const ProductDetailPage = lazy(() =>
     default: module.ProductDetailPage,
   })),
 );
+import { authPaths } from "./features/auth/paths";
+
+const ResetPasswordPage = lazy(() =>
+  import("./features/auth/pages/ResetPasswordPage").then((module) => ({
+    default: module.ResetPasswordPage,
+  })),
+);
 
 export function App() {
   return (
@@ -34,6 +41,7 @@ export function App() {
             <Route path={routes.products} element={<ProductsPage />} />
             <Route path={routes.catalog} element={<CatalogPage />} />
             <Route path={`${routes.products}/:productId`} element={<ProductDetailPage />} />
+            <Route path={authPaths.resetPassword} element={<ResetPasswordPage />} />
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Suspense>
