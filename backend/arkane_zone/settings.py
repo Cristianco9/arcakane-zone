@@ -173,12 +173,53 @@ CSRF_TRUSTED_ORIGINS = env.list(
 if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(f"https://{RENDER_EXTERNAL_HOSTNAME}")
 
+# ── Caché compartida y protección contra fuerza bruta ────────────────────────
+# Por defecto los contadores de throttling viven en una tabla de PostgreSQL,
+# creada por `manage.py createcachetable` (no requiere migraciones). Con
+# REDIS_URL se usa Redis; el paquete `redis` debe estar instalado en el entorno.
+def tasa_desde_entorno(nombre: str, defecto: str) -> str | None:
+    """Lee una tasa DRF; una cadena vacía desactiva el scope indicado."""
+    valor = env(f"THROTTLE_RATE_{nombre}", default=defecto)
+    return str(valor).strip() or None
+
+
+CACHE_TABLE = env("CACHE_TABLE", default="django_cache")
+REDIS_URL = env("REDIS_URL", default=None)
+if REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": REDIS_URL,
+        }
+    }
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+            "LOCATION": CACHE_TABLE,
+        }
+    }
+
+# 0 = confiar solo en REMOTE_ADDR; > 0 = leer X-Forwarded-For desde la derecha.
+THROTTLE_NUM_PROXIES = max(0, env.int("THROTTLE_NUM_PROXIES", default=0))
+LOGIN_MAX_FAILED_ATTEMPTS = max(1, env.int("LOGIN_MAX_FAILED_ATTEMPTS", default=5))
+LOGIN_FAILURE_WINDOW_SECONDS = max(1, env.int("LOGIN_FAILURE_WINDOW_SECONDS", default=900))
+LOGIN_LOCKOUT_SECONDS = max(1, env.int("LOGIN_LOCKOUT_SECONDS", default=900))
+
 # ── API REST ─────────────────────────────────────────────────────────────────
-# Autenticación por token (clientes desacoplados) y por sesión/cookie
+# Autenticación por token propio (clientes desacoplados) y por sesión/cookie
 # (misma sesión que usa el sitio y el admin de Django).
+def ttl_token_desde_entorno() -> int:
+    """Días de vigencia de los tokens de API; mínimo 1 día."""
+    return max(1, env.int("API_TOKEN_TTL_DAYS", default=7))
+
+
+API_TOKEN_TTL_DAYS = ttl_token_desde_entorno()
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.TokenAuthentication",
+        # Primero: un token inválido/vencido debe dar 401, no 403.
+        "api.authentication.ApiTokenAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
     # Por defecto todo exige autenticación; cada vista pública lo declara.
@@ -191,6 +232,19 @@ REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "api.pagination.StandardResultsSetPagination",
     "PAGE_SIZE": 20,
     "EXCEPTION_HANDLER": "api.exceptions.api_exception_handler",
+    # Throttling: globales anon/user + scopes específicos de las rutas sensibles.
+    "DEFAULT_THROTTLE_CLASSES": [
+        "api.throttling.AnonimoRateThrottle",
+        "api.throttling.UsuarioRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": tasa_desde_entorno("ANON", "100/min"),
+        "user": tasa_desde_entorno("USER", "1000/hour"),
+        "login": tasa_desde_entorno("LOGIN", "10/min"),
+        "registro": tasa_desde_entorno("REGISTRO", "5/hour"),
+        "contacto": tasa_desde_entorno("CONTACTO", "5/hour"),
+    },
+    "NUM_PROXIES": THROTTLE_NUM_PROXIES,
     # Respuestas JSON legibles (tildes y eñes sin escapes).
     "UNICODE_JSON": True,
     "COMPACT_JSON": False,

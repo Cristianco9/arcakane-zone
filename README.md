@@ -108,8 +108,12 @@ curl -s -X POST http://localhost:5173/api/v1/auth/login/ \
 
 - Respuestas: `{"success": true, "data": ...}`; errores:
   `{"success": false, "error": {"code", "message", "details"}}`.
-- Autenticación: token de DRF o sesión de Django con `X-CSRFToken`.
-- Contrato completo y matriz rol × endpoint: [`docs/api/API.md`](docs/api/API.md).
+- Autenticación: token propio con vencimiento (`Authorization: Token <clave>`)
+  o sesión de Django con `X-CSRFToken`.
+- El login/registro devuelve `token` y `expires_at`; usa
+  `POST /api/v1/auth/token/refresh/` para rotar la clave y
+  `POST /api/v1/auth/logout-all/` para cerrar todas las sesiones.
+- Contrato completo: [`docs/api/API.md`](docs/api/API.md).
 - El frontend consulta `/api/v1/health/` para mostrar el estado de la API.
 
 El acceso por rol (RBAC) se rige por `Rol.codigo` (`administrador`,
@@ -178,10 +182,16 @@ Toda la configuración está centralizada en el `.env` de la raíz. El Compose n
 |---|---|
 | Proyecto | `COMPOSE_PROJECT_NAME`, `IMAGE_TAG`, `TZ`, `RESTART_POLICY`, `PROD_RESTART_POLICY` |
 | Healthchecks | `HEALTHCHECK_INTERVAL`, `HEALTHCHECK_TIMEOUT`, `HEALTHCHECK_RETRIES`, `HEALTHCHECK_START_PERIOD`, `BACKEND_HEALTHCHECK_START_PERIOD`, `FRONTEND_HEALTHCHECK_START_PERIOD`, `PGADMIN_HEALTHCHECK_START_PERIOD` |
-| Backend | `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `CORS_ALLOWED_ORIGINS`, `SECURE_SSL_REDIRECT`, `USE_X_FORWARDED_HOST`, `BACKEND_HOST`, `BACKEND_PORT`, `BACKEND_PUBLISHED_PORT`, `BACKEND_WORKERS`, `BACKEND_TIMEOUT`, `RUN_MIGRATIONS`, `COLLECTSTATIC`, `SEED_CATALOGO` |
+| Backend | `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `CORS_ALLOWED_ORIGINS`, `API_TOKEN_TTL_DAYS`, `SECURE_SSL_REDIRECT`, `USE_X_FORWARDED_HOST`, `BACKEND_HOST`, `BACKEND_PORT`, `BACKEND_PUBLISHED_PORT`, `BACKEND_WORKERS`, `BACKEND_TIMEOUT`, `RUN_MIGRATIONS`, `COLLECTSTATIC`, `SEED_CATALOGO` |
 | PostgreSQL | `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_PUBLISHED_PORT` |
 | pgAdmin | `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD`, `PGADMIN_PORT`, `PGADMIN_PUBLISHED_PORT`, `PGADMIN_MASTER_PASSWORD_REQUIRED` |
 | Frontend | `FRONTEND_PORT`, `FRONTEND_PUBLISHED_PORT`, `VITE_API_BASE_URL` |
+| Throttling / caché | `CACHE_TABLE`, `REDIS_URL`, `THROTTLE_NUM_PROXIES`, `THROTTLE_RATE_*`, `LOGIN_MAX_FAILED_ATTEMPTS`, `LOGIN_FAILURE_WINDOW_SECONDS`, `LOGIN_LOCKOUT_SECONDS` |
+
+Los contadores de la API usan una tabla de PostgreSQL (`django_cache`) creada
+automáticamente por el entrypoint con `createcachetable`; para usar Redis
+define `REDIS_URL` (requiere el paquete `redis`). Las respuestas `429` llevan
+cabecera `Retry-After`; el contrato está en [`docs/api/API.md`](docs/api/API.md).
 
 Los valores de `.env.example` son ficticios y solo ilustran el formato. En producción usa secretos reales gestionados fuera del repositorio.
 

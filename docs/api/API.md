@@ -24,14 +24,18 @@ no cambian.
 
 La API acepta dos mecanismos:
 
-1. **Token de DRF**
+1. **Token propio con vencimiento**
 
    ```http
-   Authorization: Token <token>
+   Authorization: Token <clave>
    ```
 
-   El token se obtiene en `POST /api/v1/auth/login/` o
-   `POST /api/v1/auth/registro/`.
+   La clave se obtiene en `POST /api/v1/auth/login/` o
+   `POST /api/v1/auth/registro/` y se devuelve junto a `expires_at`.
+   Vigencia por defecto: 7 días, configurable con `API_TOKEN_TTL_DAYS`.
+   Un token inexistente o vencido responde `401 no_autenticado`.
+   **Los tokens antiguos de `rest_framework.authtoken` ya no son válidos:** hay
+   que iniciar sesión de nuevo para obtener una clave del modelo propio.
 
 2. **Sesión/cookie de Django**
 
@@ -160,6 +164,51 @@ nota.
 
 `details` es opcional y contiene los errores por campo o información adicional.
 
+## Límites de solicitudes y bloqueo de login
+
+Las respuestas `429` usan el sobre estándar con
+`error.code = demasiadas_solicitudes` e incluyen **siempre** la cabecera
+`Retry-After` con los segundos que faltan para reintentar.
+
+| Scope | Aplica a | Tasa por defecto | Clave |
+|---|---|---|---|
+| `anon` | Peticiones de visitantes | `100/min` | IP |
+| `user` | Peticiones autenticadas | `1000/hour` | Usuario |
+| `login` | `POST /auth/login/` | `10/min` | IP |
+| `registro` | `POST /auth/registro/` | `5/hour` | IP |
+| `contacto` | Creación de contactos y solicitudes de información | `5/hour` | IP |
+
+Ejemplo de respuesta `429`:
+
+```http
+HTTP/1.1 429 Too Many Requests
+Retry-After: 37
+Content-Type: application/json
+```
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "demasiadas_solicitudes",
+    "message": "Se superó el límite de solicitudes. Intenta más tarde."
+  }
+}
+```
+
+Además, `POST /auth/login/` bloquea temporalmente tras
+`LOGIN_MAX_FAILED_ATTEMPTS` (5) credenciales incorrectas (`401`) en
+`LOGIN_FAILURE_WINDOW_SECONDS` (900 s). El intento siguiente devuelve `429`
+con `Retry-After` hasta que pasa `LOGIN_LOCKOUT_SECONDS` (900 s). Durante el
+bloqueo **no se verifica la contraseña**. La clave es un hash de
+`usuario en minúsculas + IP`: ni la contraseña ni los datos del usuario se
+guardan en caché. Un login correcto reinicia el contador; los errores de
+validación (`400`) no cuentan como intentos fallidos.
+
+La IP se toma de `REMOTE_ADDR` por defecto. `X-Forwarded-For` solo se usa
+cuando `THROTTLE_NUM_PROXIES > 0` (número de proxies propios delante de
+Django); con `0`, una cabecera falsificada no puede cambiar la clave.
+
 | HTTP | `code` habitual | Cuándo ocurre |
 |---|---|---|
 | `400` | `datos_invalidos` | Validación de entrada |
@@ -169,6 +218,7 @@ nota.
 | `404` | `no_encontrado` | El recurso no existe o no pertenece al usuario |
 | `405` | `metodo_no_permitido` | Método HTTP no soportado |
 | `409` | `conflicto` | Regla de negocio o restricción de integridad |
+| `429` | `demasiadas_solicitudes` | Límite de solicitudes superado o login bloqueado |
 | `500` | `error_interno` | Error no controlado (siempre en JSON) |
 
 ## Listados: paginación, búsqueda y orden
@@ -186,7 +236,9 @@ nota.
 |---|---|---|
 | `POST` | `/api/v1/auth/registro/` | `username`, `email`, `password`, `password_confirm` y datos opcionales |
 | `POST` | `/api/v1/auth/login/` | `username`, `password` |
-| `POST` | `/api/v1/auth/logout/` | Invalida el token presentado y cierra la sesión |
+| `POST` | `/api/v1/auth/logout/` | Revoca solo el token de esta sesión y cierra la sesión |
+| `POST` | `/api/v1/auth/token/refresh/` | Rota el token vigente; devuelve `token` y `expires_at` |
+| `POST` | `/api/v1/auth/logout-all/` | Revoca todos los tokens del usuario y cierra la sesión |
 | `GET` | `/api/v1/auth/csrf/` | Devuelve `csrfToken` y crea la cookie |
 | `GET` | `/api/v1/auth/me/` | Perfil del usuario autenticado |
 | `PATCH`/`PUT` | `/api/v1/auth/me/` | Actualiza el perfil |
@@ -199,11 +251,28 @@ Respuesta de login y registro:
   "success": true,
   "data": {
     "usuario": { "id": 1, "username": "cliente", "...": "..." },
-    "token": "9944b09199c62bcf9418ad846dd0e4bbdfc6ee4b"
+    "token": "KiJ8mRb4K9tnGY1_3YKw8HFZqA9Ydx3v4OgbXwrH8sc",
+    "expires_at": "2026-11-29T18:30:00Z"
   },
   "message": "Sesión iniciada correctamente."
 }
 ```
+
+### Vencimiento, renovación y cierre global
+
+- Cada login o registro emite una clave nueva; varias sesiones pueden coexistir.
+- `expires_at` indica el vencimiento en ISO 8601. La vigencia la define
+  `API_TOKEN_TTL_DAYS` (días, defecto `7`, mínimo `1`).
+- `POST /api/v1/auth/token/refresh/` exige un token vigente en la cabecera,
+  revoca esa clave y devuelve una nueva con su `expires_at`. La clave anterior
+  pasa a dar `401 no_autenticado`.
+- `POST /api/v1/auth/logout-all/` revoca todos los tokens del usuario;
+  `POST /api/v1/auth/logout/` solo revoca el usado en esa petición.
+- Cambiar la contraseña por cualquier vía (API, formulario web, reseteo o
+  admin) revoca todos los tokens del usuario. Si Django vuelve a hashear la
+  contraseña al iniciar sesión por un cambio de algoritmo, también se revocan
+  los tokens anteriores; la clave emitida en ese mismo login sigue válida porque
+  se genera después de autenticar.
 
 ### Catálogo
 

@@ -20,7 +20,7 @@ Archivos relevantes de esta carpeta:
 
 - `Dockerfile`: imagen de producción basada en `python:3.12.9-slim`, usuario no privilegiado y Gunicorn por defecto.
 - `.dockerignore`: excluye `.env`, `.venv`, pruebas, medios y estáticos locales del contexto de build.
-- `docker/entrypoint.sh`: espera a PostgreSQL, aplica migraciones, recolecta estáticos y opcionalmente ejecuta `seed_catalogo`.
+- `docker/entrypoint.sh`: espera a PostgreSQL, crea la tabla de caché si hace falta, aplica migraciones, recolecta estáticos y opcionalmente ejecuta `seed_catalogo`.
 
 Comandos habituales dentro del contenedor:
 
@@ -30,6 +30,16 @@ docker compose exec backend python manage.py createsuperuser
 docker compose exec backend python manage.py seed_catalogo
 docker compose exec backend python manage.py shell
 ```
+
+### Throttling y caché
+
+Los límites de la API (`anon`, `user`, `login`, `registro`, `contacto`) se
+guardan en caché. Por defecto se usa la tabla `django_cache` de PostgreSQL;
+el entrypoint la crea con `python manage.py createcachetable` de forma
+idempotente. Para usar Redis, define `REDIS_URL` (requiere el paquete `redis`).
+Las tasas y el bloqueo de login se configuran con las variables
+`THROTTLE_RATE_*`, `THROTTLE_NUM_PROXIES` y `LOGIN_*` documentadas en
+[`.env.example`](.env.example) y en [`docs/api/API.md`](../docs/api/API.md).
 
 ## Estructura
 
@@ -85,6 +95,7 @@ cp .env.example .env
 |---|---|---|
 | `SECRET_KEY` | Sí | Clave secreta de Django. No debe compartirse ni versionarse. |
 | `DATABASE_URL` | Condicional | URL de conexión PostgreSQL, por ejemplo `postgres://usuario:clave@host:5432/db`. Si no se define, se usan las variables `POSTGRES_*`. |
+| `API_TOKEN_TTL_DAYS` | No | Días de vigencia de los tokens de API; por defecto `7` (mínimo `1`). |
 | `POSTGRES_DB` | Condicional | Nombre de la base de datos cuando se usa el fallback de Docker Compose. |
 | `POSTGRES_USER` | Condicional | Usuario de PostgreSQL cuando se usa el fallback de Docker Compose. |
 | `POSTGRES_PASSWORD` | Condicional | Contraseña de PostgreSQL cuando se usa el fallback de Docker Compose. |
@@ -187,8 +198,11 @@ SQLite en memoria, por lo que la suite es independiente del entorno.
 
 - **Base:** `/api/v1/` (raíz navegable en `GET /api/v1/`).
 - **Salud:** `GET /api/v1/health/`.
-- **Autenticación:** token de DRF (`Authorization: Bearer <token>`) o sesión de
-  Django con `X-CSRFToken`.
+- **Autenticación:** token propio con vencimiento
+  (`Authorization: Token <clave>`) o sesión de Django con `X-CSRFToken`.
+  Login y registro devuelven `token` y `expires_at`; existen
+  `POST /api/v1/auth/token/refresh/` y `POST /api/v1/auth/logout-all/`.
+  Los tokens antiguos de DRF ya no autentican: vuelve a iniciar sesión.
 - **Respuestas:** sobre uniforme `{"success": true, "data": ...}` y errores
   `{"success": false, "error": {"code", "message", "details"}}`.
 - **Paginación:** `?page=1&page_size=20`; búsqueda `?q=`; orden `?ordering=`.
@@ -240,7 +254,7 @@ para el panel administrativo:
 
 1. El frontend usa `/api/v1/...` mediante el proxy de Vite/Nginx, sin CORS en
    el flujo normal.
-2. Los clientes externos pueden autenticarse con token de DRF.
+2. Los clientes externos pueden autenticarse con el token propio de la API.
 3. La administración interna permanece en `/admin/` con django-unfold.
 4. Las plantillas se pueden retirar gradualmente sin tocar la lógica de negocio.
 
