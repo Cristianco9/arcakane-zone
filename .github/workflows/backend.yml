@@ -1,0 +1,48 @@
+name: Backend
+
+on:
+  push:
+    branches:
+      - main
+      - "AZ-S2-BE-**"
+  pull_request:
+
+jobs:
+  django:
+    name: pytest y check --deploy
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      SECRET_KEY: test-key
+      DATABASE_URL: sqlite:///db.sqlite3
+      DEBUG: "True"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
+
+      - name: Instalar dependencias
+        run: |
+          python -m venv .venv
+          .venv/bin/pip install --upgrade pip
+          .venv/bin/pip install -r requirements-dev.txt
+
+      - name: Pruebas
+        run: .venv/bin/python -m pytest -q
+
+      - name: Endurecimiento de producción
+        env:
+          SECRET_KEY: ci-only-secret-key-with-at-least-fifty-characters-and-enough-entropy-1234567890
+          DEBUG: "False"
+          DATABASE_URL: sqlite:///db.sqlite3
+          ALLOWED_HOSTS: localhost,127.0.0.1
+          SECURE_SSL_REDIRECT: "True"
+        run: .venv/bin/python manage.py check --deploy
