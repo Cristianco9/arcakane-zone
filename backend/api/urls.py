@@ -13,9 +13,11 @@ from .views.auth import (
     CambioPasswordView,
     CsrfView,
     LoginView,
+    LogoutAllView,
     LogoutView,
     MeView,
     RegistroView,
+    TokenRefreshView,
 )
 from .views.base import ApiNotFoundView, ApiRootView, HealthView
 from .views.carrito import CarritoItemDetalleView, CarritoItemsView, CarritoView
@@ -57,6 +59,8 @@ urlpatterns = [
     path("auth/registro/", RegistroView.as_view(), name="auth-registro"),
     path("auth/login/", LoginView.as_view(), name="auth-login"),
     path("auth/logout/", LogoutView.as_view(), name="auth-logout"),
+    path("auth/token/refresh/", TokenRefreshView.as_view(), name="auth-token-refresh"),
+    path("auth/logout-all/", LogoutAllView.as_view(), name="auth-logout-all"),
     path("auth/me/", MeView.as_view(), name="auth-me"),
     path(
         "auth/me/password/",

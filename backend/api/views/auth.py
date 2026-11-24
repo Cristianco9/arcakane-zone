@@ -3,19 +3,19 @@
 Se mantienen los dos mecanismos del sistema:
 
 - Sesión/cookie de Django (el mismo que usa el sitio HTML y el admin).
-- Token de DRF para clientes desacoplados (frontend, integraciones).
+- Token propio de la API, con vencimiento, para clientes desacoplados.
 """
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.middleware.csrf import get_token
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from rest_framework import status
-from rest_framework.authtoken.models import Token
 from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 
 from ..exceptions import respuesta_exitosa
+from ..models import Token
 from ..throttling import (
     AnonimoRateThrottle,
     BloqueoLoginThrottle,
@@ -34,9 +34,10 @@ from ..serializers import (
 )
 
 
-def _token_de(usuario):
-    token, _ = Token.objects.get_or_create(user=usuario)
-    return token.key
+def _emitir_token(usuario):
+    """Devuelve los datos aditivos de un token recién emitido."""
+    token, clave = Token.emitir(usuario)
+    return {"token": clave, "expires_at": token.expira_en.isoformat()}
 
 
 class RegistroView(APIView):
@@ -51,7 +52,7 @@ class RegistroView(APIView):
         return respuesta_exitosa(
             {
                 "usuario": UsuarioSerializer(usuario, context={"request": request}).data,
-                "token": _token_de(usuario),
+                **_emitir_token(usuario),
             },
             message="Cuenta creada exitosamente.",
             status_code=status.HTTP_201_CREATED,
@@ -86,7 +87,7 @@ class LoginView(APIView):
         return respuesta_exitosa(
             {
                 "usuario": UsuarioSerializer(usuario, context={"request": request}).data,
-                "token": _token_de(usuario),
+                **_emitir_token(usuario),
             },
             message="Sesión iniciada correctamente.",
         )
@@ -96,11 +97,38 @@ class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        # Si el cliente usa token, se invalida el token presentado.
+        # Revoca solo el token usado en esta petición; no los demás.
         if isinstance(request.auth, Token):
             request.auth.delete()
         logout(request)
         return respuesta_exitosa(message="Sesión cerrada correctamente.")
+
+
+class TokenRefreshView(APIView):
+    """Rota el token vigente usado en la petición."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if not isinstance(request.auth, Token):
+            raise NotAuthenticated("Se requiere un token de API vigente.")
+        request.auth.delete()
+        return respuesta_exitosa(
+            _emitir_token(request.user), message="Token renovado correctamente."
+        )
+
+
+class LogoutAllView(APIView):
+    """Revoca todos los tokens del usuario, en cualquier dispositivo."""
+
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        Token.objects.filter(usuario=request.user).delete()
+        logout(request)
+        return respuesta_exitosa(
+            message="Sesiones cerradas en todos los dispositivos."
+        )
 
 
 @method_decorator(ensure_csrf_cookie, name="dispatch")

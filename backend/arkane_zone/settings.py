@@ -207,11 +207,19 @@ LOGIN_FAILURE_WINDOW_SECONDS = max(1, env.int("LOGIN_FAILURE_WINDOW_SECONDS", de
 LOGIN_LOCKOUT_SECONDS = max(1, env.int("LOGIN_LOCKOUT_SECONDS", default=900))
 
 # ── API REST ─────────────────────────────────────────────────────────────────
-# Autenticación por token (clientes desacoplados) y por sesión/cookie
+# Autenticación por token propio (clientes desacoplados) y por sesión/cookie
 # (misma sesión que usa el sitio y el admin de Django).
+def ttl_token_desde_entorno() -> int:
+    """Días de vigencia de los tokens de API; mínimo 1 día."""
+    return max(1, env.int("API_TOKEN_TTL_DAYS", default=7))
+
+
+API_TOKEN_TTL_DAYS = ttl_token_desde_entorno()
+
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "rest_framework.authentication.TokenAuthentication",
+        # Primero: un token inválido/vencido debe dar 401, no 403.
+        "api.authentication.ApiTokenAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ],
     # Por defecto todo exige autenticación; cada vista pública lo declara.
