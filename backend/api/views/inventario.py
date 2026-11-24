@@ -12,7 +12,7 @@ from inventario.models import (
 from ..exceptions import respuesta_exitosa
 from ..inventario_service import registrar_ajuste
 from ..pagination import StandardResultsSetPagination
-from ..permissions import EsAdministrador
+from ..permissions import TieneRolInventario
 from ..serializers import AjusteInventarioSerializer, MovimientoInventarioSerializer
 from ..utils import parse_fecha_hora
 
@@ -115,7 +115,7 @@ class MovimientoInventarioViewSet(viewsets.ReadOnlyModelViewSet):
     """Historial completo del libro mayor, de solo lectura."""
 
     serializer_class = MovimientoInventarioSerializer
-    permission_classes = [EsAdministrador]
+    permission_classes = [TieneRolInventario]
     pagination_class = StandardResultsSetPagination
     http_method_names = ["get", "head", "options"]
 
@@ -136,7 +136,7 @@ class MovimientoInventarioViewSet(viewsets.ReadOnlyModelViewSet):
 class AjusteInventarioView(APIView):
     """Ajuste manual de stock: positivo suma, negativo resta."""
 
-    permission_classes = [EsAdministrador]
+    permission_classes = [TieneRolInventario]
 
     def post(self, request):
         serializer = AjusteInventarioSerializer(data=request.data)

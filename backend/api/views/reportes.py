@@ -16,7 +16,7 @@ from reportes.views import UMBRAL_BAJO_STOCK
 
 from ..exceptions import respuesta_exitosa
 from ..pagination import StandardResultsSetPagination
-from ..permissions import EsAdministrador
+from ..permissions import TieneRolReporte, TieneRolReporteInventario
 from ..serializers import OfertaVideojuegoSerializer, VentaSerializer
 
 
@@ -32,7 +32,7 @@ def _monto(valor) -> str:
 
 
 class ReporteBaseView(GenericAPIView):
-    permission_classes = [EsAdministrador]
+    permission_classes = [TieneRolReporte]
     pagination_class = StandardResultsSetPagination
 
     def _paginar(self, queryset, serializer_class, **extra):
@@ -146,6 +146,7 @@ class ReporteInventarioQuerySerializer(serializers.Serializer):
 
 
 class ReporteInventarioView(ReporteBaseView):
+    permission_classes = [TieneRolReporteInventario]
     serializer_class = OfertaVideojuegoSerializer
 
     def get(self, request):

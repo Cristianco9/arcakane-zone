@@ -10,7 +10,11 @@ from django.middleware.csrf import get_token
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.utils.decorators import method_decorator
 from rest_framework import status
-from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated
+from rest_framework.exceptions import (
+    AuthenticationFailed,
+    NotAuthenticated,
+    ValidationError,
+)
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.views import APIView
 
@@ -111,7 +115,11 @@ class TokenRefreshView(APIView):
 
     def post(self, request):
         if not isinstance(request.auth, Token):
-            raise NotAuthenticated("Se requiere un token de API vigente.")
+            # El usuario ya está autenticado (sesión/cookie): lo que falta es
+            # un token de API que poder rotar, así que es un error de solicitud.
+            raise ValidationError(
+                "Se requiere un token de API vigente para renovarlo."
+            )
         request.auth.delete()
         return respuesta_exitosa(
             _emitir_token(request.user), message="Token renovado correctamente."

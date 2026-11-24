@@ -3,6 +3,7 @@ import uuid
 from decimal import Decimal
 
 import pytest
+from django.core.cache import cache
 from django.db import DatabaseError, transaction
 
 from catalogo.models import (
@@ -27,6 +28,19 @@ from inventario.models import (
 )
 from pagos.models import EstadoIntentoPago, IntentoPago
 from pedidos.models import DetallePedido, EstadoPedido, Pedido
+
+
+@pytest.fixture(autouse=True)
+def cache_aislado():
+    """Aísla el caché de throttling entre pruebas.
+
+    La matriz RBAC (AZ-S2-BE-07) emite muchas peticiones anónimas seguidas; sin
+    esta limpieza agotaría el límite ``anon`` y contaminaría los tests de
+    throttling y de tokens que se ejecutan después.
+    """
+    cache.clear()
+    yield
+    cache.clear()
 
 
 # ── Catálogos de estado (AZ-S1-17) ────────────────────────────────────────────

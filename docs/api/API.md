@@ -77,6 +77,8 @@ abajo. Las reglas efectivas por ruta y método son:
 | `/api/v1/auth/registro/` | público | público | público | público |  |
 | `/api/v1/auth/login/` | público | público | público | público |  |
 | `/api/v1/auth/logout/` | autenticado | autenticado | autenticado | autenticado |  |
+| `/api/v1/auth/token/refresh/` | autenticado | autenticado | autenticado | autenticado |  |
+| `/api/v1/auth/logout-all/` | autenticado | autenticado | autenticado | autenticado |  |
 | `/api/v1/auth/me/` | autenticado | autenticado | autenticado | autenticado |  |
 | `/api/v1/auth/me/password/` | autenticado | autenticado | autenticado | autenticado |  |
 | `/api/v1/auth/csrf/` | público | público | público | público |  |

@@ -18,7 +18,7 @@ from inventario.models import MovimientoInventarioOfertaVideojuego
 
 from ..exceptions import respuesta_exitosa
 from ..filters import BusquedaFilter
-from ..permissions import EsAdministrador, LecturaPublicaEscrituraAdmin
+from ..permissions import TieneRolCatalogo, TieneRolInventario
 from ..serializers import (
     CategoriaSerializer,
     GeneroSerializer,
@@ -31,7 +31,7 @@ from .inventario import filtrar_movimientos, responder_listado_movimientos
 
 
 class _CatalogoBaseViewSet(viewsets.ModelViewSet):
-    permission_classes = [LecturaPublicaEscrituraAdmin]
+    permission_classes = [TieneRolCatalogo]
     filter_backends = [BusquedaFilter, OrderingFilter]
 
     def _solo_activos_para_publico(self, queryset, campo="activo"):
@@ -194,7 +194,7 @@ class OfertaVideojuegoViewSet(_CatalogoBaseViewSet):
         detail=True,
         methods=["get"],
         url_path="movimientos",
-        permission_classes=[EsAdministrador],
+        permission_classes=[TieneRolInventario],
     )
     def movimientos(self, request, pk=None):
         """Trazabilidad del libro mayor de una oferta (404 si no existe)."""
