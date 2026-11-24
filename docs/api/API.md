@@ -89,6 +89,51 @@ negocio `administrador`.
 
 `details` es opcional y contiene los errores por campo o información adicional.
 
+## Límites de solicitudes y bloqueo de login
+
+Las respuestas `429` usan el sobre estándar con
+`error.code = demasiadas_solicitudes` e incluyen **siempre** la cabecera
+`Retry-After` con los segundos que faltan para reintentar.
+
+| Scope | Aplica a | Tasa por defecto | Clave |
+|---|---|---|---|
+| `anon` | Peticiones de visitantes | `100/min` | IP |
+| `user` | Peticiones autenticadas | `1000/hour` | Usuario |
+| `login` | `POST /auth/login/` | `10/min` | IP |
+| `registro` | `POST /auth/registro/` | `5/hour` | IP |
+| `contacto` | Creación de contactos y solicitudes de información | `5/hour` | IP |
+
+Ejemplo de respuesta `429`:
+
+```http
+HTTP/1.1 429 Too Many Requests
+Retry-After: 37
+Content-Type: application/json
+```
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "demasiadas_solicitudes",
+    "message": "Se superó el límite de solicitudes. Intenta más tarde."
+  }
+}
+```
+
+Además, `POST /auth/login/` bloquea temporalmente tras
+`LOGIN_MAX_FAILED_ATTEMPTS` (5) credenciales incorrectas (`401`) en
+`LOGIN_FAILURE_WINDOW_SECONDS` (900 s). El intento siguiente devuelve `429`
+con `Retry-After` hasta que pasa `LOGIN_LOCKOUT_SECONDS` (900 s). Durante el
+bloqueo **no se verifica la contraseña**. La clave es un hash de
+`usuario en minúsculas + IP`: ni la contraseña ni los datos del usuario se
+guardan en caché. Un login correcto reinicia el contador; los errores de
+validación (`400`) no cuentan como intentos fallidos.
+
+La IP se toma de `REMOTE_ADDR` por defecto. `X-Forwarded-For` solo se usa
+cuando `THROTTLE_NUM_PROXIES > 0` (número de proxies propios delante de
+Django); con `0`, una cabecera falsificada no puede cambiar la clave.
+
 | HTTP | `code` habitual | Cuándo ocurre |
 |---|---|---|
 | `400` | `datos_invalidos` | Validación de entrada |
@@ -98,6 +143,7 @@ negocio `administrador`.
 | `404` | `no_encontrado` | El recurso no existe o no pertenece al usuario |
 | `405` | `metodo_no_permitido` | Método HTTP no soportado |
 | `409` | `conflicto` | Regla de negocio o restricción de integridad |
+| `429` | `demasiadas_solicitudes` | Límite de solicitudes superado o login bloqueado |
 | `500` | `error_interno` | Error no controlado (siempre en JSON) |
 
 ## Listados: paginación, búsqueda y orden
