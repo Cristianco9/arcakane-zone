@@ -128,6 +128,16 @@ migración de datos `cuentas/0008_roles_rbac.py` y `seed_catalogo`; la matriz
 completa por método está en `docs/api/API.md` y su fuente única en
 `backend/api/rbac.py`.
 
+La administración de cuentas también está disponible por API para administradores:
+`POST /api/v1/usuarios/` crea usuarios con rol, `PUT`/`PATCH` edita datos, roles e
+`is_active`, y `POST /api/v1/usuarios/{id}/activar/|desactivar/` registra quién y
+cuándo cambia el estado. `/api/v1/roles/` ofrece un CRUD limitado: no se eliminan
+roles en uso. No se puede desactivar la propia cuenta, dejar sin administrador
+activo ni asignar roles superiores al propio; los conflictos responden `409` y
+los rechazos por permisos `403`, siempre con el sobre de error descrito arriba.
+Cada cambio queda en `AuditoriaCuenta` y puede consultarse en
+`GET /api/v1/usuarios/{id}/auditoria/` o en el admin de Django.
+
 ### Registrar PostgreSQL en pgAdmin
 
 1. Abre <http://localhost:5050> e inicia sesión con `PGADMIN_DEFAULT_EMAIL` y `PGADMIN_DEFAULT_PASSWORD`.

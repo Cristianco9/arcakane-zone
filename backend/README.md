@@ -167,8 +167,9 @@ pip install -r requirements-dev.txt
 SECRET_KEY=test-key DATABASE_URL=sqlite:///db.sqlite3 DEBUG=True pytest
 ```
 
-Estado verificado de la suite: **130 pruebas**, todas pasan. Incluye pruebas de
-la API REST (`tests/test_api_*.py`) y las pruebas originales de la interfaz HTML.
+Estado verificado de la suite: **1871 pruebas**, todas pasan. Incluye pruebas de
+la API REST (`tests/test_api_*.py`), la matriz RBAC, la administración de
+usuarios/roles por API y las pruebas originales de la interfaz HTML.
 
 `settings_test.py` fuerza `DEBUG=True`, desactiva las redirecciones HTTPS y usa
 SQLite en memoria, por lo que la suite es independiente del entorno.
@@ -208,8 +209,12 @@ SQLite en memoria, por lo que la suite es independiente del entorno.
 - **Paginación:** `?page=1&page_size=20`; búsqueda `?q=`; orden `?ordering=`.
 
 Recursos principales: catálogo, carrito, pedidos, pagos, ventas, inventario
-(movimientos y ajustes), reportes, soporte, usuarios y roles. El detalle de
-rutas, cuerpos y códigos de estado está
+(movimientos y ajustes), reportes, soporte, usuarios y roles. La administración
+de cuentas (solo administradores) permite crear/editar usuarios con roles,
+activarlos o desactivarlos y mantener el CRUD de roles; las reglas de
+autodesactivación, último administrador y jerarquía de roles se aplican en
+`api/cuentas_service.py`, y cada cambio queda en `AuditoriaCuenta`. El detalle
+de rutas, cuerpos y códigos de estado está
 en [`docs/api/API.md`](../docs/api/API.md).
 
 ```bash

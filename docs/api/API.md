@@ -116,6 +116,9 @@ abajo. Las reglas efectivas por ruta y método son:
 | `/api/v1/soporte/contactos/{pk}/` | administrador, soporte, cliente | público | administrador, soporte | administrador, soporte | propietario |
 | `/api/v1/usuarios/` | administrador | administrador | administrador | administrador |  |
 | `/api/v1/usuarios/{pk}/` | administrador | administrador | administrador | administrador |  |
+| `/api/v1/usuarios/{pk}/activar/` | administrador | administrador | administrador | administrador | acción `activar` |
+| `/api/v1/usuarios/{pk}/desactivar/` | administrador | administrador | administrador | administrador | acción `desactivar` |
+| `/api/v1/usuarios/{pk}/auditoria/` | administrador | administrador | administrador | administrador | acción `auditoria` |
 | `/api/v1/roles/` | administrador | administrador | administrador | administrador |  |
 | `/api/v1/roles/{pk}/` | administrador | administrador | administrador | administrador |  |
 <!-- FIN MATRIZ RBAC -->
@@ -447,15 +450,45 @@ normalizadas sin alterar sus respuestas.
 
 ### Usuarios y roles (solo administrador)
 
-| Método | Ruta | Filtros |
+| Método | Ruta | Cuerpo / efecto |
 |---|---|---|
-| `GET` | `/api/v1/usuarios/` | `q`, `rol`, `activo`, `ordering` |
+| `GET` | `/api/v1/usuarios/` | Filtros `q`, `rol`, `activo`, `ordering` |
+| `POST` | `/api/v1/usuarios/` | Crea usuario interno con contraseña y roles |
 | `GET` | `/api/v1/usuarios/{id}/` | Detalle |
+| `PUT`/`PATCH` | `/api/v1/usuarios/{id}/` | Datos, `roles`/`rol` e `is_active` |
+| `POST` | `/api/v1/usuarios/{id}/activar/` | Activa la cuenta |
+| `POST` | `/api/v1/usuarios/{id}/desactivar/` | Desactiva la cuenta |
+| `GET` | `/api/v1/usuarios/{id}/auditoria/` | Historial de cambios de esa cuenta |
 | `GET` | `/api/v1/roles/` | Listado completo |
+| `POST` | `/api/v1/roles/` | Crea un rol (`codigo`, `nombre`, `descripcion`, `activo`) |
+| `PUT`/`PATCH` | `/api/v1/roles/{id}/` | Edita etiqueta, descripción o estado |
+| `DELETE` | `/api/v1/roles/{id}/` | Elimina un rol sin uso (no base) |
 
-Usuarios y roles son de solo lectura a través de la API; su gestión sigue en el
-admin de Django. `rol` y `rol_nombre` se conservan: `rol` es el primer ID por
-nombre de `Usuario.roles` y `rol_nombre` es el `codigo` estable (`cliente`,
+`POST /usuarios/` acepta `username`, `email`, `first_name`, `last_name`,
+`telefono`, `direccion`, `password`, `password_confirm` y la lista `roles` de
+IDs (o el campo histórico `rol` con un solo ID, pero no ambos). La contraseña se
+valida con las reglas de Django y nunca se devuelve ni se audita. En las
+actualizaciones, `roles` sustituye todas las asignaciones; `is_active` permite
+activar o desactivar sin borrar el usuario. No se exponen bajas de usuarios
+para conservar el historial.
+
+Reglas de protección (mensaje explícito en el sobre de error):
+
+- No se puede desactivar la propia cuenta (`409`).
+- No se puede desactivar ni quitar el rol al último administrador activo (`409`).
+- No se puede asignar un rol por encima del propio (`403`); jerarquía:
+  `cliente` < `soporte`/`gestor_inventario` < `administrador`. Staff y
+  superuser equivalen a administrador según BE-07.
+- No se eliminan roles con usuarios asignados ni los roles base `cliente` y
+  `administrador` (`409`).
+
+Todos los cambios crean un `AuditoriaCuenta` con actor, cuenta afectada, acción,
+detalles (antes/después), IP y fecha/hora, y se envían al log
+`api.cuentas_service`. El endpoint `/auditoria/` y el admin de Django permiten
+consultarlos.
+
+`rol` y `rol_nombre` se conservan: `rol` es el primer ID por nombre de
+`Usuario.roles` y `rol_nombre` es el `codigo` estable (`cliente`,
 `administrador`), que mantiene el texto histórico de la API. La lista aditiva
 `roles` expone todos los IDs ordenados por nombre; `/roles/` añade el campo
 `codigo` y su `nombre` devuelve ese mismo código. Las propiedades de negocio
