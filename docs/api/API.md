@@ -14,6 +14,12 @@ en sus rutas de siempre.
 `/api/` redirige a `/api/v1/` y `/api/catalogo/` redirige a
 `/api/v1/catalogo/videojuegos/` por compatibilidad.
 
+El contrato v1 es aditivo: tras la normalización del modelo se añadieron campos
+y se conservaron todos los existentes. Los campos históricos marcados como
+*deprecated* siguen devolviendo un único valor determinista; las listas nuevas
+son la forma preferida. El sobre de respuesta y los códigos HTTP de esta guía
+no cambian.
+
 ## Autenticación y autorización
 
 La API acepta dos mecanismos:
@@ -87,6 +93,51 @@ negocio `administrador`.
 
 `details` es opcional y contiene los errores por campo o información adicional.
 
+## Límites de solicitudes y bloqueo de login
+
+Las respuestas `429` usan el sobre estándar con
+`error.code = demasiadas_solicitudes` e incluyen **siempre** la cabecera
+`Retry-After` con los segundos que faltan para reintentar.
+
+| Scope | Aplica a | Tasa por defecto | Clave |
+|---|---|---|---|
+| `anon` | Peticiones de visitantes | `100/min` | IP |
+| `user` | Peticiones autenticadas | `1000/hour` | Usuario |
+| `login` | `POST /auth/login/` | `10/min` | IP |
+| `registro` | `POST /auth/registro/` | `5/hour` | IP |
+| `contacto` | Creación de contactos y solicitudes de información | `5/hour` | IP |
+
+Ejemplo de respuesta `429`:
+
+```http
+HTTP/1.1 429 Too Many Requests
+Retry-After: 37
+Content-Type: application/json
+```
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "demasiadas_solicitudes",
+    "message": "Se superó el límite de solicitudes. Intenta más tarde."
+  }
+}
+```
+
+Además, `POST /auth/login/` bloquea temporalmente tras
+`LOGIN_MAX_FAILED_ATTEMPTS` (5) credenciales incorrectas (`401`) en
+`LOGIN_FAILURE_WINDOW_SECONDS` (900 s). El intento siguiente devuelve `429`
+con `Retry-After` hasta que pasa `LOGIN_LOCKOUT_SECONDS` (900 s). Durante el
+bloqueo **no se verifica la contraseña**. La clave es un hash de
+`usuario en minúsculas + IP`: ni la contraseña ni los datos del usuario se
+guardan en caché. Un login correcto reinicia el contador; los errores de
+validación (`400`) no cuentan como intentos fallidos.
+
+La IP se toma de `REMOTE_ADDR` por defecto. `X-Forwarded-For` solo se usa
+cuando `THROTTLE_NUM_PROXIES > 0` (número de proxies propios delante de
+Django); con `0`, una cabecera falsificada no puede cambiar la clave.
+
 | HTTP | `code` habitual | Cuándo ocurre |
 |---|---|---|
 | `400` | `datos_invalidos` | Validación de entrada |
@@ -96,6 +147,7 @@ negocio `administrador`.
 | `404` | `no_encontrado` | El recurso no existe o no pertenece al usuario |
 | `405` | `metodo_no_permitido` | Método HTTP no soportado |
 | `409` | `conflicto` | Regla de negocio o restricción de integridad |
+| `429` | `demasiadas_solicitudes` | Límite de solicitudes superado o login bloqueado |
 | `500` | `error_interno` | Error no controlado (siempre en JSON) |
 
 ## Listados: paginación, búsqueda y orden
@@ -164,6 +216,33 @@ Respuesta de login y registro:
 | `GET` | `/api/v1/catalogo/ofertas/` | `q`, `videojuego`, `plataforma`, `categoria`, `genero`, `disponible`, `estado_publicacion` (admin), `ordering` |
 | `POST`/`PUT`/`PATCH`/`DELETE` | `/api/v1/catalogo/...` | Solo administrador |
 
+Los filtros `categoria`, `genero` y `plataforma` conservan su nombre y
+semántica. Los dos primeros consultan ahora relaciones muchos-a-muchos y se
+aplica `distinct()` para no duplicar resultados ni romper la paginación.
+
+Ejemplo de videojuego con los campos aditivos:
+
+```json
+{
+  "id": 1,
+  "titulo": "Juego Alpha",
+  "categoria": 3,
+  "categoria_nombre": "Acción",
+  "categorias": [3, 7],
+  "genero": 5,
+  "genero_nombre": "RPG",
+  "generos": [5, 9],
+  "activo": true,
+  "disponible": true
+}
+```
+
+`categoria`, `categoria_nombre`, `genero` y `genero_nombre` están *deprecated*:
+se conservan por compatibilidad y exponen el primero por nombre de las listas
+`categorias`/`generos`, cuyos IDs también se ordenan por nombre. La escritura
+acepta la forma histórica (`categoria` o `genero`) y las listas nuevas; si se
+envían ambas, prevalecen las listas.
+
 ### Carrito
 
 | Método | Ruta | Cuerpo |
@@ -185,7 +264,10 @@ Respuesta de login y registro:
 | `POST` | `/api/v1/pedidos/{id}/cancelar/` | Alias explícito de cancelación |
 
 Solo se permite cancelar pedidos en estado `pendiente`; cualquier otra
-transición devuelve `409 Conflict`.
+transición devuelve `409 Conflict`. Los textos de `estado` (`pendiente`,
+`pagado`, `cancelado`) no cambian: ahora se leen del `codigo` del catálogo de
+estados. El detalle incluye `pago` —el intento aprobado, o `null` si no lo
+hay— y la lista aditiva `intentos_pago` con todos los intentos.
 
 ### Pagos y ventas
 
@@ -197,7 +279,13 @@ transición devuelve `409 Conflict`.
 | `GET` | `/api/v1/ventas/` | Solo administrador; filtros `desde`, `hasta`, `cliente` |
 
 Un pago rechazado devuelve `402 Payment Required` con el registro del intento en
-`error.details`. El pedido permanece pendiente y el pago puede reintentarse.
+`error.details`. El pedido permanece pendiente y el pago puede reintentarse; un
+rechazo ya no bloquea los intentos posteriores. Con varios intentos para el
+mismo pedido, `POST /pagos/` devuelve el último (el aprobado cuando el pago se
+completó): `monto` conserva su nombre histórico y se mapea desde
+`IntentoPago.importe`, mientras el pedido expone el aprobado en `pago` y todos
+en `intentos_pago`. Los textos de `estado` (`aprobado`, `rechazado`,
+`pendiente`) también provienen del `codigo` del catálogo.
 
 ### Reportes (solo administrador)
 
@@ -208,7 +296,11 @@ Un pago rechazado devuelve `402 Payment Required` con el registro del intento en
 | `GET` | `/api/v1/reportes/inventario/` | `filtro=todos\|agotados\|bajo_stock\|disponibles\|inactivas` |
 | `GET` | `/api/v1/reportes/videojuegos/` | `categoria`, `genero`, `plataforma`, `estado`, `disponibilidad` |
 
-Los reportes paginados devuelven `data.resultados` junto con `resumen`.
+Los reportes paginados devuelven `data.resultados` junto con `resumen`. Los
+filtros `categoria`/`genero` usan las relaciones muchos-a-muchos con
+`distinct()`, de modo que un videojuego con varias categorías no duplica
+ofertas paginadas. El dashboard y `seed_catalogo` emplean las mismas tablas
+normalizadas sin alterar sus respuestas.
 
 ### Soporte
 
@@ -228,7 +320,12 @@ Los reportes paginados devuelven `data.resultados` junto con `resumen`.
 | `GET` | `/api/v1/roles/` | Listado completo |
 
 Usuarios y roles son de solo lectura a través de la API; su gestión sigue en el
-admin de Django.
+admin de Django. `rol` y `rol_nombre` se conservan: `rol` es el primer ID por
+nombre de `Usuario.roles` y `rol_nombre` es el `codigo` estable (`cliente`,
+`administrador`), que mantiene el texto histórico de la API. La lista aditiva
+`roles` expone todos los IDs ordenados por nombre; `/roles/` añade el campo
+`codigo` y su `nombre` devuelve ese mismo código. Las propiedades de negocio
+`es_administrador`/`es_cliente` siguen intactas y gobiernan los permisos.
 
 ## Ejemplos
 
@@ -281,6 +378,7 @@ Las pruebas específicas de la API están en:
 - `tests/test_api_carrito_pedidos_pagos.py`
 - `tests/test_api_reportes_soporte.py`
 - `tests/test_api_usuarios_ventas.py`
+- `tests/test_api_contrato_modelo_normalizado.py`
 
 ## Compatibilidad con el sitio HTML
 

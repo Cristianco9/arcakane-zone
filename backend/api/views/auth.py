@@ -16,6 +16,15 @@ from rest_framework.views import APIView
 
 from ..exceptions import respuesta_exitosa
 from ..models import Token
+from ..throttling import (
+    AnonimoRateThrottle,
+    BloqueoLoginThrottle,
+    LoginRateThrottle,
+    RegistroRateThrottle,
+    UsuarioRateThrottle,
+    registrar_intento_fallido,
+    reiniciar_intentos_login,
+)
 from ..serializers import (
     CambioPasswordSerializer,
     LoginSerializer,
@@ -33,6 +42,7 @@ def _emitir_token(usuario):
 
 class RegistroView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [RegistroRateThrottle, AnonimoRateThrottle, UsuarioRateThrottle]
 
     def post(self, request):
         serializer = RegistroSerializer(data=request.data, context={"request": request})
@@ -51,20 +61,28 @@ class RegistroView(APIView):
 
 class LoginView(APIView):
     permission_classes = [AllowAny]
+    throttle_classes = [
+        BloqueoLoginThrottle,
+        LoginRateThrottle,
+        AnonimoRateThrottle,
+        UsuarioRateThrottle,
+    ]
 
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        username = serializer.validated_data["username"]
         usuario = authenticate(
             request,
-            username=serializer.validated_data["username"],
+            username=username,
             password=serializer.validated_data["password"],
         )
-        if usuario is None:
+        if usuario is None or not usuario.is_active:
+            # Mensaje único: no distingue usuario inexistente de contraseña mala.
+            registrar_intento_fallido(request, username)
             raise AuthenticationFailed("Usuario o contraseña incorrectos.")
-        if not usuario.is_active:
-            raise AuthenticationFailed("La cuenta está desactivada.")
 
+        reiniciar_intentos_login(request, username)
         login(request, usuario)
         return respuesta_exitosa(
             {

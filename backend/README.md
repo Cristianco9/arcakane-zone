@@ -20,7 +20,7 @@ Archivos relevantes de esta carpeta:
 
 - `Dockerfile`: imagen de producción basada en `python:3.12.9-slim`, usuario no privilegiado y Gunicorn por defecto.
 - `.dockerignore`: excluye `.env`, `.venv`, pruebas, medios y estáticos locales del contexto de build.
-- `docker/entrypoint.sh`: espera a PostgreSQL, aplica migraciones, recolecta estáticos y opcionalmente ejecuta `seed_catalogo`.
+- `docker/entrypoint.sh`: espera a PostgreSQL, crea la tabla de caché si hace falta, aplica migraciones, recolecta estáticos y opcionalmente ejecuta `seed_catalogo`.
 
 Comandos habituales dentro del contenedor:
 
@@ -30,6 +30,16 @@ docker compose exec backend python manage.py createsuperuser
 docker compose exec backend python manage.py seed_catalogo
 docker compose exec backend python manage.py shell
 ```
+
+### Throttling y caché
+
+Los límites de la API (`anon`, `user`, `login`, `registro`, `contacto`) se
+guardan en caché. Por defecto se usa la tabla `django_cache` de PostgreSQL;
+el entrypoint la crea con `python manage.py createcachetable` de forma
+idempotente. Para usar Redis, define `REDIS_URL` (requiere el paquete `redis`).
+Las tasas y el bloqueo de login se configuran con las variables
+`THROTTLE_RATE_*`, `THROTTLE_NUM_PROXIES` y `LOGIN_*` documentadas en
+[`.env.example`](.env.example) y en [`docs/api/API.md`](../docs/api/API.md).
 
 ## Estructura
 
