@@ -5,6 +5,17 @@
 </div>
 {% endif %}
 
+{% if advertencias %}
+<div id="carrito-advertencias" class="mb-4 px-4 py-3 rounded text-sm bg-amber-900/40 border border-amber-700 text-amber-100">
+  <p class="font-semibold mb-1">Revisa tu carrito antes de pagar:</p>
+  <ul class="list-disc list-inside space-y-1">
+    {% for advertencia in advertencias %}
+    <li>{{ advertencia.mensaje }}</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endif %}
+
 {% if detalles %}
 <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden mb-6">
   <table class="w-full text-sm">

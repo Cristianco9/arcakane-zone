@@ -10,6 +10,7 @@ from .services import (
     cancelar_pedido,
     get_or_create_carrito,
     quitar_item,
+    revalidar_carrito,
 )
 
 
@@ -19,12 +20,14 @@ def _es_htmx(request) -> bool:
 
 def _render_carrito_zona(request, mensaje="", exito=True):
     pedido = get_or_create_carrito(request.user)
+    advertencias = revalidar_carrito(pedido, sincronizar=True)
     detalles = pedido.detalles.select_related(
         "oferta__videojuego", "oferta__plataforma"
     ).all()
     return render(request, "pedidos/_carrito_contenido.html", {
         "pedido": pedido,
         "detalles": detalles,
+        "advertencias": advertencias,
         "mensaje": mensaje,
         "exito": exito,
     })
@@ -35,10 +38,15 @@ def _render_carrito_zona(request, mensaje="", exito=True):
 @login_required
 def carrito(request):
     pedido = get_or_create_carrito(request.user)
+    advertencias = revalidar_carrito(pedido, sincronizar=True)
     detalles = pedido.detalles.select_related(
         "oferta__videojuego", "oferta__plataforma"
     ).all()
-    return render(request, "pedidos/carrito.html", {"pedido": pedido, "detalles": detalles})
+    return render(request, "pedidos/carrito.html", {
+        "pedido": pedido,
+        "detalles": detalles,
+        "advertencias": advertencias,
+    })
 
 
 @login_required

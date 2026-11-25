@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from pagos.models import IntentoPago, Venta
 from pagos.services import procesar_pago_simulado
-from pedidos.services import validar_para_checkout
+from pedidos.services import revalidar_carrito
 
 from ..exceptions import ErrorDeNegocio, respuesta_error, respuesta_exitosa
 from ..permissions import EsAdministrador
@@ -44,11 +44,15 @@ class PagoViewSet(
         if pedido.estado_id != "pendiente":
             raise ErrorDeNegocio("El pedido no está en estado pendiente.")
 
-        errores = validar_para_checkout(pedido)
-        if errores:
+        ajustes = revalidar_carrito(pedido, sincronizar=False)
+        if ajustes:
             raise ErrorDeNegocio(
-                "El pedido no está listo para pagar.",
-                extra={"errores": errores},
+                "El carrito cambió desde la última consulta. "
+                "Vuelve a GET /carrito/ para confirmar los ajustes antes de pagar.",
+                extra={
+                    "ajustes": ajustes,
+                    "errores": [ajuste["mensaje"] for ajuste in ajustes],
+                },
             )
 
         exito, mensaje = procesar_pago_simulado(pedido)

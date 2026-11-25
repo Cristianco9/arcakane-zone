@@ -6,6 +6,7 @@ cual para no duplicar comportamiento entre las vistas HTML y la API.
 """
 import re
 
+from django.conf import settings
 from django.contrib.auth import password_validation
 from django.core.exceptions import ObjectDoesNotExist, ValidationError as DjangoValidationError
 from django.db import transaction
@@ -24,6 +25,7 @@ from cuentas.models import AuditoriaCuenta, Rol, Usuario
 from inventario.models import MotivoMovimientoInventario, MovimientoInventarioOfertaVideojuego
 from pagos.models import IntentoPago, Venta
 from pedidos.models import DetallePedido, EstadoPedido, Pedido
+from pedidos.services import motivo_indisponibilidad
 from soporte.models import Contacto
 
 
@@ -419,17 +421,45 @@ class DetallePedidoSerializer(serializers.ModelSerializer):
         return OfertaEnDetalleSerializer(obj.oferta, context=self.context).data
 
 
-class CarritoItemCreateSerializer(serializers.Serializer):
+class CarritoDetalleSerializer(DetallePedidoSerializer):
+    """Línea del carrito con su disponibilidad actual frente al catálogo."""
+
+    disponible = serializers.SerializerMethodField()
+    motivo_no_disponible = serializers.SerializerMethodField()
+
+    class Meta(DetallePedidoSerializer.Meta):
+        fields = [*DetallePedidoSerializer.Meta.fields, "disponible", "motivo_no_disponible"]
+
+    def get_disponible(self, obj):
+        return motivo_indisponibilidad(obj) is None
+
+    def get_motivo_no_disponible(self, obj):
+        return motivo_indisponibilidad(obj)
+
+
+class _LimiteCantidadCarrito:
+    """Comparte la validación del tope configurable de unidades por línea."""
+
+    def validate_cantidad(self, value):
+        limite = settings.CARRITO_MAX_CANTIDAD_POR_LINEA
+        if value > limite:
+            raise serializers.ValidationError(
+                f"La cantidad máxima por línea es {limite}."
+            )
+        return value
+
+
+class CarritoItemCreateSerializer(_LimiteCantidadCarrito, serializers.Serializer):
     oferta = serializers.PrimaryKeyRelatedField(queryset=OfertaVideojuego.objects.all())
     cantidad = serializers.IntegerField(min_value=1, default=1)
 
 
-class CarritoItemUpdateSerializer(serializers.Serializer):
+class CarritoItemUpdateSerializer(_LimiteCantidadCarrito, serializers.Serializer):
     cantidad = serializers.IntegerField(min_value=0)
 
 
 class CarritoSerializer(serializers.ModelSerializer):
-    detalles = DetallePedidoSerializer(many=True, read_only=True)
+    detalles = CarritoDetalleSerializer(many=True, read_only=True)
     total = serializers.DecimalField(max_digits=12, decimal_places=2, read_only=True)
     total_items = serializers.SerializerMethodField()
 

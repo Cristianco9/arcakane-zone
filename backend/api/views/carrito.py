@@ -11,14 +11,15 @@ from pedidos.services import (
     agregar_o_incrementar,
     get_or_create_carrito,
     quitar_item,
+    revalidar_carrito,
 )
 
 from ..exceptions import ErrorDeNegocio, respuesta_exitosa
 from ..serializers import (
+    CarritoDetalleSerializer,
     CarritoItemCreateSerializer,
     CarritoItemUpdateSerializer,
     CarritoSerializer,
-    DetallePedidoSerializer,
 )
 
 
@@ -43,16 +44,19 @@ def _detalle_del_carrito(usuario, pk):
         raise NotFound("El ítem del carrito no existe.") from exc
 
 
-def _serializar_carrito(pedido, request):
+def _serializar_carrito(pedido, request, advertencias=None):
     if pedido is None:
-        return {
+        datos = {
             "id": None,
             "estado": "pendiente",
             "total": "0.00",
             "total_items": 0,
             "detalles": [],
         }
-    return CarritoSerializer(pedido, context={"request": request}).data
+    else:
+        datos = CarritoSerializer(pedido, context={"request": request}).data
+    datos["advertencias"] = advertencias or []
+    return datos
 
 
 class CarritoView(APIView):
@@ -60,7 +64,15 @@ class CarritoView(APIView):
 
     def get(self, request):
         pedido = _carrito_pendiente(request.user)
-        return respuesta_exitosa(_serializar_carrito(pedido, request))
+        advertencias = []
+        if pedido is not None:
+            # Leer el carrito sincroniza los precios: es la confirmación
+            # explícita del cliente antes de pagar.
+            advertencias = revalidar_carrito(pedido, sincronizar=True)
+            pedido._prefetched_objects_cache.pop("detalles", None)
+        return respuesta_exitosa(
+            _serializar_carrito(pedido, request, advertencias)
+        )
 
     @transaction.atomic
     def delete(self, request):
@@ -88,7 +100,7 @@ class CarritoItemsView(APIView):
         pedido = get_or_create_carrito(request.user)
         detalle = _detalle_del_carrito(request.user, pedido.detalles.get(oferta=oferta).pk)
         return respuesta_exitosa(
-            DetallePedidoSerializer(detalle, context={"request": request}).data,
+            CarritoDetalleSerializer(detalle, context={"request": request}).data,
             message=mensaje,
             status_code=status.HTTP_201_CREATED,
         )
@@ -100,7 +112,7 @@ class CarritoItemDetalleView(APIView):
     def get(self, request, pk):
         detalle = _detalle_del_carrito(request.user, pk)
         return respuesta_exitosa(
-            DetallePedidoSerializer(detalle, context={"request": request}).data
+            CarritoDetalleSerializer(detalle, context={"request": request}).data
         )
 
     def patch(self, request, pk):
@@ -119,7 +131,7 @@ class CarritoItemDetalleView(APIView):
         detalle.refresh_from_db()
         detalle = _detalle_del_carrito(request.user, pk)
         return respuesta_exitosa(
-            DetallePedidoSerializer(detalle, context={"request": request}).data,
+            CarritoDetalleSerializer(detalle, context={"request": request}).data,
             message=mensaje,
         )
 
