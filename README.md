@@ -114,6 +114,10 @@ curl -s -X POST http://localhost:5173/api/v1/auth/login/ \
   `POST /api/v1/auth/token/refresh/` para rotar la clave y
   `POST /api/v1/auth/logout-all/` para cerrar todas las sesiones.
 - Contrato completo: [`docs/api/API.md`](docs/api/API.md).
+- `GET /api/v1/carrito/` revalida precios y disponibilidad: sincroniza el
+  `precio_unitario` y devuelve `advertencias`. Si el catálogo cambia después,
+  `POST /api/v1/pagos/` responde `409` con `error.details.ajustes` hasta que el
+  cliente vuelva a consultar el carrito.
 - El frontend consulta `/api/v1/health/` para mostrar el estado de la API.
 
 El acceso por rol (RBAC) se rige por `Rol.codigo` (`administrador`,
@@ -192,7 +196,7 @@ Toda la configuración está centralizada en el `.env` de la raíz. El Compose n
 |---|---|
 | Proyecto | `COMPOSE_PROJECT_NAME`, `IMAGE_TAG`, `TZ`, `RESTART_POLICY`, `PROD_RESTART_POLICY` |
 | Healthchecks | `HEALTHCHECK_INTERVAL`, `HEALTHCHECK_TIMEOUT`, `HEALTHCHECK_RETRIES`, `HEALTHCHECK_START_PERIOD`, `BACKEND_HEALTHCHECK_START_PERIOD`, `FRONTEND_HEALTHCHECK_START_PERIOD`, `PGADMIN_HEALTHCHECK_START_PERIOD` |
-| Backend | `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `CORS_ALLOWED_ORIGINS`, `API_TOKEN_TTL_DAYS`, `SECURE_SSL_REDIRECT`, `USE_X_FORWARDED_HOST`, `SECURE_REFERRER_POLICY`, `SESSION_COOKIE_SAMESITE`, `SECURE_HSTS_PRELOAD`, `LOG_LEVEL`, `BACKEND_HOST`, `BACKEND_PORT`, `BACKEND_PUBLISHED_PORT`, `BACKEND_WORKERS`, `BACKEND_TIMEOUT`, `RUN_MIGRATIONS`, `COLLECTSTATIC`, `SEED_CATALOGO` |
+| Backend | `DJANGO_SECRET_KEY`, `DJANGO_DEBUG`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `CORS_ALLOWED_ORIGINS`, `API_TOKEN_TTL_DAYS`, `CARRITO_MAX_CANTIDAD_POR_LINEA`, `SECURE_SSL_REDIRECT`, `USE_X_FORWARDED_HOST`, `SECURE_REFERRER_POLICY`, `SESSION_COOKIE_SAMESITE`, `SECURE_HSTS_PRELOAD`, `LOG_LEVEL`, `BACKEND_HOST`, `BACKEND_PORT`, `BACKEND_PUBLISHED_PORT`, `BACKEND_WORKERS`, `BACKEND_TIMEOUT`, `RUN_MIGRATIONS`, `COLLECTSTATIC`, `SEED_CATALOGO` |
 | PostgreSQL | `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_HOST`, `POSTGRES_PORT`, `POSTGRES_PUBLISHED_PORT` |
 | pgAdmin | `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD`, `PGADMIN_PORT`, `PGADMIN_PUBLISHED_PORT`, `PGADMIN_MASTER_PASSWORD_REQUIRED` |
 | Frontend | `FRONTEND_PORT`, `FRONTEND_PUBLISHED_PORT`, `VITE_API_BASE_URL` |

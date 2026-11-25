@@ -96,6 +96,7 @@ cp .env.example .env
 | `SECRET_KEY` | Sí | Clave secreta de Django. No debe compartirse ni versionarse. Con `DEBUG=False` se exige una clave real de al menos 50 caracteres; la arranque falla si está vacía o es de ejemplo (`openssl rand -hex 32`). |
 | `DATABASE_URL` | Condicional | URL de conexión PostgreSQL, por ejemplo `postgres://usuario:clave@host:5432/db`. Si no se define, se usan las variables `POSTGRES_*`. |
 | `API_TOKEN_TTL_DAYS` | No | Días de vigencia de los tokens de API; por defecto `7` (mínimo `1`). |
+| `CARRITO_MAX_CANTIDAD_POR_LINEA` | No | Unidades máximas por línea del carrito; por defecto `20` (mínimo `1`). Aplica a API y vistas HTML. |
 | `POSTGRES_DB` | Condicional | Nombre de la base de datos cuando se usa el fallback de Docker Compose. |
 | `POSTGRES_USER` | Condicional | Usuario de PostgreSQL cuando se usa el fallback de Docker Compose. |
 | `POSTGRES_PASSWORD` | Condicional | Contraseña de PostgreSQL cuando se usa el fallback de Docker Compose. |
@@ -204,6 +205,7 @@ SQLite en memoria, por lo que la suite es independiente del entorno.
 - **Base:** `/api/v1/` (raíz navegable en `GET /api/v1/`).
 - **Salud:** `GET /api/v1/health/` (*liveness*) y `GET /api/v1/health/ready/` (*readiness*, consulta la BD y responde `503` si falla).
 - **Trazabilidad:** cada respuesta `/api/` devuelve `X-Request-ID` (se acepta la cabecera del cliente); el mismo valor se incluye en los logs JSON de producción y en los errores `500`.
+- **Carrito:** `GET /carrito/` sincroniza precios y devuelve `advertencias` (`precio_cambiado`, `sin_stock`, `no_disponible`); el pago responde `409` con `error.details.ajustes` si el carrito cambió después de esa consulta.
 - **Autenticación:** token propio con vencimiento
   (`Authorization: Token <clave>`) o sesión de Django con `X-CSRFToken`.
   Login y registro devuelven `token` y `expires_at`; existen

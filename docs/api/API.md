@@ -352,6 +352,22 @@ envían ambas, prevalecen las listas.
 | `PATCH` | `/api/v1/carrito/items/{id}/` | `{ "cantidad": 3 }`; `0` elimina la línea |
 | `DELETE` | `/api/v1/carrito/items/{id}/` | Elimina la línea |
 
+`GET /carrito/` revalida el carrito: sincroniza `precio_unitario` con
+`OfertaVideojuego.precio_vigente` y devuelve `advertencias` además del sobre
+habitual. Cada aviso incluye `codigo`, `detalle_id`, `titulo`, `plataforma`,
+`cantidad` y `mensaje`; `precio_cambiado` añade `precio_anterior` y
+`precio_nuevo`, `sin_stock` añade `stock` y `no_disponible` añade `motivo`
+(`titulo_inactivo` u `oferta_retirada`). Las líneas también exponen
+`disponible` y `motivo_no_disponible`. Consultar el carrito es la forma en que
+el cliente acepta los precios vigentes: tras la sincronización el aviso de
+precio desaparece y el total se recalcula.
+
+No se puede agregar una oferta retirada, sin stock o cuyo `videojuego.activo`
+sea `False`. La cantidad por línea está limitada por
+`CARRITO_MAX_CANTIDAD_POR_LINEA` (20 por defecto, mínimo 1); superarla da `400`
+en la API y un `409` de regla de negocio en el servicio compartido con las
+vistas HTML.
+
 ### Pedidos
 
 | Método | Ruta | Notas |
@@ -375,6 +391,14 @@ hay— y la lista aditiva `intentos_pago` con todos los intentos.
 | `GET` | `/api/v1/pagos/{id}/` | Detalle |
 | `POST` | `/api/v1/pagos/` | `{ "pedido": 1 }`; procesa el pago simulado |
 | `GET` | `/api/v1/ventas/` | Solo administrador; filtros `desde`, `hasta`, `cliente` |
+
+Antes de cobrar se revalida el carrito **sin modificarlo**. Si el precio, el
+stock, la publicación o el estado activo del título cambiaron desde la última
+consulta de `/carrito/`, la respuesta es `409 Conflict` con
+`error.details.ajustes` (misma forma que las `advertencias` del carrito) y
+`error.details.errores` con los mensajes legibles. No se crea ningún
+`IntentoPago`: el cliente debe volver a `GET /carrito/` para ver los precios
+sincronizados y reintentar el pago.
 
 Un pago rechazado devuelve `402 Payment Required` con el registro del intento en
 `error.details`. El pedido permanece pendiente y el pago puede reintentarse; un
