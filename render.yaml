@@ -16,6 +16,8 @@ services:
         value: "False"
       - key: LOG_LEVEL
         value: INFO
+      - key: CARRITO_MAX_CANTIDAD_POR_LINEA
+        value: "20"
       - key: DATABASE_URL
         sync: false          # se configura manualmente en el panel de Render
       - key: ALLOWED_HOSTS

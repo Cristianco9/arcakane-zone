@@ -246,6 +246,12 @@ LOGIN_MAX_FAILED_ATTEMPTS = max(1, env.int("LOGIN_MAX_FAILED_ATTEMPTS", default=
 LOGIN_FAILURE_WINDOW_SECONDS = max(1, env.int("LOGIN_FAILURE_WINDOW_SECONDS", default=900))
 LOGIN_LOCKOUT_SECONDS = max(1, env.int("LOGIN_LOCKOUT_SECONDS", default=900))
 
+# Tope de unidades por línea del carrito. Se valida en la API y en el servicio
+# para que la regla sea la misma en REST y en las vistas HTML.
+CARRITO_MAX_CANTIDAD_POR_LINEA = max(
+    1, env.int("CARRITO_MAX_CANTIDAD_POR_LINEA", default=20)
+)
+
 # ── API REST ─────────────────────────────────────────────────────────────────
 # Autenticación por token propio (clientes desacoplados) y por sesión/cookie
 # (misma sesión que usa el sitio y el admin de Django).
