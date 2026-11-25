@@ -1,7 +1,9 @@
 """Pruebas del carrito, pedidos y pagos a través de la API REST."""
+from decimal import Decimal
 from unittest.mock import patch
 
 import pytest
+from django.test import override_settings
 from rest_framework.test import APIClient
 
 from cuentas.models import Usuario
@@ -448,3 +450,142 @@ def test_pedido_con_varios_intentos_expone_el_aprobado(usuario_cliente, pedido_c
         rechazado.referencia,
         aprobado.referencia,
     }
+
+
+# ── Revalidación de carrito (AZ-S2-BE-11) ────────────────────────────────────
+
+def test_get_carrito_sincroniza_precio_y_devuelve_advertencia(
+    usuario_cliente, pedido_con_item, oferta
+):
+    detalle = pedido_con_item.detalles.first()
+    oferta.precio_vigente = "90000.00"
+    oferta.save(update_fields=["precio_vigente"])
+    client = _auth(usuario_cliente)
+
+    respuesta = client.get("/api/v1/carrito/")
+
+    assert respuesta.status_code == 200
+    data = respuesta.json()["data"]
+    assert data["advertencias"][0]["codigo"] == "precio_cambiado"
+    assert data["advertencias"][0]["detalle_id"] == detalle.pk
+    assert data["advertencias"][0]["precio_anterior"] == "80000.00"
+    assert data["advertencias"][0]["precio_nuevo"] == "90000.00"
+    assert data["detalles"][0]["precio_unitario"] == "90000.00"
+    assert data["total"] == "180000.00"
+
+    # La segunda lectura ya no advierte: el precio quedó sincronizado.
+    assert client.get("/api/v1/carrito/").json()["data"]["advertencias"] == []
+
+
+def test_get_carrito_devuelve_advertencia_de_stock(
+    usuario_cliente, pedido_con_item, oferta
+):
+    detalle = pedido_con_item.detalles.first()
+    oferta.stock = detalle.cantidad - 1
+    oferta.save(update_fields=["stock"])
+
+    data = _auth(usuario_cliente).get("/api/v1/carrito/").json()["data"]
+
+    assert data["advertencias"][0]["codigo"] == "sin_stock"
+    assert data["advertencias"][0]["stock"] == detalle.cantidad - 1
+    assert data["detalles"][0]["disponible"] is False
+    assert data["detalles"][0]["motivo_no_disponible"] == "sin_stock"
+
+
+def test_get_carrito_devuelve_advertencia_de_titulo_inactivo(
+    usuario_cliente, pedido_con_item, videojuego
+):
+    videojuego.activo = False
+    videojuego.save(update_fields=["activo"])
+
+    data = _auth(usuario_cliente).get("/api/v1/carrito/").json()["data"]
+
+    assert data["advertencias"][0]["codigo"] == "no_disponible"
+    assert data["advertencias"][0]["motivo"] == "titulo_inactivo"
+    assert data["detalles"][0]["disponible"] is False
+    assert data["detalles"][0]["motivo_no_disponible"] == "titulo_inactivo"
+
+
+def test_get_carrito_devuelve_advertencia_de_oferta_retirada(
+    usuario_cliente, pedido_con_item, oferta
+):
+    oferta.estado_publicacion_id = "retirado"
+    oferta.save(update_fields=["estado_publicacion"])
+
+    data = _auth(usuario_cliente).get("/api/v1/carrito/").json()["data"]
+
+    assert data["advertencias"][0]["codigo"] == "no_disponible"
+    assert data["advertencias"][0]["motivo"] == "oferta_retirada"
+
+
+def test_pago_con_precio_desactualizado_devuelve_409_con_ajustes(
+    usuario_cliente, pedido_con_item, oferta
+):
+    oferta.precio_vigente = "90000.00"
+    oferta.save(update_fields=["precio_vigente"])
+
+    respuesta = _auth(usuario_cliente).post(
+        "/api/v1/pagos/", {"pedido": pedido_con_item.pk}, format="json"
+    )
+
+    assert respuesta.status_code == 409
+    cuerpo = respuesta.json()["error"]
+    assert cuerpo["code"] == "conflicto"
+    assert cuerpo["details"]["ajustes"][0]["codigo"] == "precio_cambiado"
+    assert cuerpo["details"]["ajustes"][0]["precio_nuevo"] == "90000.00"
+    assert not IntentoPago.objects.filter(pedido=pedido_con_item).exists()
+
+    detalle = pedido_con_item.detalles.first()
+    detalle.refresh_from_db()
+    assert detalle.precio_unitario == Decimal("80000.00")
+
+
+def test_pago_con_titulo_inactivo_devuelve_409(
+    usuario_cliente, pedido_con_item, videojuego
+):
+    videojuego.activo = False
+    videojuego.save(update_fields=["activo"])
+
+    respuesta = _auth(usuario_cliente).post(
+        "/api/v1/pagos/", {"pedido": pedido_con_item.pk}, format="json"
+    )
+
+    assert respuesta.status_code == 409
+    ajustes = respuesta.json()["error"]["details"]["ajustes"]
+    assert ajustes[0]["codigo"] == "no_disponible"
+    assert ajustes[0]["motivo"] == "titulo_inactivo"
+    assert not IntentoPago.objects.filter(pedido=pedido_con_item).exists()
+
+
+def test_pago_tras_consultar_carrito_usa_el_precio_sincronizado(
+    usuario_cliente, pedido_con_item, oferta
+):
+    client = _auth(usuario_cliente)
+    oferta.precio_vigente = "90000.00"
+    oferta.save(update_fields=["precio_vigente"])
+
+    consulta = client.get("/api/v1/carrito/")
+    assert consulta.json()["data"]["advertencias"][0]["codigo"] == "precio_cambiado"
+
+    with patch("pagos.services.random.random", return_value=0.0):
+        pago = client.post(
+            "/api/v1/pagos/", {"pedido": pedido_con_item.pk}, format="json"
+        )
+
+    assert pago.status_code == 201
+    intento = IntentoPago.objects.get(pedido=pedido_con_item)
+    assert intento.importe == Decimal("180000.00")
+
+
+@override_settings(CARRITO_MAX_CANTIDAD_POR_LINEA=3)
+def test_agregar_por_encima_del_limite_configurable_devuelve_400(
+    usuario_cliente, oferta
+):
+    respuesta = _auth(usuario_cliente).post(
+        "/api/v1/carrito/items/",
+        {"oferta": oferta.pk, "cantidad": 4},
+        format="json",
+    )
+
+    assert respuesta.status_code == 400
+    assert "cantidad" in respuesta.json()["error"]["details"]
