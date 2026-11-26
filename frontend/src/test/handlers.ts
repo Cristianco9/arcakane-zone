@@ -77,13 +77,13 @@ function paginado<T>(datos: readonly T[], solicitud: Request) {
 }
 
 export const handlers = [
-  http.get("/api/v1/catalogo/categorias", ({ request }) =>
+  http.get("/api/v1/catalogo/categorias/", ({ request }) =>
     HttpResponse.json(paginado(categoriasApi, request)),
   ),
-  http.get("/api/v1/catalogo/plataformas", ({ request }) =>
+  http.get("/api/v1/catalogo/plataformas/", ({ request }) =>
     HttpResponse.json(paginado(plataformasApi, request)),
   ),
-  http.get("/api/v1/catalogo/videojuegos", ({ request }) =>
+  http.get("/api/v1/catalogo/videojuegos/", ({ request }) =>
     HttpResponse.json(paginado(videojuegosApi, request)),
   ),
   http.get("/api/v1/catalogo/videojuegos/:id/", ({ params }) => {

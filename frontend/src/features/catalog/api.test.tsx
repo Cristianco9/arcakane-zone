@@ -32,7 +32,7 @@ describe("catalog API", () => {
 
   it("rechaza una respuesta que no cumple el contrato", async () => {
     server.use(
-      http.get("/api/v1/catalogo/categorias", () =>
+      http.get("/api/v1/catalogo/categorias/", () =>
         HttpResponse.json({ success: true, data: [{ id: "no-numero" }] }),
       ),
     );

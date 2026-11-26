@@ -169,7 +169,7 @@ export function useCatalogCategories() {
   return useQuery({
     queryKey: ["catalogo", "categorias"],
     queryFn: async () =>
-      (await fetchPaginas(`${BASE_URL}/categorias`, CatalogoMaestroApiSchema)).map(
+      (await fetchPaginas(`${BASE_URL}/categorias/`, CatalogoMaestroApiSchema)).map(
         aCategoria,
       ),
   });
@@ -180,7 +180,7 @@ export function useCatalogPlatforms() {
     queryKey: ["catalogo", "plataformas"],
     queryFn: async () =>
       (
-        await fetchPaginas(`${BASE_URL}/plataformas`, CatalogoMaestroApiSchema)
+        await fetchPaginas(`${BASE_URL}/plataformas/`, CatalogoMaestroApiSchema)
       ).map((plataforma) => plataforma.nombre),
   });
 }
@@ -191,7 +191,7 @@ export function useCatalogProducts() {
     queryKey: ["catalogo", "videojuegos", categorias.data],
     queryFn: async () =>
       (
-        await fetchPaginas(`${BASE_URL}/videojuegos`, VideojuegoApiSchema)
+        await fetchPaginas(`${BASE_URL}/videojuegos/`, VideojuegoApiSchema)
       ).map((videojuego) => aProducto(videojuego, categorias.data ?? [])),
     enabled: categorias.isSuccess,
   });
