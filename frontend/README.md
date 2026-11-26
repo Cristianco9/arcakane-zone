@@ -66,9 +66,14 @@ El frontend llama a rutas relativas bajo `/api/v1/...`:
 const respuesta = await fetch("/api/v1/health/");
 ```
 
-- Desarrollo: Vite reenvía `/api/v1/...` a `http://backend:8000/api/v1/...`.
+- Desarrollo: Vite reenvía `/api/v1/...` a `http://backend:8000/api/v1/...` y
+  añade `X-Forwarded-Proto: https`, igual que hace Nginx en producción. Sin esa
+  cabecera, un backend con `SECURE_SSL_REDIRECT=True` responde `301` hacia
+  `https://backend:8000/...` y el navegador se queda cargando.
 - Producción: Nginx hace lo mismo usando el nombre de servicio `backend`.
 - El prefijo `/api` **no** se elimina: la API versionada vive en `/api/v1/`.
+- El router de Django exige barra final: usa `/api/v1/catalogo/videojuegos/`,
+  no `/api/v1/catalogo/videojuegos`.
 
 El catálogo (inicio, catálogos, productos y detalle) ya no usa el arreglo de
 demostración: `src/features/catalog/api.ts` consulta `categorias`, `plataformas` y
@@ -89,7 +94,10 @@ FRONTEND_PORT=5173 VITE_DEV_PROXY_TARGET=http://localhost:8000 npm run dev
 ```
 
 Disponible en <http://localhost:5173/>. Si omites `VITE_DEV_PROXY_TARGET`, Vite apunta a
-`http://localhost:8000`, que es útil cuando el backend corre en local.
+`http://localhost:8000`, que es útil cuando el backend corre en local. En ese modo
+local, arranca el backend con `SECURE_SSL_REDIRECT=False` (o detrás de un proxy que
+envíe `X-Forwarded-Proto: https`); de lo contrario Django redirigirá las peticiones
+`/api` y la UI se quedará en «Cargando vista…».
 
 ## Scripts
 
