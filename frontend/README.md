@@ -12,7 +12,8 @@ frontend/
 │   ├── App.tsx           # Componente raíz
 │   ├── main.tsx          # Punto de entrada
 │   ├── index.css         # Estilos globales
-│   └── App.css
+│   ├── App.css
+│   └── features/catalog/api.ts  # Consulta paginada y validada del catálogo
 ├── public/
 ├── Dockerfile            # targets: development y production
 ├── .dockerignore
@@ -68,6 +69,14 @@ const respuesta = await fetch("/api/v1/health/");
 - Desarrollo: Vite reenvía `/api/v1/...` a `http://backend:8000/api/v1/...`.
 - Producción: Nginx hace lo mismo usando el nombre de servicio `backend`.
 - El prefijo `/api` **no** se elimina: la API versionada vive en `/api/v1/`.
+
+El catálogo (inicio, catálogos, productos y detalle) ya no usa el arreglo de
+demostración: `src/features/catalog/api.ts` consulta `categorias`, `plataformas` y
+`videojuegos` con TanStack Query, recorre todas las páginas (`page_size=100`) y
+valida cada respuesta con Zod antes de transformarla en `Product`. Por eso la
+vista refleja los videojuegos sembrados en el backend y sus ofertas reales.
+`mockData.ts` se conserva únicamente como fixture de los tests de selector y de
+las respuestas simuladas con MSW.
 
 Contrato completo: [`docs/api/API.md`](../docs/api/API.md).
 
