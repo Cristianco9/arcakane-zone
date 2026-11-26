@@ -83,6 +83,10 @@ vista refleja los videojuegos sembrados en el backend y sus ofertas reales.
 `mockData.ts` se conserva únicamente como fixture de los tests de selector y de
 las respuestas simuladas con MSW.
 
+Cada videojuego trae `imagen_url` desde la base de datos y se muestra como
+portada en tarjetas, destacado y detalle. Si la URL remota falla, se sustituye
+por `src/assets/covers/catalog-placeholder.svg` mediante `alFallarPortada`.
+
 Contrato completo: [`docs/api/API.md`](../docs/api/API.md).
 
 ## Desarrollo local sin Docker

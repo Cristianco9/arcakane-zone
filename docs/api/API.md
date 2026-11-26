@@ -329,6 +329,8 @@ Ejemplo de videojuego con los campos aditivos:
 {
   "id": 1,
   "titulo": "Juego Alpha",
+  "portada": null,
+  "imagen_url": "https://picsum.photos/seed/arkane-1-juego-alpha/800/1000",
   "categoria": 3,
   "categoria_nombre": "Acción",
   "categorias": [3, 7],
@@ -345,6 +347,12 @@ se conservan por compatibilidad y exponen el primero por nombre de las listas
 `categorias`/`generos`, cuyos IDs también se ordenan por nombre. La escritura
 acepta la forma histórica (`categoria` o `genero`) y las listas nuevas; si se
 envían ambas, prevalecen las listas.
+
+`imagen_url` guarda en la base de datos la URL pública de la portada de cada
+videojuego. El seed la genera de forma determinista con la PK y el título, y la
+migración `catalogo.0015_videojuego_imagen_url` la rellena para los títulos que
+ya existían. El frontend la usa como `cover` y cae a una portada local si la URL
+no responde.
 
 ### Carrito
 
