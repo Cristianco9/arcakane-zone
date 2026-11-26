@@ -318,6 +318,11 @@ Los filtros `categoria`, `genero` y `plataforma` conservan su nombre y
 semántica. Los dos primeros consultan ahora relaciones muchos-a-muchos y se
 aplica `distinct()` para no duplicar resultados ni romper la paginación.
 
+Tras `python manage.py seed_catalogo` el catálogo contiene 120 videojuegos,
+20 por cada categoría base. `GET /api/v1/catalogo/videojuegos/` devuelve ese
+total en `pagination.count`, y `?categoria=<id>` permite verificar la
+distribución de una categoría concreta.
+
 Ejemplo de videojuego con los campos aditivos:
 
 ```json

@@ -132,7 +132,34 @@ python manage.py seed_catalogo
 python manage.py createsuperuser
 ```
 
-`seed_catalogo` crea roles, categorías, plataformas, géneros y 15 videojuegos de ejemplo. Es idempotente para los datos que ya existen.
+`seed_catalogo` crea roles, las seis categorías base, plataformas, géneros y
+**120 videojuegos de ejemplo** (20 por categoría). Si hay categorías adicionales,
+también siembra 20 títulos para cada una: el objetivo global es
+`max(100, 20 × número_de_categorías)`. Es idempotente: repetirlo no crea
+duplicados y solo completa las relaciones que falten.
+
+Al terminar imprime la evidencia de carga:
+
+```text
+  Videojuegos:    120 creados
+  Ofertas:        167 creadas
+  Total videojuegos: 120 (mínimo 120)
+    - Acción: 20
+    - Aventura: 20
+    - Carreras: 20
+    - Deportes: 20
+    - Estrategia: 20
+    - RPG: 20
+```
+
+Para **restablecer** solo los datos semilla (borra también usuarios y pedidos):
+
+```bash
+python manage.py flush --noinput
+python manage.py migrate
+python manage.py seed_catalogo
+python manage.py createsuperuser
+```
 
 ### Conciliación de inventario
 

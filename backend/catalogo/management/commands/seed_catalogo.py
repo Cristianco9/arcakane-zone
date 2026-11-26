@@ -20,6 +20,164 @@ from cuentas.models import Rol
 from pagos.models import EstadoIntentoPago
 from pedidos.models import EstadoPedido
 
+# AZ-S2-BE-16: mínimos del catálogo sembrado. Si hay más categorías que las
+# seis base, el objetivo global crece con ellas (20 por categoría).
+MINIMO_VIDEOJUEGOS = 100
+MINIMO_POR_CATEGORIA = 20
+
+GENERO_POR_CATEGORIA = {
+    "Acción": "Shooter",
+    "Aventura": "Mundo abierto",
+    "Carreras": "Simulación",
+    "Deportes": "Deportivo",
+    "Estrategia": "Simulación",
+    "RPG": "Rol",
+}
+CLASIFICACIONES_ROTACION = ("3", "7", "12", "16", "18")
+PLATAFORMAS_ROTACION = ("PC", "PlayStation 5", "Xbox Series X", "Nintendo Switch")
+
+# Títulos de prueba complementarios. Se consumen solo hasta completar 20 por
+# categoría, por lo que los 15 juegos históricos se conservan sin duplicarlos.
+TITULOS_COMPLEMENTARIOS = {
+    "Acción": [
+        "Asalto al amanecer",
+        "Ataque en la cumbre",
+        "Cazador de sombras",
+        "Combate en la penumbra",
+        "Duelo de titanes",
+        "Escape de la fortaleza",
+        "Furia de acero",
+        "Golpe mortal",
+        "Operación Relámpago",
+        "Raid en la ciudad baja",
+        "Rescate en la factoría",
+        "Sendero de cenizas",
+        "Tormenta de fuego",
+        "Última línea de defensa",
+        "Venganza del norte",
+        "Zona de impacto",
+        "Asedio en el puerto",
+        "Contrataque final",
+        "Punto de ruptura",
+        "Sabotaje nocturno",
+    ],
+    "Aventura": [
+        "Cartografía del vacío",
+        "Cuevas de cristal",
+        "Diario de una expedición",
+        "El bosque susurrante",
+        "El faro perdido",
+        "El secreto del manantial",
+        "En busca de la brújula",
+        "Islas flotantes",
+        "La ciudad sumergida",
+        "La llave de los ecos",
+        "Las ruinas de Aztlán",
+        "Los restos del templo",
+        "Memoria de arena",
+        "Murmullos del valle",
+        "Naufragio en el archipiélago",
+        "Obsidiana y niebla",
+        "Tras el rastro de las estrellas",
+        "Viaje al fondo del cañón",
+        "La puerta de sal",
+        "El mapa de los vientos",
+    ],
+    "Carreras": [
+        "Auto-x en la costa",
+        "Carrera de resistencia",
+        "Circuitos de cristal",
+        "Clásico de montaña",
+        "Contrarreloj nocturna",
+        "Duna salvaje",
+        "Escape en la autopista",
+        "Fórmula de neón",
+        "Gran premio de invierno",
+        "Karting de precisión",
+        "Las mil curvas",
+        "Meta en la cumbre",
+        "Nitro en el desierto",
+        "Rally de cenizas",
+        "Relevos de velocidad",
+        "Ruta de los faros",
+        "Sprint en la ciudad",
+        "Turismo de élite",
+        "Carrera de los récords",
+        "Pista del volcán",
+    ],
+    "Deportes": [
+        "Baloncesto callejero",
+        "Campeonato de invierno",
+        "Copa de las naciones",
+        "Derbi de neón",
+        "Entrenamiento de élite",
+        "Estadio de cristal",
+        "Fútbol de barrio",
+        "Grand Slam nocturno",
+        "Liga de acero",
+        "Maratón urbana",
+        "Partido de medianoche",
+        "Pelota en llamas",
+        "Renacimiento olímpico",
+        "Rodeo de superficie",
+        "Tenis en la azotea",
+        "Torneo de gladiadores",
+        "Victoria en la prórroga",
+        "Voley playa extremo",
+        "Ciclismo de montaña",
+        "Boxeo en el ring",
+    ],
+    "Estrategia": [
+        "Asedio a la muralla",
+        "Batalla de los estados",
+        "Campañas de invierno",
+        "Ciudadela de cristal",
+        "Conquista del delta",
+        "Duque de las tierras altas",
+        "El consejo de los diez",
+        "El gran sitio",
+        "Economía de guerra",
+        "Ejércitos de papel",
+        "Fronteras del imperio",
+        "Guerra de los puertos",
+        "Imperio de sal",
+        "La línea de defensa",
+        "Logística de campaña",
+        "Reino de las llanuras",
+        "Reforma tributaria",
+        "Sitio de la capital",
+        "Tratado de los ríos",
+        "Alianza de los valles",
+    ],
+    "RPG": [
+        "Aprendiz de hechicero",
+        "Caballeros del crepúsculo",
+        "Crónicas de Ardevia",
+        "El pacto de los antiguos",
+        "El último paladín",
+        "La corona partida",
+        "Los elegidos del caos",
+        "Maestros del arcano",
+        "Mercenarios del norte",
+        "Oráculo de piedra",
+        "Raíces del mal",
+        "Reino de ceniza",
+        "Sangre de dragón",
+        "Secta del amanecer",
+        "Templo de los deseos",
+        "Vástagos de la luna",
+        "Herencia de los dioses",
+        "La espada errante",
+        "Pacto de sangre",
+        "Ruinas del destino",
+    ],
+}
+
+# Para categorías creadas fuera de la semilla se generan títulos distintos,
+# siempre prefijados con el nombre de la categoría para evitar colisiones.
+ADJETIVOS_EXTRA = ("Nocturno", "Crómatico", "Silvestre", "Metálico", "Sereno")
+SUSTANTIVOS_EXTRA = ("expedición", "duelo", "travesía", "asaltos", "leyenda")
+
 
 class Command(BaseCommand):
     help = "Pobla la base de datos con datos de prueba para Arcakane Zone."
@@ -44,6 +202,18 @@ class Command(BaseCommand):
         self.stdout.write(f"  Idiomas:        {idiomas_creados} creados")
         self.stdout.write(f"  Videojuegos:    {juegos_creados} creados")
         self.stdout.write(f"  Ofertas:        {ofertas_creadas} creadas")
+
+        # Evidencia de validación (AZ-S2-BE-16): total global y distribución.
+        total = Videojuego.objects.count()
+        objetivo = max(
+            MINIMO_VIDEOJUEGOS,
+            MINIMO_POR_CATEGORIA * Categoria.objects.count(),
+        )
+        self.stdout.write(f"  Total videojuegos: {total} (mínimo {objetivo})")
+        for categoria in Categoria.objects.order_by("nombre"):
+            self.stdout.write(
+                f"    - {categoria.nombre}: {categoria.videojuegos.count()}"
+            )
 
     # ------------------------------------------------------------------
     def _seed_estados(self):
@@ -189,6 +359,171 @@ class Command(BaseCommand):
             if nuevo:
                 creados += 1
         return creados
+
+    # ------------------------------------------------------------------
+    def _crear_videojuego(
+        self,
+        *,
+        titulo,
+        descripcion,
+        fecha_lanzamiento,
+        categoria,
+        genero,
+        ofertas,
+        plt,
+        clasificacion=None,
+        prefijo_sku="AZ",
+    ):
+        """Crea (o reutiliza) un título con sus relaciones y ofertas."""
+        videojuego, nuevo = Videojuego.objects.get_or_create(
+            titulo=titulo,
+            defaults={
+                "descripcion": descripcion,
+                "fecha_lanzamiento": fecha_lanzamiento,
+                "clasificacion_edad": clasificacion,
+                "activo": True,
+            },
+        )
+        juegos_creados = 1 if nuevo else 0
+
+        VideojuegoCategoria.objects.get_or_create(
+            videojuego=videojuego, categoria=categoria
+        )
+        VideojuegoGenero.objects.get_or_create(videojuego=videojuego, genero=genero)
+
+        ofertas_creadas = 0
+        for oferta in ofertas:
+            plataforma = plt[oferta["plataforma"]]
+            _, nueva = OfertaVideojuego.objects.get_or_create(
+                videojuego=videojuego,
+                plataforma=plataforma,
+                defaults={
+                    "sku": f"{prefijo_sku}-{videojuego.pk:04d}-{plataforma.pk:03d}",
+                    "precio_vigente": oferta["precio"],
+                    "stock": oferta["stock"],
+                },
+            )
+            if nueva:
+                ofertas_creadas += 1
+        return juegos_creados, ofertas_creadas
+
+    @staticmethod
+    def _fecha_generada(indice):
+        """Fecha determinista y válida para los títulos complementarios."""
+        return date(2014 + indice % 11, 1 + indice % 12, 1 + indice % 28)
+
+    @staticmethod
+    def _ofertas_generadas(indice):
+        """Una o dos ofertas por título, con precios y stock variados."""
+        total = len(PLATAFORMAS_ROTACION)
+        primera = PLATAFORMAS_ROTACION[indice % total]
+        segunda = PLATAFORMAS_ROTACION[(indice + 1) % total]
+        ofertas = [
+            {
+                "plataforma": primera,
+                "precio": 39900 + (indice % 12) * 5000,
+                "stock": 4 + (indice % 10),
+            }
+        ]
+        if indice % 3 == 0:
+            ofertas.append(
+                {
+                    "plataforma": segunda,
+                    "precio": 34900 + (indice % 8) * 4000,
+                    "stock": 2 + (indice % 6),
+                }
+            )
+        return ofertas
+
+    @staticmethod
+    def _titulos_para_categoria_extra(categoria):
+        """Títulos únicos para categorías creadas fuera de la semilla base."""
+        return [
+            f"{categoria.nombre}: "
+            f"{ADJETIVOS_EXTRA[i % len(ADJETIVOS_EXTRA)]} "
+            f"{SUSTANTIVOS_EXTRA[(i // len(ADJETIVOS_EXTRA)) % len(SUSTANTIVOS_EXTRA)]}"
+            for i in range(MINIMO_POR_CATEGORIA)
+        ]
+
+    def _completar_categoria(self, categoria, titulos, plt, gen, clas):
+        """Llena hasta 20 juegos una categoría, sin repetir títulos."""
+        existentes = set(
+            Videojuego.objects.filter(vinculos_categoria__categoria=categoria)
+            .values_list("titulo", flat=True)
+        )
+        faltan = MINIMO_POR_CATEGORIA - len(existentes)
+        if faltan <= 0:
+            return 0, 0
+
+        genero = gen[GENERO_POR_CATEGORIA.get(categoria.nombre, "Simulación")]
+        juegos_creados = 0
+        ofertas_creadas = 0
+        for indice, titulo in enumerate(titulos):
+            if titulo in existentes:
+                continue
+            codigo = CLASIFICACIONES_ROTACION[
+                indice % len(CLASIFICACIONES_ROTACION)
+            ]
+            creados, ofertas = self._crear_videojuego(
+                titulo=titulo,
+                descripcion=(
+                    f"{titulo}. Título de prueba de {categoria.nombre.lower()} "
+                    f"con mecánicas de {genero.nombre.lower()} "
+                    "para el catálogo de Arcakane Zone."
+                ),
+                fecha_lanzamiento=self._fecha_generada(indice),
+                categoria=categoria,
+                genero=genero,
+                ofertas=self._ofertas_generadas(indice),
+                plt=plt,
+                clasificacion=clas[codigo],
+                prefijo_sku="AZ-SEED",
+            )
+            juegos_creados += creados
+            ofertas_creadas += ofertas
+            existentes.add(titulo)
+            faltan -= 1
+            if faltan == 0:
+                break
+        return juegos_creados, ofertas_creadas
+
+    def _completar_total_global(self, plt, gen, clas):
+        """Garantiza el mínimo global aunque falten categorías sembradas."""
+        objetivo = max(
+            MINIMO_VIDEOJUEGOS,
+            MINIMO_POR_CATEGORIA * Categoria.objects.count(),
+        )
+        categorias = list(Categoria.objects.order_by("nombre"))
+        if not categorias:
+            return 0, 0
+
+        juegos_creados = 0
+        ofertas_creadas = 0
+        indice = 0
+        while Videojuego.objects.count() < objetivo and indice < objetivo * 2:
+            categoria = categorias[indice % len(categorias)]
+            genero = gen[GENERO_POR_CATEGORIA.get(categoria.nombre, "Simulación")]
+            codigo = CLASIFICACIONES_ROTACION[
+                indice % len(CLASIFICACIONES_ROTACION)
+            ]
+            creados, ofertas = self._crear_videojuego(
+                titulo=f"Catálogo de prueba {indice + 1:04d} · {categoria.nombre}",
+                descripcion=(
+                    f"Título de prueba {indice + 1} de {categoria.nombre.lower()} "
+                    "para validar el catálogo de Arcakane Zone."
+                ),
+                fecha_lanzamiento=self._fecha_generada(indice + 100),
+                categoria=categoria,
+                genero=genero,
+                ofertas=self._ofertas_generadas(indice + 100),
+                plt=plt,
+                clasificacion=clas[codigo],
+                prefijo_sku="AZ-SEED",
+            )
+            juegos_creados += creados
+            ofertas_creadas += ofertas
+            indice += 1
+        return juegos_creados, ofertas_creadas
 
     def _seed_catalogo_comercial(self):
         """
@@ -365,39 +700,40 @@ class Command(BaseCommand):
 
         juegos_creados = 0
         ofertas_creadas = 0
-        for datos in juegos:
-            videojuego, nuevo = Videojuego.objects.get_or_create(
+        clas = {c.codigo: c for c in ClasificacionEdad.objects.all()}
+
+        # Títulos históricos: se conservan con su descripción, fecha y ofertas.
+        for indice, datos in enumerate(juegos):
+            codigo = CLASIFICACIONES_ROTACION[
+                indice % len(CLASIFICACIONES_ROTACION)
+            ]
+            creados, ofertas = self._crear_videojuego(
                 titulo=datos["titulo"],
-                defaults={
-                    "descripcion": datos["descripcion"],
-                    "fecha_lanzamiento": datos["fecha_lanzamiento"],
-                },
+                descripcion=datos["descripcion"],
+                fecha_lanzamiento=datos["fecha_lanzamiento"],
+                categoria=datos["categoria"],
+                genero=datos["genero"],
+                ofertas=datos["ofertas"],
+                plt=plt,
+                clasificacion=clas[codigo],
             )
-            if nuevo:
-                juegos_creados += 1
+            juegos_creados += creados
+            ofertas_creadas += ofertas
 
-            # Asociación inicial en las tablas puente. Se mantiene una sola
-            # categoría y un solo género por juego para no alterar los datos
-            # esperados por el resto del sistema.
-            VideojuegoCategoria.objects.get_or_create(
-                videojuego=videojuego, categoria=datos["categoria"]
+        # Complemento hasta 20 por categoría. También cubre categorías que el
+        # usuario haya creado fuera de las seis base (AZ-S2-BE-16).
+        for categoria in Categoria.objects.order_by("nombre"):
+            titulos = TITULOS_COMPLEMENTARIOS.get(
+                categoria.nombre,
+                self._titulos_para_categoria_extra(categoria),
             )
-            VideojuegoGenero.objects.get_or_create(
-                videojuego=videojuego, genero=datos["genero"]
+            creados, ofertas = self._completar_categoria(
+                categoria, titulos, plt, gen, clas
             )
+            juegos_creados += creados
+            ofertas_creadas += ofertas
 
-            for oferta in datos["ofertas"]:
-                plataforma = plt[oferta["plataforma"]]
-                _, nueva = OfertaVideojuego.objects.get_or_create(
-                    videojuego=videojuego,
-                    plataforma=plataforma,
-                    defaults={
-                        "sku": f"AZ-{videojuego.pk:04d}-{plataforma.pk:03d}",
-                        "precio_vigente": oferta["precio"],
-                        "stock": oferta["stock"],
-                    },
-                )
-                if nueva:
-                    ofertas_creadas += 1
-
+        creados, ofertas = self._completar_total_global(plt, gen, clas)
+        juegos_creados += creados
+        ofertas_creadas += ofertas
         return juegos_creados, ofertas_creadas
