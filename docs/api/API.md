@@ -330,7 +330,7 @@ Ejemplo de videojuego con los campos aditivos:
   "id": 1,
   "titulo": "Juego Alpha",
   "portada": null,
-  "imagen_url": "https://picsum.photos/seed/arkane-1-juego-alpha/800/1000",
+  "imagen_url": "/covers/reales/elden-ring.jpg",
   "categoria": 3,
   "categoria_nombre": "Acción",
   "categorias": [3, 7],
@@ -348,11 +348,14 @@ se conservan por compatibilidad y exponen el primero por nombre de las listas
 acepta la forma histórica (`categoria` o `genero`) y las listas nuevas; si se
 envían ambas, prevalecen las listas.
 
-`imagen_url` guarda en la base de datos la URL pública de la portada de cada
-videojuego. El seed la genera de forma determinista con la PK y el título, y la
-migración `catalogo.0015_videojuego_imagen_url` la rellena para los títulos que
-ya existían. El frontend la usa como `cover` y cae a una portada local si la URL
-no responde.
+`imagen_url` guarda en la base de datos la URL de la portada de cada videojuego.
+Las 15 portadas reales están en `frontend/public/covers/reales` y se sirven
+desde `/covers/reales/`. Los títulos históricos del seed usan su portada
+exacta; los títulos de relleno toman una portada real según su PK. Las
+migraciones `catalogo.0015_videojuego_imagen_url` y
+`catalogo.0016_portadas_reales` rellenan y actualizan las URLs de los títulos
+ya existentes. El frontend la usa como `cover` y cae a una portada local si la
+URL no responde.
 
 ### Carrito
 
