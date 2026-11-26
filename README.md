@@ -87,6 +87,12 @@ Para cargar datos de ejemplo del catálogo:
 docker compose exec backend python manage.py seed_catalogo
 ```
 
+El seed siembra 120 videojuegos (20 por cada una de las seis categorías base)
+y al terminar imprime el total y la distribución. Es idempotente: puede
+repetirse sin duplicados. Para reiniciar los datos semilla, ejecuta
+`manage.py flush --noinput`, luego `manage.py migrate` y vuelve a sembrar;
+los detalles están en [`backend/README.md`](backend/README.md).
+
 ### API REST
 
 El backend expone una API JSON versionada en `/api/v1/` y conserva el sitio HTML
