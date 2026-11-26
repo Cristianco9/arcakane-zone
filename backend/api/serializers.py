@@ -243,6 +243,7 @@ class VideojuegoSerializer(serializers.ModelSerializer):
             "titulo",
             "descripcion",
             "portada",
+            "imagen_url",
             "fecha_lanzamiento",
             "categoria",
             "categoria_nombre",

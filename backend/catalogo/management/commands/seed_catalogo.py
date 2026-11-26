@@ -16,6 +16,7 @@ from catalogo.models import (
     VideojuegoGenero,
     normalizar_nombre_catalogo,
 )
+from catalogo.portadas import url_portada_videojuego
 from cuentas.models import Rol
 from pagos.models import EstadoIntentoPago
 from pedidos.models import EstadoPedido
@@ -385,6 +386,12 @@ class Command(BaseCommand):
             },
         )
         juegos_creados = 1 if nuevo else 0
+
+        # La URL se calcula con la PK ya asignada, así que se rellena también
+        # en títulos creados antes de existiera este campo.
+        if not videojuego.imagen_url:
+            videojuego.imagen_url = url_portada_videojuego(videojuego.pk, titulo)
+            videojuego.save(update_fields=["imagen_url"])
 
         VideojuegoCategoria.objects.get_or_create(
             videojuego=videojuego, categoria=categoria

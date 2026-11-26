@@ -209,6 +209,11 @@ class Videojuego(models.Model):
     titulo = models.CharField(max_length=200)
     descripcion = models.TextField(blank=True)
     portada = models.ImageField(upload_to="portadas/", null=True, blank=True)
+    imagen_url = models.URLField(
+        blank=True,
+        default="",
+        help_text="URL pública de la portada cuando no se sube un archivo local.",
+    )
     fecha_lanzamiento = models.DateField(null=True, blank=True)
     # Un título puede pertenecer a varias categorías y géneros. El vínculo se
     # materializa en las tablas puente VideojuegoCategoria / VideojuegoGenero.
