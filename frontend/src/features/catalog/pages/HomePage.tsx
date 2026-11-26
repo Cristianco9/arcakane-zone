@@ -1,24 +1,49 @@
 import { Link } from "react-router-dom";
+import { LoadingFallback } from "../../../app/LoadingFallback";
 import { buildCatalogUrl, buildProductsUrl } from "../../../app/routes";
 import { ArrowRightIcon, SparklesIcon } from "../../../components/icons";
 import { ButtonLink } from "../../../components/ui/Button";
+import { EmptyState } from "../../../components/ui/EmptyState";
 import { SectionHeading } from "../../../components/ui/SectionHeading";
 import { Badge } from "../../../components/ui/Badge";
 import { formatPrice } from "../../../lib/format";
-import { getStartingPrice } from "../catalog";
-import { categories, platforms, products } from "../data/mockData";
+import { getPublishedOffers, getStartingPrice } from "../catalog";
+import { useCatalogCategories, useCatalogPlatforms, useCatalogProducts } from "../api";
 import { ProductGrid } from "../components/ProductGrid";
 
-const featuredProducts = products.filter((product) => product.featured).slice(0, 4);
-const heroProduct = products.find((product) => product.id === "1");
-
-const stats = [
-  { value: String(products.length), label: "títulos de muestra" },
-  { value: String(categories.length), label: "categorías" },
-  { value: String(platforms.length), label: "plataformas" },
-];
-
 export function HomePage() {
+  const categorias = useCatalogCategories();
+  const plataformas = useCatalogPlatforms();
+  const catalogo = useCatalogProducts();
+
+  if (categorias.isPending || plataformas.isPending || catalogo.isPending) {
+    return <LoadingFallback />;
+  }
+
+  if (categorias.isError || plataformas.isError || catalogo.isError) {
+    return (
+      <div className="mx-auto w-full max-w-3xl px-4 py-16 sm:px-6">
+        <EmptyState
+          title="No se pudo cargar el catálogo"
+          description="Inténtalo de nuevo en unos instantes. Los datos se leen desde la API."
+        />
+      </div>
+    );
+  }
+
+  const categories = categorias.data ?? [];
+  const products = catalogo.data ?? [];
+  const featuredProducts = products
+    .filter((product) => getPublishedOffers(product).length > 0)
+    .slice(0, 4);
+  const heroProduct = products[0];
+
+  const stats = [
+    { value: String(products.length), label: "videojuegos" },
+    { value: String(categories.length), label: "categorías" },
+    { value: String((plataformas.data ?? []).length), label: "plataformas" },
+  ];
+
   return (
     <>
       <section className="mx-auto w-full max-w-7xl px-4 pb-16 pt-12 sm:px-6 lg:px-8 lg:pb-24 lg:pt-20">
@@ -26,7 +51,7 @@ export function HomePage() {
           <div>
             <Badge tone="aqua" className="mb-5">
               <SparklesIcon className="h-3 w-3" />
-              Catálogo de demostración
+              Catálogo en vivo
             </Badge>
             <h1 className="text-balance text-4xl font-extrabold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
               Tu próxima aventura empieza aquí.

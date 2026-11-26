@@ -1,3 +1,4 @@
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { lazy, Suspense } from "react";
 import { HashRouter, Route, Routes } from "react-router-dom";
 import { LoadingFallback } from "./app/LoadingFallback";
@@ -24,20 +25,31 @@ const ProductDetailPage = lazy(() =>
   })),
 );
 
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: { retry: 1, staleTime: 60_000, refetchOnWindowFocus: false },
+  },
+});
+
 export function App() {
   return (
-    <HashRouter>
-      <PageLayout>
-        <Suspense fallback={<LoadingFallback />}>
-          <Routes>
-            <Route path={routes.home} element={<HomePage />} />
-            <Route path={routes.products} element={<ProductsPage />} />
-            <Route path={routes.catalog} element={<CatalogPage />} />
-            <Route path={`${routes.products}/:productId`} element={<ProductDetailPage />} />
-            <Route path="*" element={<NotFoundPage />} />
-          </Routes>
-        </Suspense>
-      </PageLayout>
-    </HashRouter>
+    <QueryClientProvider client={queryClient}>
+      <HashRouter>
+        <PageLayout>
+          <Suspense fallback={<LoadingFallback />}>
+            <Routes>
+              <Route path={routes.home} element={<HomePage />} />
+              <Route path={routes.products} element={<ProductsPage />} />
+              <Route path={routes.catalog} element={<CatalogPage />} />
+              <Route
+                path={`${routes.products}/:productId`}
+                element={<ProductDetailPage />}
+              />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </Suspense>
+        </PageLayout>
+      </HashRouter>
+    </QueryClientProvider>
   );
 }

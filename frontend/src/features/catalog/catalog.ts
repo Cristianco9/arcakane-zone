@@ -10,8 +10,11 @@ function normalize(value: string): string {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
-export function getProductById(productId: string): Product | undefined {
-  return products.find((product) => product.id === productId);
+export function getProductById(
+  productId: string,
+  source: readonly Product[] = products,
+): Product | undefined {
+  return source.find((product) => product.id === productId);
 }
 
 export function getPublishedOffers(product: Product): ProductOffer[] {
@@ -60,8 +63,9 @@ export function filterProducts(
 
 export function groupProductsByCategory(
   source: readonly Product[],
+  categoryList: readonly CatalogCategory[] = categories,
 ): { category: CatalogCategory; products: Product[] }[] {
-  return categories
+  return categoryList
     .map((category) => ({
       category,
       products: source.filter((product) => product.category.id === category.id),
@@ -69,17 +73,28 @@ export function groupProductsByCategory(
     .filter((group) => group.products.length > 0);
 }
 
-export function getRelatedProducts(product: Product, limit = 3): Product[] {
-  return products
+export function getRelatedProducts(
+  product: Product,
+  source: readonly Product[] = products,
+  limit = 3,
+): Product[] {
+  return source
     .filter((item) => item.id !== product.id && item.category.id === product.category.id)
     .slice(0, limit);
 }
 
-export function getAvailablePlatforms(source: readonly Product[] = products): string[] {
+export function getAvailablePlatforms(
+  source: readonly Product[] = products,
+  availablePlatforms: readonly string[] = platforms,
+): string[] {
   const usedPlatforms = new Set(
     source.flatMap((product) =>
       getPublishedOffers(product).map((offer) => offer.platform),
     ),
   );
-  return platforms.filter((platform) => usedPlatforms.has(platform));
+  const conocidas = availablePlatforms.filter((platform) => usedPlatforms.has(platform));
+  const adicionales = [...usedPlatforms]
+    .filter((platform) => !availablePlatforms.includes(platform))
+    .sort((a, b) => a.localeCompare(b, "es"));
+  return [...conocidas, ...adicionales];
 }
