@@ -6,7 +6,7 @@ from django.core.management import call_command
 from rest_framework.test import APIClient
 
 from catalogo.models import Videojuego
-from catalogo.portadas import url_portada_videojuego
+from catalogo.portadas import PORTADAS_REALES, url_portada_videojuego
 
 pytestmark = pytest.mark.django_db
 
@@ -20,10 +20,25 @@ def test_seed_asigna_una_url_distinta_a_cada_videojuego():
 
     juegos = list(Videojuego.objects.all())
     assert len(juegos) >= 100
-    assert all(juego.imagen_url.startswith("https://") for juego in juegos)
-    assert len({juego.imagen_url for juego in juegos}) == len(juegos)
+    assert all(juego.imagen_url.startswith("/covers/reales/") for juego in juegos)
+    assert set(juego.imagen_url for juego in juegos) <= set(PORTADAS_REALES.values())
     for juego in juegos:
         assert juego.imagen_url == url_portada_videojuego(juego.pk, juego.titulo)
+
+
+def test_titulos_historicos_usan_su_portada_real():
+    _sembrar()
+
+    casos = {
+        "God of War Ragnarök": "/covers/reales/god-of-war-ragnarok.jpg",
+        "Elden Ring": "/covers/reales/elden-ring.jpg",
+        "The Legend of Zelda: Tears of the Kingdom": (
+            "/covers/reales/zelda-tears-of-the-kingdom.jpg"
+        ),
+        "Starfield": "/covers/reales/starfield.jpg",
+    }
+    for titulo, url in casos.items():
+        assert Videojuego.objects.get(titulo=titulo).imagen_url == url
 
 
 def test_semilla_repetida_conserva_las_urls():
