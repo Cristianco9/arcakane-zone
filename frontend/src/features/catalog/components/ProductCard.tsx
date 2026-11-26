@@ -4,6 +4,7 @@ import { ArrowRightIcon } from "../../../components/icons";
 import { Badge } from "../../../components/ui/Badge";
 import { formatPrice } from "../../../lib/format";
 import { getPublishedOffers, getStartingPrice } from "../catalog";
+import { alFallarPortada } from "../cover";
 import type { Product } from "../types";
 
 interface ProductCardProps {
@@ -25,6 +26,7 @@ export function ProductCard({ product }: ProductCardProps) {
           src={product.cover}
           alt={`Portada de ${product.title}`}
           loading="lazy"
+          onError={alFallarPortada}
           className="h-full w-full object-cover transition duration-500 group-hover:scale-105 motion-reduce:transition-none"
         />
         <div className="absolute inset-x-0 bottom-0 flex flex-wrap gap-2 bg-gradient-to-t from-ink-950/90 to-transparent p-3 pt-10">

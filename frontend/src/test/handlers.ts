@@ -35,13 +35,14 @@ function ofertaApi(oferta: ProductOffer) {
   };
 }
 
-const videojuegosApi = products.map((producto) => {
+export const videojuegosApi = products.map((producto) => {
   const ofertas = producto.offers.map(ofertaApi);
   return {
     id: Number(producto.id),
     titulo: producto.title,
     descripcion: producto.description,
     portada: producto.cover,
+    imagen_url: producto.cover,
     fecha_lanzamiento: producto.releaseDate,
     categoria: Number(producto.category.id),
     categoria_nombre: producto.category.name,
@@ -55,7 +56,7 @@ const videojuegosApi = products.map((producto) => {
   };
 });
 
-function paginado<T>(datos: readonly T[], solicitud: Request) {
+export function paginado<T>(datos: readonly T[], solicitud: Request) {
   const url = new URL(solicitud.url);
   const pagina = Number(url.searchParams.get("page") ?? "1");
   const tamano = Number(url.searchParams.get("page_size") ?? "20");

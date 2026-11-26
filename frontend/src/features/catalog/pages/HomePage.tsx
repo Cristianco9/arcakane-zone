@@ -8,6 +8,7 @@ import { SectionHeading } from "../../../components/ui/SectionHeading";
 import { Badge } from "../../../components/ui/Badge";
 import { formatPrice } from "../../../lib/format";
 import { getPublishedOffers, getStartingPrice } from "../catalog";
+import { alFallarPortada } from "../cover";
 import { useCatalogCategories, useCatalogPlatforms, useCatalogProducts } from "../api";
 import { ProductGrid } from "../components/ProductGrid";
 
@@ -96,6 +97,7 @@ export function HomePage() {
                 <img
                   src={heroProduct.cover}
                   alt={`Portada destacada de ${heroProduct.title}`}
+                  onError={alFallarPortada}
                   className="aspect-[4/5] w-full object-cover sm:aspect-[5/4] lg:aspect-[4/5]"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-ink-950 via-ink-950/20 to-transparent" />

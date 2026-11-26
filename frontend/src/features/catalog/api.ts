@@ -44,6 +44,7 @@ const VideojuegoApiSchema = z.object({
   titulo: z.string(),
   descripcion: z.string(),
   portada: z.string().nullable(),
+  imagen_url: z.string(),
   fecha_lanzamiento: z.string().nullable(),
   categoria: z.number().nullable(),
   categoria_nombre: z.string().nullable(),
@@ -137,7 +138,7 @@ function aProducto(
     title: item.titulo,
     description: item.descripcion,
     longDescription: item.descripcion || "Sin descripción disponible.",
-    cover: item.portada || catalogCover,
+    cover: item.imagen_url || item.portada || catalogCover,
     gallery: [],
     releaseDate: item.fecha_lanzamiento ?? "",
     category: {

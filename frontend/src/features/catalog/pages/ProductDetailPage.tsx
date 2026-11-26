@@ -13,6 +13,7 @@ import {
   getStartingPrice,
   isProductAvailable,
 } from "../catalog";
+import { alFallarPortada } from "../cover";
 import { useCatalogProduct, useCatalogProducts } from "../api";
 import { ProductGrid } from "../components/ProductGrid";
 import { ProductOffers } from "../components/ProductOffers";
@@ -75,6 +76,7 @@ export function ProductDetailPage() {
             <img
               src={product.cover}
               alt={`Portada de ${product.title}`}
+              onError={alFallarPortada}
               className="aspect-[4/5] w-full object-cover"
             />
             <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-ink-950 via-ink-950/70 to-transparent p-6 pt-20 text-lg font-bold text-white">
@@ -94,6 +96,7 @@ export function ProductDetailPage() {
                   }
                   className="aspect-video w-full object-cover"
                   loading="lazy"
+                  onError={alFallarPortada}
                 />
               </li>
             ))}
