@@ -87,8 +87,13 @@ Para cargar datos de ejemplo del catálogo:
 docker compose exec backend python manage.py seed_catalogo
 ```
 
-El seed siembra 120 videojuegos (20 por cada una de las seis categorías base)
-y al terminar imprime el total y la distribución. Es idempotente: puede
+El seed siembra **140 videojuegos reales**: 20 por cada una de las seis
+categorías base y 20 títulos adicionales para categorías creadas aparte. Cada
+juego lleva título, desarrollador, fecha, descripción, precio, stock y portada
+verdaderos (fuente: Steam y Wikipedia ES), guardados en
+`backend/catalogo/datos/catalogo_real.json`. El entrypoint siembra
+automáticamente una base de datos vacía, aunque `SEED_CATALOGO=false`.
+Al terminar imprime el total y la distribución. Es idempotente: puede
 repetirse sin duplicados. Para reiniciar los datos semilla, ejecuta
 `manage.py flush --noinput`, luego `manage.py migrate` y vuelve a sembrar;
 los detalles están en [`backend/README.md`](backend/README.md).

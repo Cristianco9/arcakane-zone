@@ -318,19 +318,20 @@ Los filtros `categoria`, `genero` y `plataforma` conservan su nombre y
 semántica. Los dos primeros consultan ahora relaciones muchos-a-muchos y se
 aplica `distinct()` para no duplicar resultados ni romper la paginación.
 
-Tras `python manage.py seed_catalogo` el catálogo contiene 120 videojuegos,
-20 por cada categoría base. `GET /api/v1/catalogo/videojuegos/` devuelve ese
-total en `pagination.count`, y `?categoria=<id>` permite verificar la
-distribución de una categoría concreta.
+Tras `python manage.py seed_catalogo` el catálogo contiene 140 videojuegos
+reales, 20 por cada categoría base. `GET /api/v1/catalogo/videojuegos/`
+devuelve ese total en `pagination.count`, y `?categoria=<id>` permite verificar
+la distribución de una categoría concreta.
 
 Ejemplo de videojuego con los campos aditivos:
 
 ```json
 {
   "id": 1,
-  "titulo": "Juego Alpha",
+  "titulo": "ELDEN RING",
+  "desarrollador": "FromSoftware, Inc.",
   "portada": null,
-  "imagen_url": "/covers/reales/elden-ring.jpg",
+  "imagen_url": "/covers/reales/1245620.jpg",
   "categoria": 3,
   "categoria_nombre": "Acción",
   "categorias": [3, 7],
@@ -349,13 +350,15 @@ acepta la forma histórica (`categoria` o `genero`) y las listas nuevas; si se
 envían ambas, prevalecen las listas.
 
 `imagen_url` guarda en la base de datos la URL de la portada de cada videojuego.
-Las 15 portadas reales están en `frontend/public/covers/reales` y se sirven
-desde `/covers/reales/`. Los títulos históricos del seed usan su portada
-exacta; los títulos de relleno toman una portada real según su PK. Las
-migraciones `catalogo.0015_videojuego_imagen_url` y
-`catalogo.0016_portadas_reales` rellenan y actualizan las URLs de los títulos
-ya existentes. El frontend la usa como `cover` y cae a una portada local si la
-URL no responde.
+Las 140 portadas reales están en `frontend/public/covers/reales` y se sirven
+desde `/covers/reales/`: cada título del fixture tiene su propia imagen.
+`desarrollador` expone la compañía real del juego. Las migraciones
+`catalogo.0015_videojuego_imagen_url`, `catalogo.0016_portadas_reales` y
+`catalogo.0017_portadas_catalogo_real` rellenan y actualizan las URLs de los
+títulos ya existentes; `catalogo.0018_videojuego_desarrollador` añade y
+rellena el desarrollador, y `catalogo.0019_fichas_catalogo_real` actualiza las
+descripciones en español y los géneros del fixture. El frontend
+usa `imagen_url` como `cover` y cae a una portada local si la URL no responde.
 
 ### Carrito
 

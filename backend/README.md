@@ -133,10 +133,13 @@ python manage.py createsuperuser
 ```
 
 `seed_catalogo` crea roles, las seis categorías base, plataformas, géneros y
-**120 videojuegos de ejemplo** (20 por categoría). Si hay categorías adicionales,
-también siembra 20 títulos para cada una: el objetivo global es
-`max(100, 20 × número_de_categorías)`. Es idempotente: repetirlo no crea
-duplicados y solo completa las relaciones que falten.
+**140 videojuegos reales**: 20 por cada una de las seis categorías base y 20
+títulos adicionales que se asignan a categorías creadas aparte. Cada ficha
+(título, desarrollador, fecha, descripción, precio, stock y portada) viene del
+fixture `catalogo/datos/catalogo_real.json`, obtenido de Steam y Wikipedia en
+español. El objetivo global es `max(100, 20 × número_de_categorías)`.
+Es idempotente: repetirlo no crea duplicados y solo completa las relaciones
+que falten.
 
 Al terminar imprime la evidencia de carga:
 

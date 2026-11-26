@@ -83,11 +83,10 @@ vista refleja los videojuegos sembrados en el backend y sus ofertas reales.
 `mockData.ts` se conserva únicamente como fixture de los tests de selector y de
 las respuestas simuladas con MSW.
 
-Cada videojuego trae `imagen_url` desde la base de datos y se muestra como
-portada en tarjetas, destacado y detalle. Las portadas reales están en
-`public/covers/reales` y se sirven desde `/covers/reales/`: los 15 títulos
-históricos tienen su portada exacta y los títulos de relleno reutilizan una
-portada real según su PK. Si la URL no responde, se sustituye por
+Cada videojuego trae `imagen_url` y `desarrollador` desde la base de datos y se
+muestra como portada y ficha en tarjetas, destacado y detalle. Las 140 portadas
+reales están en `public/covers/reales` y se sirven desde `/covers/reales/`;
+cada título tiene la suya. Si la URL no responde, se sustituye por
 `src/assets/covers/catalog-placeholder.svg` mediante `alFallarPortada`.
 
 Contrato completo: [`docs/api/API.md`](../docs/api/API.md).

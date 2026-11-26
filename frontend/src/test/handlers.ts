@@ -40,6 +40,7 @@ export const videojuegosApi = products.map((producto) => {
   return {
     id: Number(producto.id),
     titulo: producto.title,
+    desarrollador: producto.developer,
     descripcion: producto.description,
     portada: producto.cover,
     imagen_url: producto.cover,

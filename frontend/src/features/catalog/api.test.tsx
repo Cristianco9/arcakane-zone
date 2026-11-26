@@ -29,6 +29,7 @@ describe("catalog API", () => {
     expect(result.current.categorias.data).toHaveLength(6);
     expect(result.current.productos.data).toHaveLength(8);
     expect(result.current.productos.data?.[0]?.offers[0]?.sku).toBe("AZ-ND-PC");
+    expect(result.current.productos.data?.[0]?.developer).toBeTruthy();
   });
 
   it("rechaza una respuesta que no cumple el contrato", async () => {
@@ -69,5 +70,18 @@ describe("catalog API", () => {
     expect(result.current.data?.[119]?.cover).toBe(
       "https://ejemplo.test/portada-120.png",
     );
+  });
+
+  it("acepta un catálogo vacío con pagination vacía", async () => {
+    server.use(
+      http.get("/api/v1/catalogo/videojuegos/", () =>
+        HttpResponse.json({ success: true, data: [], pagination: {} }),
+      ),
+    );
+
+    const { result } = renderHook(() => useCatalogProducts(), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toEqual([]);
   });
 });

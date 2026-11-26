@@ -10,14 +10,31 @@ import type {
 const BASE_URL = "/api/v1/catalogo";
 const PAGE_SIZE = 100;
 
-const PaginationSchema = z.object({
-  count: z.number(),
-  page: z.number(),
-  page_size: z.number(),
-  total_pages: z.number(),
-  next: z.string().nullable(),
-  previous: z.string().nullable(),
-});
+// La API devuelve `pagination: {}` cuando no hay resultados. Lo normalizamos
+// para que el catálogo vacío muestre el estado vacío, no un error de contrato.
+const PaginationSchema = z.preprocess(
+  (valor) => {
+    if (valor && typeof valor === "object" && !Object.keys(valor).length) {
+      return {
+        count: 0,
+        page: 1,
+        page_size: PAGE_SIZE,
+        total_pages: 1,
+        next: null,
+        previous: null,
+      };
+    }
+    return valor;
+  },
+  z.object({
+    count: z.number(),
+    page: z.number(),
+    page_size: z.number(),
+    total_pages: z.number(),
+    next: z.string().nullable(),
+    previous: z.string().nullable(),
+  }),
+);
 
 function envelope<T>(data: z.ZodType<T>) {
   return z.object({
@@ -42,6 +59,7 @@ const OfertaApiSchema = z.object({
 const VideojuegoApiSchema = z.object({
   id: z.number(),
   titulo: z.string(),
+  desarrollador: z.string(),
   descripcion: z.string(),
   portada: z.string().nullable(),
   imagen_url: z.string(),
@@ -150,7 +168,7 @@ function aProducto(
       id: idGenero === null ? "0" : String(idGenero),
       name: item.genero_nombre ?? "Sin género",
     },
-    developer: "Arcakane Zone",
+    developer: item.desarrollador || "Arcakane Zone",
     featured: false,
     tags: [nombreCategoria, item.genero_nombre].filter(
       (valor): valor is string => Boolean(valor),

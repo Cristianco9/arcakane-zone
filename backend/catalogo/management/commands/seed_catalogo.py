@@ -1,6 +1,6 @@
 from datetime import date
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandError
 
 from api.rbac import ROLES_NUEVOS
 from catalogo.models import (
@@ -16,6 +16,7 @@ from catalogo.models import (
     VideojuegoGenero,
     normalizar_nombre_catalogo,
 )
+from catalogo.catalogo_real import juegos_reales
 from catalogo.portadas import url_portada_videojuego
 from cuentas.models import Rol
 from pagos.models import EstadoIntentoPago
@@ -25,159 +26,6 @@ from pedidos.models import EstadoPedido
 # seis base, el objetivo global crece con ellas (20 por categoría).
 MINIMO_VIDEOJUEGOS = 100
 MINIMO_POR_CATEGORIA = 20
-
-GENERO_POR_CATEGORIA = {
-    "Acción": "Shooter",
-    "Aventura": "Mundo abierto",
-    "Carreras": "Simulación",
-    "Deportes": "Deportivo",
-    "Estrategia": "Simulación",
-    "RPG": "Rol",
-}
-CLASIFICACIONES_ROTACION = ("3", "7", "12", "16", "18")
-PLATAFORMAS_ROTACION = ("PC", "PlayStation 5", "Xbox Series X", "Nintendo Switch")
-
-# Títulos de prueba complementarios. Se consumen solo hasta completar 20 por
-# categoría, por lo que los 15 juegos históricos se conservan sin duplicarlos.
-TITULOS_COMPLEMENTARIOS = {
-    "Acción": [
-        "Asalto al amanecer",
-        "Ataque en la cumbre",
-        "Cazador de sombras",
-        "Combate en la penumbra",
-        "Duelo de titanes",
-        "Escape de la fortaleza",
-        "Furia de acero",
-        "Golpe mortal",
-        "Operación Relámpago",
-        "Raid en la ciudad baja",
-        "Rescate en la factoría",
-        "Sendero de cenizas",
-        "Tormenta de fuego",
-        "Última línea de defensa",
-        "Venganza del norte",
-        "Zona de impacto",
-        "Asedio en el puerto",
-        "Contrataque final",
-        "Punto de ruptura",
-        "Sabotaje nocturno",
-    ],
-    "Aventura": [
-        "Cartografía del vacío",
-        "Cuevas de cristal",
-        "Diario de una expedición",
-        "El bosque susurrante",
-        "El faro perdido",
-        "El secreto del manantial",
-        "En busca de la brújula",
-        "Islas flotantes",
-        "La ciudad sumergida",
-        "La llave de los ecos",
-        "Las ruinas de Aztlán",
-        "Los restos del templo",
-        "Memoria de arena",
-        "Murmullos del valle",
-        "Naufragio en el archipiélago",
-        "Obsidiana y niebla",
-        "Tras el rastro de las estrellas",
-        "Viaje al fondo del cañón",
-        "La puerta de sal",
-        "El mapa de los vientos",
-    ],
-    "Carreras": [
-        "Auto-x en la costa",
-        "Carrera de resistencia",
-        "Circuitos de cristal",
-        "Clásico de montaña",
-        "Contrarreloj nocturna",
-        "Duna salvaje",
-        "Escape en la autopista",
-        "Fórmula de neón",
-        "Gran premio de invierno",
-        "Karting de precisión",
-        "Las mil curvas",
-        "Meta en la cumbre",
-        "Nitro en el desierto",
-        "Rally de cenizas",
-        "Relevos de velocidad",
-        "Ruta de los faros",
-        "Sprint en la ciudad",
-        "Turismo de élite",
-        "Carrera de los récords",
-        "Pista del volcán",
-    ],
-    "Deportes": [
-        "Baloncesto callejero",
-        "Campeonato de invierno",
-        "Copa de las naciones",
-        "Derbi de neón",
-        "Entrenamiento de élite",
-        "Estadio de cristal",
-        "Fútbol de barrio",
-        "Grand Slam nocturno",
-        "Liga de acero",
-        "Maratón urbana",
-        "Partido de medianoche",
-        "Pelota en llamas",
-        "Renacimiento olímpico",
-        "Rodeo de superficie",
-        "Tenis en la azotea",
-        "Torneo de gladiadores",
-        "Victoria en la prórroga",
-        "Voley playa extremo",
-        "Ciclismo de montaña",
-        "Boxeo en el ring",
-    ],
-    "Estrategia": [
-        "Asedio a la muralla",
-        "Batalla de los estados",
-        "Campañas de invierno",
-        "Ciudadela de cristal",
-        "Conquista del delta",
-        "Duque de las tierras altas",
-        "El consejo de los diez",
-        "El gran sitio",
-        "Economía de guerra",
-        "Ejércitos de papel",
-        "Fronteras del imperio",
-        "Guerra de los puertos",
-        "Imperio de sal",
-        "La línea de defensa",
-        "Logística de campaña",
-        "Reino de las llanuras",
-        "Reforma tributaria",
-        "Sitio de la capital",
-        "Tratado de los ríos",
-        "Alianza de los valles",
-    ],
-    "RPG": [
-        "Aprendiz de hechicero",
-        "Caballeros del crepúsculo",
-        "Crónicas de Ardevia",
-        "El pacto de los antiguos",
-        "El último paladín",
-        "La corona partida",
-        "Los elegidos del caos",
-        "Maestros del arcano",
-        "Mercenarios del norte",
-        "Oráculo de piedra",
-        "Raíces del mal",
-        "Reino de ceniza",
-        "Sangre de dragón",
-        "Secta del amanecer",
-        "Templo de los deseos",
-        "Vástagos de la luna",
-        "Herencia de los dioses",
-        "La espada errante",
-        "Pacto de sangre",
-        "Ruinas del destino",
-    ],
-}
-
-# Para categorías creadas fuera de la semilla se generan títulos distintos,
-# siempre prefijados con el nombre de la categoría para evitar colisiones.
-ADJETIVOS_EXTRA = ("Nocturno", "Crómatico", "Silvestre", "Metálico", "Sereno")
-SUSTANTIVOS_EXTRA = ("expedición", "duelo", "travesía", "asaltos", "leyenda")
 
 
 class Command(BaseCommand):
@@ -373,6 +221,7 @@ class Command(BaseCommand):
         ofertas,
         plt,
         clasificacion=None,
+        desarrollador=None,
         prefijo_sku="AZ",
     ):
         """Crea (o reutiliza) un título con sus relaciones y ofertas."""
@@ -382,16 +231,24 @@ class Command(BaseCommand):
                 "descripcion": descripcion,
                 "fecha_lanzamiento": fecha_lanzamiento,
                 "clasificacion_edad": clasificacion,
+                "desarrollador": desarrollador or "",
                 "activo": True,
             },
         )
         juegos_creados = 1 if nuevo else 0
 
-        # La URL se calcula con la PK ya asignada, así que se rellena también
-        # en títulos creados antes de existiera este campo.
-        if not videojuego.imagen_url:
-            videojuego.imagen_url = url_portada_videojuego(videojuego.pk, titulo)
-            videojuego.save(update_fields=["imagen_url"])
+        # La URL y el desarrollador se calculan con la PK ya asignada, así que
+        # se rellenan también en títulos creados antes de que existieran.
+        url_portada = url_portada_videojuego(videojuego.pk, titulo)
+        if (
+            videojuego.imagen_url != url_portada
+            or desarrollador
+            and videojuego.desarrollador != desarrollador
+        ):
+            videojuego.imagen_url = url_portada
+            if desarrollador:
+                videojuego.desarrollador = desarrollador
+            videojuego.save(update_fields=["imagen_url", "desarrollador"])
 
         VideojuegoCategoria.objects.get_or_create(
             videojuego=videojuego, categoria=categoria
@@ -414,333 +271,61 @@ class Command(BaseCommand):
                 ofertas_creadas += 1
         return juegos_creados, ofertas_creadas
 
-    @staticmethod
-    def _fecha_generada(indice):
-        """Fecha determinista y válida para los títulos complementarios."""
-        return date(2014 + indice % 11, 1 + indice % 12, 1 + indice % 28)
+    def _seed_catalogo_comercial(self):
+        """Crea los 140 juegos reales del fixture y sus ofertas."""
+        cat = {c.nombre: c for c in Categoria.objects.all()}
+        plt = {p.nombre: p for p in Plataforma.objects.all()}
+        gen = {g.nombre: g for g in Genero.objects.all()}
+        clas = {c.codigo: c for c in ClasificacionEdad.objects.all()}
 
-    @staticmethod
-    def _ofertas_generadas(indice):
-        """Una o dos ofertas por título, con precios y stock variados."""
-        total = len(PLATAFORMAS_ROTACION)
-        primera = PLATAFORMAS_ROTACION[indice % total]
-        segunda = PLATAFORMAS_ROTACION[(indice + 1) % total]
-        ofertas = [
-            {
-                "plataforma": primera,
-                "precio": 39900 + (indice % 12) * 5000,
-                "stock": 4 + (indice % 10),
-            }
-        ]
-        if indice % 3 == 0:
-            ofertas.append(
-                {
-                    "plataforma": segunda,
-                    "precio": 34900 + (indice % 8) * 4000,
-                    "stock": 2 + (indice % 6),
-                }
-            )
-        return ofertas
-
-    @staticmethod
-    def _titulos_para_categoria_extra(categoria):
-        """Títulos únicos para categorías creadas fuera de la semilla base."""
-        return [
-            f"{categoria.nombre}: "
-            f"{ADJETIVOS_EXTRA[i % len(ADJETIVOS_EXTRA)]} "
-            f"{SUSTANTIVOS_EXTRA[(i // len(ADJETIVOS_EXTRA)) % len(SUSTANTIVOS_EXTRA)]}"
-            for i in range(MINIMO_POR_CATEGORIA)
-        ]
-
-    def _completar_categoria(self, categoria, titulos, plt, gen, clas):
-        """Llena hasta 20 juegos una categoría, sin repetir títulos."""
-        existentes = set(
-            Videojuego.objects.filter(vinculos_categoria__categoria=categoria)
-            .values_list("titulo", flat=True)
-        )
-        faltan = MINIMO_POR_CATEGORIA - len(existentes)
-        if faltan <= 0:
-            return 0, 0
-
-        genero = gen[GENERO_POR_CATEGORIA.get(categoria.nombre, "Simulación")]
         juegos_creados = 0
         ofertas_creadas = 0
-        for indice, titulo in enumerate(titulos):
-            if titulo in existentes:
-                continue
-            codigo = CLASIFICACIONES_ROTACION[
-                indice % len(CLASIFICACIONES_ROTACION)
-            ]
+        titulos_extra: list[str] = []
+
+        for datos in juegos_reales():
+            es_extra = bool(datos.get("es_extra"))
+            if es_extra:
+                titulos_extra.append(datos["titulo"])
+            # Los títulos de relleno también son juegos reales; mientras no
+            # exista una categoría adicional se agrupan en Aventura.
+            categoria = (
+                "Aventura" if datos["categoria"] == "Extra" else datos["categoria"]
+            )
             creados, ofertas = self._crear_videojuego(
-                titulo=titulo,
-                descripcion=(
-                    f"{titulo}. Título de prueba de {categoria.nombre.lower()} "
-                    f"con mecánicas de {genero.nombre.lower()} "
-                    "para el catálogo de Arcakane Zone."
-                ),
-                fecha_lanzamiento=self._fecha_generada(indice),
-                categoria=categoria,
-                genero=genero,
-                ofertas=self._ofertas_generadas(indice),
+                titulo=datos["titulo"],
+                descripcion=datos["descripcion"],
+                fecha_lanzamiento=date.fromisoformat(datos["fecha_lanzamiento"]),
+                categoria=cat[categoria],
+                genero=gen[datos["genero"]],
+                ofertas=datos["ofertas"],
                 plt=plt,
-                clasificacion=clas[codigo],
-                prefijo_sku="AZ-SEED",
+                clasificacion=clas[datos["clasificacion"]],
+                desarrollador=datos["desarrollador"],
             )
             juegos_creados += creados
             ofertas_creadas += ofertas
-            existentes.add(titulo)
-            faltan -= 1
-            if faltan == 0:
-                break
-        return juegos_creados, ofertas_creadas
 
-    def _completar_total_global(self, plt, gen, clas):
-        """Garantiza el mínimo global aunque falten categorías sembradas."""
+        # Si el usuario creó categorías fuera de las seis base, les asignamos
+        # los 20 títulos reales de relleno para mantener 20 por categoría.
+        nombres_base = {
+            juego["categoria"]
+            for juego in juegos_reales()
+            if not juego.get("es_extra")
+        }
+        juegos_extra = Videojuego.objects.filter(titulo__in=titulos_extra)
+        for categoria in Categoria.objects.exclude(nombre__in=nombres_base):
+            for juego in juegos_extra:
+                VideojuegoCategoria.objects.get_or_create(
+                    videojuego=juego, categoria=categoria
+                )
+
         objetivo = max(
             MINIMO_VIDEOJUEGOS,
             MINIMO_POR_CATEGORIA * Categoria.objects.count(),
         )
-        categorias = list(Categoria.objects.order_by("nombre"))
-        if not categorias:
-            return 0, 0
-
-        juegos_creados = 0
-        ofertas_creadas = 0
-        indice = 0
-        while Videojuego.objects.count() < objetivo and indice < objetivo * 2:
-            categoria = categorias[indice % len(categorias)]
-            genero = gen[GENERO_POR_CATEGORIA.get(categoria.nombre, "Simulación")]
-            codigo = CLASIFICACIONES_ROTACION[
-                indice % len(CLASIFICACIONES_ROTACION)
-            ]
-            creados, ofertas = self._crear_videojuego(
-                titulo=f"Catálogo de prueba {indice + 1:04d} · {categoria.nombre}",
-                descripcion=(
-                    f"Título de prueba {indice + 1} de {categoria.nombre.lower()} "
-                    "para validar el catálogo de Arcakane Zone."
-                ),
-                fecha_lanzamiento=self._fecha_generada(indice + 100),
-                categoria=categoria,
-                genero=genero,
-                ofertas=self._ofertas_generadas(indice + 100),
-                plt=plt,
-                clasificacion=clas[codigo],
-                prefijo_sku="AZ-SEED",
+        total = Videojuego.objects.count()
+        if total < objetivo:
+            raise CommandError(
+                f"El catálogo realista tiene {total} juegos; se esperaban {objetivo}."
             )
-            juegos_creados += creados
-            ofertas_creadas += ofertas
-            indice += 1
-        return juegos_creados, ofertas_creadas
-
-    def _seed_catalogo_comercial(self):
-        """
-        Pobla la identidad de los videojuegos y sus ofertas por plataforma.
-        Un mismo título puede venderse en varias plataformas con precio,
-        SKU y stock propios.
-        """
-        cat = {c.nombre: c for c in Categoria.objects.all()}
-        plt = {p.nombre: p for p in Plataforma.objects.all()}
-        gen = {g.nombre: g for g in Genero.objects.all()}
-
-        juegos = [
-            {
-                "titulo": "God of War Ragnarök",
-                "descripcion": "Kratos y Atreus enfrentan el Ragnarök nórdico en una épica aventura de acción.",
-                "fecha_lanzamiento": date(2022, 11, 9),
-                "categoria": cat["Acción"],
-                "genero": gen["Mundo abierto"],
-                "ofertas": [
-                    {"plataforma": "PlayStation 5", "precio": 219900, "stock": 10},
-                    {"plataforma": "PC", "precio": 199900, "stock": 6},
-                ],
-            },
-            {
-                "titulo": "The Legend of Zelda: Tears of the Kingdom",
-                "descripcion": "Link explora Hyrule y los cielos en una nueva aventura de mundo abierto.",
-                "fecha_lanzamiento": date(2023, 5, 12),
-                "categoria": cat["Aventura"],
-                "genero": gen["Mundo abierto"],
-                "ofertas": [
-                    {"plataforma": "Nintendo Switch", "precio": 249900, "stock": 8},
-                ],
-            },
-            {
-                "titulo": "Elden Ring",
-                "descripcion": "RPG de acción oscura en el vasto mundo entre-tierras, creado con George R.R. Martin.",
-                "fecha_lanzamiento": date(2022, 2, 25),
-                "categoria": cat["RPG"],
-                "genero": gen["Rol"],
-                "ofertas": [
-                    {"plataforma": "PC", "precio": 199900, "stock": 15},
-                    {"plataforma": "PlayStation 5", "precio": 209900, "stock": 7},
-                    {"plataforma": "Xbox Series X", "precio": 209900, "stock": 4},
-                ],
-            },
-            {
-                "titulo": "FIFA 24",
-                "descripcion": "La entrega anual de fútbol con licencias oficiales de ligas y selecciones.",
-                "fecha_lanzamiento": date(2023, 9, 29),
-                "categoria": cat["Deportes"],
-                "genero": gen["Deportivo"],
-                "ofertas": [
-                    {"plataforma": "PlayStation 5", "precio": 189900, "stock": 20},
-                    {"plataforma": "Xbox Series X", "precio": 189900, "stock": 12},
-                    {"plataforma": "PC", "precio": 149900, "stock": 9},
-                ],
-            },
-            {
-                "titulo": "Forza Horizon 5",
-                "descripcion": "Carreras en mundo abierto ambientadas en los coloridos paisajes de México.",
-                "fecha_lanzamiento": date(2021, 11, 9),
-                "categoria": cat["Carreras"],
-                "genero": gen["Mundo abierto"],
-                "ofertas": [
-                    {"plataforma": "Xbox Series X", "precio": 179900, "stock": 12},
-                    {"plataforma": "PC", "precio": 169900, "stock": 5},
-                ],
-            },
-            {
-                "titulo": "Halo Infinite",
-                "descripcion": "El Jefe Maestro regresa en un shooter de ciencia ficción épico y multijugador.",
-                "fecha_lanzamiento": date(2021, 12, 8),
-                "categoria": cat["Acción"],
-                "genero": gen["Shooter"],
-                "ofertas": [
-                    {"plataforma": "Xbox Series X", "precio": 159900, "stock": 9},
-                ],
-            },
-            {
-                "titulo": "Hogwarts Legacy",
-                "descripcion": "Vive tu propia historia en el mundo mágico del siglo XIX del universo Harry Potter.",
-                "fecha_lanzamiento": date(2023, 2, 10),
-                "categoria": cat["RPG"],
-                "genero": gen["Rol"],
-                "ofertas": [
-                    {"plataforma": "PlayStation 5", "precio": 209900, "stock": 7},
-                    {"plataforma": "PC", "precio": 189900, "stock": 0},
-                ],
-            },
-            {
-                "titulo": "Super Mario Bros. Wonder",
-                "descripcion": "Mario y sus amigos exploran el Reino de las Flores con nuevas mecánicas Wonder.",
-                "fecha_lanzamiento": date(2023, 10, 20),
-                "categoria": cat["Acción"],
-                "genero": gen["Plataformas"],
-                "ofertas": [
-                    {"plataforma": "Nintendo Switch", "precio": 229900, "stock": 14},
-                ],
-            },
-            {
-                "titulo": "Cyberpunk 2077",
-                "descripcion": "RPG de mundo abierto en Night City, una megalópolis del futuro obsesionada con el poder.",
-                "fecha_lanzamiento": date(2020, 12, 10),
-                "categoria": cat["RPG"],
-                "genero": gen["Mundo abierto"],
-                "ofertas": [
-                    {"plataforma": "PC", "precio": 149900, "stock": 18},
-                    {"plataforma": "PlayStation 5", "precio": 159900, "stock": 5},
-                ],
-            },
-            {
-                "titulo": "NBA 2K24",
-                "descripcion": "La simulación de baloncesto más completa con modos carrera, MyTeam y online.",
-                "fecha_lanzamiento": date(2023, 9, 8),
-                "categoria": cat["Deportes"],
-                "genero": gen["Deportivo"],
-                "ofertas": [
-                    {"plataforma": "Xbox Series X", "precio": 189900, "stock": 11},
-                ],
-            },
-            {
-                "titulo": "Age of Empires IV",
-                "descripcion": "Estrategia en tiempo real con civilizaciones históricas de la Edad Media.",
-                "fecha_lanzamiento": date(2021, 10, 28),
-                "categoria": cat["Estrategia"],
-                "genero": gen["Simulación"],
-                "ofertas": [
-                    {"plataforma": "PC", "precio": 139900, "stock": 6},
-                ],
-            },
-            {
-                "titulo": "Gran Turismo 7",
-                "descripcion": "Simulador de carreras con más de 400 autos licenciados y físicas ultra realistas.",
-                "fecha_lanzamiento": date(2022, 3, 4),
-                "categoria": cat["Carreras"],
-                "genero": gen["Simulación"],
-                "ofertas": [
-                    {"plataforma": "PlayStation 5", "precio": 219900, "stock": 0},
-                ],
-            },
-            {
-                "titulo": "Baldur's Gate 3",
-                "descripcion": "RPG por turnos basado en D&D con decisiones que moldean cada aspecto de la historia.",
-                "fecha_lanzamiento": date(2023, 8, 3),
-                "categoria": cat["RPG"],
-                "genero": gen["Rol"],
-                "ofertas": [
-                    {"plataforma": "PC", "precio": 199900, "stock": 5},
-                    {"plataforma": "PlayStation 5", "precio": 219900, "stock": 2},
-                ],
-            },
-            {
-                "titulo": "Mortal Kombat 1",
-                "descripcion": "Reinicio de la saga con nuevos Kameos, historia épica y brutal combate en HD.",
-                "fecha_lanzamiento": date(2023, 9, 19),
-                "categoria": cat["Acción"],
-                "genero": gen["Shooter"],
-                "ofertas": [
-                    {"plataforma": "PlayStation 5", "precio": 209900, "stock": 0},
-                ],
-            },
-            {
-                "titulo": "Starfield",
-                "descripcion": "RPG espacial de Bethesda con más de 1000 planetas explorables y libertad total.",
-                "fecha_lanzamiento": date(2023, 9, 6),
-                "categoria": cat["Aventura"],
-                "genero": gen["Mundo abierto"],
-                "ofertas": [
-                    {"plataforma": "Xbox Series X", "precio": 219900, "stock": 13},
-                    {"plataforma": "PC", "precio": 209900, "stock": 3},
-                ],
-            },
-        ]
-
-        juegos_creados = 0
-        ofertas_creadas = 0
-        clas = {c.codigo: c for c in ClasificacionEdad.objects.all()}
-
-        # Títulos históricos: se conservan con su descripción, fecha y ofertas.
-        for indice, datos in enumerate(juegos):
-            codigo = CLASIFICACIONES_ROTACION[
-                indice % len(CLASIFICACIONES_ROTACION)
-            ]
-            creados, ofertas = self._crear_videojuego(
-                titulo=datos["titulo"],
-                descripcion=datos["descripcion"],
-                fecha_lanzamiento=datos["fecha_lanzamiento"],
-                categoria=datos["categoria"],
-                genero=datos["genero"],
-                ofertas=datos["ofertas"],
-                plt=plt,
-                clasificacion=clas[codigo],
-            )
-            juegos_creados += creados
-            ofertas_creadas += ofertas
-
-        # Complemento hasta 20 por categoría. También cubre categorías que el
-        # usuario haya creado fuera de las seis base (AZ-S2-BE-16).
-        for categoria in Categoria.objects.order_by("nombre"):
-            titulos = TITULOS_COMPLEMENTARIOS.get(
-                categoria.nombre,
-                self._titulos_para_categoria_extra(categoria),
-            )
-            creados, ofertas = self._completar_categoria(
-                categoria, titulos, plt, gen, clas
-            )
-            juegos_creados += creados
-            ofertas_creadas += ofertas
-
-        creados, ofertas = self._completar_total_global(plt, gen, clas)
-        juegos_creados += creados
-        ofertas_creadas += ofertas
         return juegos_creados, ofertas_creadas

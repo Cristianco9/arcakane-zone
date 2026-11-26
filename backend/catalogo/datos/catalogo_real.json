@@ -1,0 +1,3477 @@
+[
+  {
+    "titulo": "Terraria",
+    "descripcion": "Terraria es un videojuego de acción-aventura y de mundo abierto producido por el estudio Re-Logic. Se caracteriza por la exploración, la elaboración de objetos, construcción de estructuras, y el combate. Actualmente se encuentra en la versión 1.4.5.8.​ Se lanzó el 16 de mayo de 2011.",
+    "fecha_lanzamiento": "2011-05-16",
+    "categoria": "Acción",
+    "genero": "Rol",
+    "clasificacion": "7",
+    "desarrollador": "Re-Logic",
+    "imagen_url": "/covers/reales/105600.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 39900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 49900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 49900,
+        "stock": 17
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 49900,
+        "stock": 4
+      }
+    ]
+  },
+  {
+    "titulo": "Rust",
+    "descripcion": "Un shooter de supervivencia multijugador en un mundo abierto hostil donde construyes bases, cazas animales y te enfrentas a otros jugadores.",
+    "fecha_lanzamiento": "2018-02-08",
+    "categoria": "Acción",
+    "genero": "Rol",
+    "clasificacion": "7",
+    "desarrollador": "Facepunch Studios",
+    "imagen_url": "/covers/reales/252490.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 159900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 169900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 169900,
+        "stock": 7
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 169900,
+        "stock": 14
+      }
+    ]
+  },
+  {
+    "titulo": "Red Dead Redemption 2",
+    "descripcion": "Red Dead Redemption 2 (abreviado como RDR2 y estilizado como Red Dead Redemption II) es un videojuego de acción-aventura de mundo abierto desarrollado y publicado por Rockstar Games. El juego es la tercera entrada de la serie Red Dead y una precuela del juego Red Dead Redemption de 2010.",
+    "fecha_lanzamiento": "2019-12-05",
+    "categoria": "Acción",
+    "genero": "Mundo abierto",
+    "clasificacion": "16",
+    "desarrollador": "Rockstar Games",
+    "imagen_url": "/covers/reales/1174180.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 59900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 69900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 69900,
+        "stock": 17
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 69900,
+        "stock": 4
+      }
+    ]
+  },
+  {
+    "titulo": "ELDEN RING",
+    "descripcion": "Un RPG de acción oscura desarrollado por FromSoftware en un vasto mundo de fantasía repleto de criaturas, ruinas y secretos por descubrir.",
+    "fecha_lanzamiento": "2022-02-24",
+    "categoria": "Acción",
+    "genero": "Rol",
+    "clasificacion": "16",
+    "desarrollador": "FromSoftware, Inc.",
+    "imagen_url": "/covers/reales/1245620.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 239900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 249900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 249900,
+        "stock": 17
+      }
+    ]
+  },
+  {
+    "titulo": "Left 4 Dead 2",
+    "descripcion": "Left 4 Dead 2 es un videojuego de disparos en primera persona de 2009 de Valve. Secuela de Left 4 Dead (2008) y segundo juego de la serie Left 4 Dead, fue lanzado para Microsoft Windows y Xbox 360 en noviembre de 2009, Mac OS X en octubre de 2010 y Linux en julio de 2013.​​ Ambientado en un mundo posterior a una pandemia, el juego se c...",
+    "fecha_lanzamiento": "2009-11-16",
+    "categoria": "Acción",
+    "genero": "Shooter",
+    "clasificacion": "7",
+    "desarrollador": "Valve",
+    "imagen_url": "/covers/reales/550.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 39900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 49900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 49900,
+        "stock": 7
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 49900,
+        "stock": 14
+      }
+    ]
+  },
+  {
+    "titulo": "Dead by Daylight",
+    "descripcion": "Dead by Daylight es un videojuego de terror y supervivencia multijugador asimétrico en línea desarrollado y publicado por el estudio canadiense Behaviour Interactive.",
+    "fecha_lanzamiento": "2016-06-14",
+    "categoria": "Acción",
+    "genero": "Shooter",
+    "clasificacion": "16",
+    "desarrollador": "Behaviour Interactive Inc.",
+    "imagen_url": "/covers/reales/381210.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 79900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 89900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 89900,
+        "stock": 7
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 89900,
+        "stock": 14
+      }
+    ]
+  },
+  {
+    "titulo": "Phasmophobia",
+    "descripcion": "Phasmophobia es un videojuego de terror independiente desarrollado y publicado por Kinetic Games. El juego contó con un acceso anticipado a través de Steam para los equipos de Microsoft Windows en septiembre de 2020, junto con soporte de realidad virtual.",
+    "fecha_lanzamiento": "2020-09-18",
+    "categoria": "Acción",
+    "genero": "Shooter",
+    "clasificacion": "7",
+    "desarrollador": "Kinetic Games",
+    "imagen_url": "/covers/reales/739630.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 79900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 89900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 89900,
+        "stock": 7
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 89900,
+        "stock": 14
+      }
+    ]
+  },
+  {
+    "titulo": "ARK: Survival Evolved",
+    "descripcion": "Sobrevive en una isla prehistórica domesticando dinosaurios, construyendo refugios y explorando un mundo salvaje lleno de peligros.",
+    "fecha_lanzamiento": "2017-08-27",
+    "categoria": "Acción",
+    "genero": "Rol",
+    "clasificacion": "7",
+    "desarrollador": "Studio Wildcard",
+    "imagen_url": "/covers/reales/346110.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 59900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 69900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 69900,
+        "stock": 7
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 69900,
+        "stock": 14
+      }
+    ]
+  },
+  {
+    "titulo": "Hollow Knight",
+    "descripcion": "Hollow Knight es un videojuego perteneciente al género metroidvania. El videojuego fue inicialmente lanzado para Microsoft Windows en febrero de 2017, y más tarde para macOS y Linux en abril de 2017.​ La adaptación para Nintendo Switch fue lanzada el 12 de junio de 2018.​ El desarrollo fue parcialmente financiado como un proyecto Kicks...",
+    "fecha_lanzamiento": "2017-02-24",
+    "categoria": "Acción",
+    "genero": "Plataformas",
+    "clasificacion": "7",
+    "desarrollador": "Team Cherry",
+    "imagen_url": "/covers/reales/367520.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 59900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 69900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 69900,
+        "stock": 17
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 69900,
+        "stock": 4
+      }
+    ]
+  },
+  {
+    "titulo": "Valheim",
+    "descripcion": "Valheim es un videojuego de supervivencia y sandbox del desarrollado por el estudio sueco Iron Gate Studio y publicado por Coffee Stain Studios.​ Se lanzó en acceso anticipado el 2 de febrero de 2021 para Linux y Windows a través de Steam, y para Xbox One y Xbox Series X/S el 14 de marzo de 2023.​​ El juego fue desarrollado por un equi...",
+    "fecha_lanzamiento": "2026-09-09",
+    "categoria": "Acción",
+    "genero": "Rol",
+    "clasificacion": "7",
+    "desarrollador": "Iron Gate AB",
+    "imagen_url": "/covers/reales/892970.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 119900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 129900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 129900,
+        "stock": 7
+      }
+    ]
+  },
+  {
+    "titulo": "Palworld",
+    "descripcion": "Palworld (パルワールド, Paruwārudo?) es un videojuego de acción y aventura de supervivencia del desarrollador japonés Pocket Pair. El juego está ambientado en un mundo abierto poblado por criaturas parecidas a animales conocidas como \"Pals\".",
+    "fecha_lanzamiento": "2026-07-09",
+    "categoria": "Acción",
+    "genero": "Rol",
+    "clasificacion": "7",
+    "desarrollador": "Pocketpair",
+    "imagen_url": "/covers/reales/1623730.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 119900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 129900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 129900,
+        "stock": 7
+      }
+    ]
+  },
+  {
+    "titulo": "Hollow Knight: Silksong",
+    "descripcion": "Hollow Knight: Silksong es un videojuego metroidvania desarrollado por el estudio independiente australiano Team Cherry.​ Es la secuela del videojuego de 2017 Hollow Knight.​ Desarrollado para Windows, macOS, Linux, Nintendo Switch, Nintendo Switch 2, Xbox One, Xbox Series X/S, PlayStation 4 y PlayStation 5,​​​ fue anunciado oficialmen...",
+    "fecha_lanzamiento": "2025-09-04",
+    "categoria": "Acción",
+    "genero": "Plataformas",
+    "clasificacion": "7",
+    "desarrollador": "Team Cherry",
+    "imagen_url": "/covers/reales/1030300.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 79900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 89900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 89900,
+        "stock": 17
+      }
+    ]
+  },
+  {
+    "titulo": "DayZ",
+    "descripcion": "DayZ (también conocido como DayZ Standalone) es un videojuego de terror y de mundo abierto, desarrollado por Bohemia Interactive y la versión independiente del premiado mod homónimo, creado por Dean Hall.",
+    "fecha_lanzamiento": "2018-12-13",
+    "categoria": "Acción",
+    "genero": "Mundo abierto",
+    "clasificacion": "16",
+    "desarrollador": "Bohemia Interactive",
+    "imagen_url": "/covers/reales/221100.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 199900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 209900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 209900,
+        "stock": 17
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 209900,
+        "stock": 4
+      }
+    ]
+  },
+  {
+    "titulo": "Don't Starve Together",
+    "descripcion": "Una aventura de supervivencia estilo cómic en la que debes recolectar recursos, fabricar objetos y resistir las noches en un mundo hostil.",
+    "fecha_lanzamiento": "2016-04-21",
+    "categoria": "Acción",
+    "genero": "Rol",
+    "clasificacion": "7",
+    "desarrollador": "Klei Entertainment",
+    "imagen_url": "/covers/reales/322330.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 59900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 69900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 69900,
+        "stock": 7
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 69900,
+        "stock": 14
+      }
+    ]
+  },
+  {
+    "titulo": "R.E.P.O.",
+    "descripcion": "R.E.P.O. (acrónimo de Retrieve, Extract and Profit Operation; Operación Beneficiosa de Recuperación y Extracción) es un videojuego cooperativo de survival horror desarrollado por Semiwork para PC. Fue lanzado en Steam como acceso anticipado el 28 de febrero de 2025.",
+    "fecha_lanzamiento": "2025-02-26",
+    "categoria": "Acción",
+    "genero": "Shooter",
+    "clasificacion": "7",
+    "desarrollador": "semiwork",
+    "imagen_url": "/covers/reales/3241660.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 39900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 49900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 49900,
+        "stock": 17
+      }
+    ]
+  },
+  {
+    "titulo": "No Man's Sky",
+    "descripcion": "No Man's Sky es un videojuego desarrollado y publicado por Hello Games para PlayStation 5, PlayStation 4, Xbox One, Xbox Series X/S, Microsoft Windows, macOS y Nintendo Switch, que posteriormente recibió una edición para Nintendo Switch 2.",
+    "fecha_lanzamiento": "2016-08-12",
+    "categoria": "Acción",
+    "genero": "Mundo abierto",
+    "clasificacion": "7",
+    "desarrollador": "Hello Games",
+    "imagen_url": "/covers/reales/275850.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 239900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 249900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 249900,
+        "stock": 7
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 249900,
+        "stock": 14
+      }
+    ]
+  },
+  {
+    "titulo": "ARC Raiders",
+    "descripcion": "ARC Raiders es un videojuego de disparos en tercera persona con mecánicas de extracción lanzado en 2025, desarrollado y publicado por Embark Studios para PlayStation 5, Windows y Xbox Series X/S.",
+    "fecha_lanzamiento": "2025-10-30",
+    "categoria": "Acción",
+    "genero": "Shooter",
+    "clasificacion": "7",
+    "desarrollador": "Embark Studios",
+    "imagen_url": "/covers/reales/1808500.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 79900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 89900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 89900,
+        "stock": 17
+      }
+    ]
+  },
+  {
+    "titulo": "Battlefield™ 6",
+    "descripcion": "Combates militares a gran escala con vehículos, destructibilidad y modos multijugador para equipos en frentes urbanos y rurales.",
+    "fecha_lanzamiento": "2025-10-10",
+    "categoria": "Acción",
+    "genero": "Shooter",
+    "clasificacion": "16",
+    "desarrollador": "Battlefield Studios",
+    "imagen_url": "/covers/reales/2807960.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 91900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 101900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 101900,
+        "stock": 17
+      }
+    ]
+  },
+  {
+    "titulo": "7 Days to Die",
+    "descripcion": "7 Days to Die (7DTD) (literalmente en español: 7 Días para Morir o 7DPM) es un videojuego perteneciente al género de Videojuego de terror, mundo abierto, sandbox basado en voxel y supervivencia, creado por la empresa The Fun Pimps.",
+    "fecha_lanzamiento": "2024-07-25",
+    "categoria": "Acción",
+    "genero": "Rol",
+    "clasificacion": "7",
+    "desarrollador": "The Fun Pimps",
+    "imagen_url": "/covers/reales/251570.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 179900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 189900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 189900,
+        "stock": 7
+      }
+    ]
+  },
+  {
+    "titulo": "DARK SOULS™ III",
+    "descripcion": "Dark Souls es una serie de juegos de rol de acción creada por Hidetaka Miyazaki de FromSoftware y publicada por Bandai Namco Entertainment. La serie comenzó con el lanzamiento de Dark Souls en 2011 y ha visto dos secuelas, Dark Souls II en 2014 y Dark Souls III en 2016.",
+    "fecha_lanzamiento": "2016-04-11",
+    "categoria": "Acción",
+    "genero": "Rol",
+    "clasificacion": "16",
+    "desarrollador": "FromSoftware, Inc.",
+    "imagen_url": "/covers/reales/374320.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 119900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 129900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 129900,
+        "stock": 17
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 129900,
+        "stock": 4
+      }
+    ]
+  },
+  {
+    "titulo": "Hogwarts Legacy",
+    "descripcion": "Hogwarts Legacy es un videojuego de rol de acción publicado en 2023, desarrollado por Avalanche Software y distribuido por Warner Bros. Games a través de su sello Portkey Games.",
+    "fecha_lanzamiento": "2023-02-10",
+    "categoria": "Aventura",
+    "genero": "Rol",
+    "clasificacion": "3",
+    "desarrollador": "Avalanche Software",
+    "imagen_url": "/covers/reales/990080.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 23900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 33900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 33900,
+        "stock": 17
+      }
+    ]
+  },
+  {
+    "titulo": "Ready or Not",
+    "descripcion": "Un shooter táctico de SWAT en el que diriges un equipo de asalto, cumples órdenes y rescatas rehenes en escenarios realistas.",
+    "fecha_lanzamiento": "2023-12-13",
+    "categoria": "Aventura",
+    "genero": "Mundo abierto",
+    "clasificacion": "3",
+    "desarrollador": "VOID Interactive",
+    "imagen_url": "/covers/reales/1144200.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 99900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 109900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 109900,
+        "stock": 17
+      }
+    ]
+  },
+  {
+    "titulo": "Satisfactory",
+    "descripcion": "Construye una fábrica en un planeta alienígena, automatiza la producción y explora el terreno mientras optimizas cada línea de montaje.",
+    "fecha_lanzamiento": "2024-09-10",
+    "categoria": "Aventura",
+    "genero": "Simulación",
+    "clasificacion": "3",
+    "desarrollador": "Coffee Stain Studios",
+    "imagen_url": "/covers/reales/526870.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 159900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 169900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 169900,
+        "stock": 7
+      }
+    ]
+  },
+  {
+    "titulo": "Grand Theft Auto V Enhanced",
+    "descripcion": "Una versión mejorada de la épica aventura de mundo abierto en Los Santos, con gráficos renovados y modos multijugador.",
+    "fecha_lanzamiento": "2025-03-04",
+    "categoria": "Aventura",
+    "genero": "Mundo abierto",
+    "clasificacion": "16",
+    "desarrollador": "Rockstar North",
+    "imagen_url": "/covers/reales/3240220.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 78900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 88900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 88900,
+        "stock": 17
+      }
+    ]
+  },
+  {
+    "titulo": "Grand Theft Auto IV: The Complete Edition",
+    "descripcion": "La edición completa de la aventura criminal de Liberty City, con sus expansiones y una historia de acción y mundo abierto.",
+    "fecha_lanzamiento": "2020-03-24",
+    "categoria": "Aventura",
+    "genero": "Mundo abierto",
+    "clasificacion": "16",
+    "desarrollador": "Rockstar North",
+    "imagen_url": "/covers/reales/12210.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 79900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 89900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 89900,
+        "stock": 7
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 89900,
+        "stock": 14
+      }
+    ]
+  },
+  {
+    "titulo": "Stray",
+    "descripcion": "Un gato extraviado en una metrópolis futurista explora sus callejones y azoteas, resuelve acertijos y descubre una historia inolvidable.",
+    "fecha_lanzamiento": "2022-07-19",
+    "categoria": "Aventura",
+    "genero": "Mundo abierto",
+    "clasificacion": "3",
+    "desarrollador": "BlueTwelve Studio",
+    "imagen_url": "/covers/reales/1332010.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 59900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 69900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 69900,
+        "stock": 7
+      }
+    ]
+  },
+  {
+    "titulo": "Call of Duty®: Black Ops III",
+    "descripcion": "Call of Duty: Black Ops III es un videojuego de disparos en primera persona desarrollado por Treyarch publicado por Activision. Es la duodécima entrada de la serie Call of Duty y la secuela del videojuego de 2012 Call of Duty: Black Ops II.",
+    "fecha_lanzamiento": "2015-11-05",
+    "categoria": "Aventura",
+    "genero": "Shooter",
+    "clasificacion": "16",
+    "desarrollador": "Treyarch",
+    "imagen_url": "/covers/reales/311210.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 59900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 69900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 69900,
+        "stock": 7
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 69900,
+        "stock": 14
+      }
+    ]
+  },
+  {
+    "titulo": "The Elder Scrolls® Online",
+    "descripcion": "Un RPG multijugador ambientado en Tamriel que combina exploración, misiones, artesanía y combate en un enorme mundo persistente.",
+    "fecha_lanzamiento": "2017-05-22",
+    "categoria": "Aventura",
+    "genero": "Rol",
+    "clasificacion": "16",
+    "desarrollador": "ZeniMax Online Studios",
+    "imagen_url": "/covers/reales/306130.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 19900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 29900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 29900,
+        "stock": 7
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 29900,
+        "stock": 14
+      }
+    ]
+  },
+  {
+    "titulo": "God of War",
+    "descripcion": "Kratos y su hijo Atreus viajan por los reinos nórdicos en una aventura de acción llena de mitología, combate y secretos.",
+    "fecha_lanzamiento": "2022-01-14",
+    "categoria": "Aventura",
+    "genero": "Rol",
+    "clasificacion": "16",
+    "desarrollador": "Santa Monica Studio",
+    "imagen_url": "/covers/reales/1593500.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 79900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 89900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 89900,
+        "stock": 17
+      }
+    ]
+  },
+  {
+    "titulo": "Crimson Desert Enhanced",
+    "descripcion": "Una aventura de mundo abierto en un continente fantástico de reinos en guerra, con combate épico, exploración y decisiones que moldean la historia.",
+    "fecha_lanzamiento": "2026-03-19",
+    "categoria": "Aventura",
+    "genero": "Mundo abierto",
+    "clasificacion": "3",
+    "desarrollador": "Pearl Abyss",
+    "imagen_url": "/covers/reales/3321460.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 223900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 233900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 233900,
+        "stock": 17
+      }
+    ]
+  },
+  {
+    "titulo": "The Isle",
+    "descripcion": "The Isle es un videojuego de aventura y supervivencia producido por un estudio independiente, Afterthought LLC.​ Tiene características tales como los rompecabezas, niveles 3D que puedes girar para ver desde otro ángulo. Se lanzó el 1 de diciembre de 2015. El videojuego fue lanzado para Steam.​",
+    "fecha_lanzamiento": "2015-12-01",
+    "categoria": "Aventura",
+    "genero": "Simulación",
+    "clasificacion": "3",
+    "desarrollador": "Afterthought LLC",
+    "imagen_url": "/covers/reales/376210.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 79900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 89900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 89900,
+        "stock": 7
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 89900,
+        "stock": 14
+      }
+    ]
+  },
+  {
+    "titulo": "ARK: Survival Ascended",
+    "descripcion": "Una versión remasterizada de la supervivencia prehistórica: dinosaurios, construcción y exploración con gráficos de nueva generación.",
+    "fecha_lanzamiento": "2023-10-25",
+    "categoria": "Aventura",
+    "genero": "Rol",
+    "clasificacion": "3",
+    "desarrollador": "Studio Wildcard",
+    "imagen_url": "/covers/reales/2399830.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 179900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 189900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 189900,
+        "stock": 7
+      }
+    ]
+  },
+  {
+    "titulo": "Enshrouded",
+    "descripcion": "Un RPG de supervivencia en mundo abierto donde construye tu base, explora un reino cubierto por la niebla y lucha contra criaturas.",
+    "fecha_lanzamiento": "2026-10-15",
+    "categoria": "Aventura",
+    "genero": "Rol",
+    "clasificacion": "3",
+    "desarrollador": "Keen Games GmbH",
+    "imagen_url": "/covers/reales/1203620.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 159900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 169900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 169900,
+        "stock": 17
+      }
+    ]
+  },
+  {
+    "titulo": "Marvel’s Spider-Man Remastered",
+    "descripcion": "Balancea por Nueva York como Peter Parker y Spider-Man, resolviendo casos y enfrentándote a villanos de Marvel.",
+    "fecha_lanzamiento": "2022-08-12",
+    "categoria": "Aventura",
+    "genero": "Mundo abierto",
+    "clasificacion": "3",
+    "desarrollador": "Insomniac Games",
+    "imagen_url": "/covers/reales/1817070.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 95900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 105900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 105900,
+        "stock": 7
+      }
+    ]
+  },
+  {
+    "titulo": "Days Gone",
+    "descripcion": "Days Gone es un videojuego de terror y acción-aventura, desarrollado por el estudio SIE Bend Studio y publicado por Sony Interactive Entertainment para PlayStation 4 y Microsoft Windows.",
+    "fecha_lanzamiento": "2021-05-17",
+    "categoria": "Aventura",
+    "genero": "Mundo abierto",
+    "clasificacion": "16",
+    "desarrollador": "Bend Studio",
+    "imagen_url": "/covers/reales/1259420.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 52900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 62900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 62900,
+        "stock": 17
+      }
+    ]
+  },
+  {
+    "titulo": "Dune: Awakening",
+    "descripcion": "Dune: Awakening es un videojuego de supervivencia desarrollado y publicado por Funcom. Es un juego multijugador que se lanzó para Windows el 10 de junio de 2025, con un acceso anticipado que comenzó el 5 de junio. También está previsto el lanzamiento de versiones para PlayStation 5 y Xbox Series X/S el 22 de septiembre de 2026.",
+    "fecha_lanzamiento": "2025-06-10",
+    "categoria": "Aventura",
+    "genero": "Rol",
+    "clasificacion": "16",
+    "desarrollador": "Funcom",
+    "imagen_url": "/covers/reales/1172710.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 99900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 109900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 109900,
+        "stock": 7
+      }
+    ]
+  },
+  {
+    "titulo": "Black Desert",
+    "descripcion": "Un RPG de mundo abierto con combate fluido, artesanía, comercio y grandes batallas entre jugadores en un mundo de fantasía.",
+    "fecha_lanzamiento": "2017-05-24",
+    "categoria": "Aventura",
+    "genero": "Rol",
+    "clasificacion": "3",
+    "desarrollador": "Pearl Abyss",
+    "imagen_url": "/covers/reales/582660.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 19900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 29900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 29900,
+        "stock": 17
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 29900,
+        "stock": 4
+      }
+    ]
+  },
+  {
+    "titulo": "Lies of P",
+    "descripcion": "Lies of P es un videojuego soulslike desarrollado por Round8 Studio y publicado por Neowiz Games, ambas compañías de Corea del Sur.",
+    "fecha_lanzamiento": "2023-09-18",
+    "categoria": "Aventura",
+    "genero": "Rol",
+    "clasificacion": "16",
+    "desarrollador": "NEOWIZ",
+    "imagen_url": "/covers/reales/1627720.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 119900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 129900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 129900,
+        "stock": 17
+      }
+    ]
+  },
+  {
+    "titulo": "Street Fighter™ 6",
+    "descripcion": "El regreso de la saga de lucha con un nuevo sistema de combate, modos online y un plantel de luchadores clásicos y nuevos.",
+    "fecha_lanzamiento": "2023-06-01",
+    "categoria": "Aventura",
+    "genero": "Mundo abierto",
+    "clasificacion": "3",
+    "desarrollador": "CAPCOM Co., Ltd.",
+    "imagen_url": "/covers/reales/1364780.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 159900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 169900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 169900,
+        "stock": 17
+      }
+    ]
+  },
+  {
+    "titulo": "SILENT HILL 2",
+    "descripcion": "Un terror psicológico que sigue a James Sunderland en la niebla de Silent Hill, donde cada calle esconde una pista y una pesadilla.",
+    "fecha_lanzamiento": "2024-10-07",
+    "categoria": "Aventura",
+    "genero": "Mundo abierto",
+    "clasificacion": "16",
+    "desarrollador": "Bloober Team SA",
+    "imagen_url": "/covers/reales/2124490.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 77900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 87900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 87900,
+        "stock": 7
+      }
+    ]
+  },
+  {
+    "titulo": "BeamNG.drive",
+    "descripcion": "BeamNG.drive (comúnmente abreviado como BeamNG) es un videojuego de simulación de vehículos de mundo abierto desarrollado y publicado por el desarrollador de videojuegos BeamNG GmbH, con sede en Bremen.",
+    "fecha_lanzamiento": "2015-05-29",
+    "categoria": "Carreras",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "BeamNG",
+    "imagen_url": "/covers/reales/284160.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 99900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 109900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 109900,
+        "stock": 17
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 109900,
+        "stock": 4
+      }
+    ]
+  },
+  {
+    "titulo": "Assetto Corsa",
+    "descripcion": "Assetto Corsa es un videojuego de carreras de simulación desarrollado por Kunos Simulazioni. Está diseñado con énfasis en una experiencia de carreras realistas con soporte para una amplia personalización y modificación.",
+    "fecha_lanzamiento": "2014-12-19",
+    "categoria": "Carreras",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Kunos Simulazioni",
+    "imagen_url": "/covers/reales/244210.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 19900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 29900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 29900,
+        "stock": 7
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 29900,
+        "stock": 14
+      }
+    ]
+  },
+  {
+    "titulo": "Forza Horizon 6",
+    "descripcion": "Forza Horizon 6 es un videojuego de carreras desarrollado por Playground Games y publicado por Xbox Game Studios, lanzado el 19 de mayo de 2026 para Windows y Xbox Series X/S, y una versión posterior para PlayStation 5.",
+    "fecha_lanzamiento": "2026-05-18",
+    "categoria": "Carreras",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Playground Games",
+    "imagen_url": "/covers/reales/2483190.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 209900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 219900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 219900,
+        "stock": 7
+      }
+    ]
+  },
+  {
+    "titulo": "The Crew™ 2",
+    "descripcion": "Carreras en mundo abierto por Estados Unidos con coches, motos, barcos y aviones, además de misiones y multijugador.",
+    "fecha_lanzamiento": "2018-06-28",
+    "categoria": "Carreras",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Ivory Tower",
+    "imagen_url": "/covers/reales/646910.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 35900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 45900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 45900,
+        "stock": 7
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 45900,
+        "stock": 14
+      }
+    ]
+  },
+  {
+    "titulo": "City Car Driving",
+    "descripcion": "Un simulador de conducción urbana para practicar normas de tráfico, maniobras y distintos vehículos en entornos realistas.",
+    "fecha_lanzamiento": "2016-11-03",
+    "categoria": "Carreras",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Forward Development, Ltd.",
+    "imagen_url": "/covers/reales/493490.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 49900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 59900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 59900,
+        "stock": 7
+      }
+    ]
+  },
+  {
+    "titulo": "F1® 25",
+    "descripcion": "La simulación oficial de la Fórmula 1 con los equipos, pilotos y circuitos de la temporada, modos carrera y multijugador.",
+    "fecha_lanzamiento": "2025-05-30",
+    "categoria": "Carreras",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Codemasters",
+    "imagen_url": "/covers/reales/3059520.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 119900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 129900,
+        "stock": 10
+      }
+    ]
+  },
+  {
+    "titulo": "Automobilista 2",
+    "descripcion": "Un simulador de carreras con coches y circuitos brasileños e internacionales, físicas realistas y condiciones cambiantes.",
+    "fecha_lanzamiento": "2020-06-30",
+    "categoria": "Carreras",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Reiza Studios",
+    "imagen_url": "/covers/reales/1066890.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 159900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 169900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 169900,
+        "stock": 7
+      }
+    ]
+  },
+  {
+    "titulo": "Forza Motorsport",
+    "descripcion": "Forza Motorsport es un videojuego de carreras desarrollado por Turn 10 Studios y publicado por Microsoft para el sistema de juegos Xbox. Fue enviado a las tiendas el 3 de mayo de 2005.",
+    "fecha_lanzamiento": "2023-10-09",
+    "categoria": "Carreras",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Turn 10",
+    "imagen_url": "/covers/reales/2440510.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 111900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 121900,
+        "stock": 20
+      }
+    ]
+  },
+  {
+    "titulo": "Motorsport Manager",
+    "descripcion": "Motorsport Manager es un juego de simulación de automóviles desarrollado por Playsport Games. El juego fue lanzado para iOS en agosto de 2014 y para Android en 2015. El juego lo publicó Sega para los sistemas MacOS y Windows en noviembre de 2016.",
+    "fecha_lanzamiento": "2016-11-09",
+    "categoria": "Carreras",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Playsport Games",
+    "imagen_url": "/covers/reales/415200.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 79900,
+        "stock": 3
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 89900,
+        "stock": 10
+      }
+    ]
+  },
+  {
+    "titulo": "EA SPORTS™ WRC",
+    "descripcion": "El campeonato mundial de rally con coches oficiales, tramos de tierra y nieve y modos de competencia y carrera.",
+    "fecha_lanzamiento": "2023-11-02",
+    "categoria": "Carreras",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Codemasters",
+    "imagen_url": "/covers/reales/1849250.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 59900,
+        "stock": 13
+      }
+    ]
+  },
+  {
+    "titulo": "Naval Action",
+    "descripcion": "Un juego de combate naval por turnos en tiempo real con fragatas históricas, comercio y batallas entre jugadores.",
+    "fecha_lanzamiento": "2019-06-13",
+    "categoria": "Carreras",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Bermuda Computer Club",
+    "imagen_url": "/covers/reales/311310.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 79900,
+        "stock": 13
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 89900,
+        "stock": 20
+      }
+    ]
+  },
+  {
+    "titulo": "STAR WARS: Galactic Racer™",
+    "descripcion": "Carreras de vehículos en el universo Star Wars con pilotos, naves y circuitos de distintos planetas.",
+    "fecha_lanzamiento": "2026-10-06",
+    "categoria": "Carreras",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Fuse Games",
+    "imagen_url": "/covers/reales/4078430.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 191900,
+        "stock": 13
+      }
+    ]
+  },
+  {
+    "titulo": "over the hill",
+    "descripcion": "Un simulador de rally en el que recorres caminos de montaña con distintos coches y condiciones de conducción.",
+    "fecha_lanzamiento": "2026-10-14",
+    "categoria": "Carreras",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Funselektor",
+    "imagen_url": "/covers/reales/2929250.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 99900,
+        "stock": 13
+      }
+    ]
+  },
+  {
+    "titulo": "Street Legal Racing: Redline v2.3.1",
+    "descripcion": "Un clásico de carreras callejeras con tuning, motores y competencias nocturnas en las calles de la ciudad.",
+    "fecha_lanzamiento": "2016-08-05",
+    "categoria": "Carreras",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Invictus Games Ltd.",
+    "imagen_url": "/covers/reales/497180.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 27900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "GRID Legends",
+    "descripcion": "Grid Legends (estilizado como GRID Legends) es un videojuego de carreras de 2022 desarrollado por Codemasters y publicado por Electronic Arts. Es la quinta entrega de la franquicia Grid.",
+    "fecha_lanzamiento": "2022-02-24",
+    "categoria": "Carreras",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Codemasters",
+    "imagen_url": "/covers/reales/1307710.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 71900,
+        "stock": 13
+      }
+    ]
+  },
+  {
+    "titulo": "WRC 10 FIA World Rally Championship",
+    "descripcion": "WRC: FIA World Rally Championship es un videojuego de carreras de coches basado en la temporada 2010 del World Rally Championship (WRC). Es el primer juego con licencia oficial del WRC desde WRC: Rally Evolved de 2005, y es el séptimo juego en llevar la licencia WRC.",
+    "fecha_lanzamiento": "2021-09-02",
+    "categoria": "Carreras",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "KT Racing",
+    "imagen_url": "/covers/reales/1462810.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 199900,
+        "stock": 13
+      }
+    ]
+  },
+  {
+    "titulo": "Old School Rally",
+    "descripcion": "Un rally retro con físicas arcade, coches clásicos y tramos llenos de curvas y saltos.",
+    "fecha_lanzamiento": "2025-12-03",
+    "categoria": "Carreras",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Frozen Lake Games",
+    "imagen_url": "/covers/reales/2824660.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 38900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "Circuit Superstars",
+    "descripcion": "Carreras de circuito con coches clásicos y modernos, físicas accesibles y competiciones online para todos los niveles.",
+    "fecha_lanzamiento": "2023-10-31",
+    "categoria": "Carreras",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Original Fire Games",
+    "imagen_url": "/covers/reales/1097130.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 79900,
+        "stock": 13
+      }
+    ]
+  },
+  {
+    "titulo": "WRC 8 FIA World Rally Championship",
+    "descripcion": "La simulación oficial del WRC con etapas de gravel, asfalto y nieve, gestión de equipo y modos de carrera.",
+    "fecha_lanzamiento": "2020-09-08",
+    "categoria": "Carreras",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "KT Racing",
+    "imagen_url": "/covers/reales/1004750.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 119900,
+        "stock": 13
+      }
+    ]
+  },
+  {
+    "titulo": "WRC 4 FIA World Rally Championship",
+    "descripcion": "La entrega del campeonato mundial de rally con coches oficiales, tramos reales y sistema de daños.",
+    "fecha_lanzamiento": "2013-10-25",
+    "categoria": "Carreras",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Milestone S.r.l.",
+    "imagen_url": "/covers/reales/256330.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 19900,
+        "stock": 13
+      }
+    ]
+  },
+  {
+    "titulo": "EA SPORTS FC™ 27",
+    "descripcion": "EA Sports FC es una saga de videojuegos de fútbol publicados anualmente por Electronic Arts bajo el sello de EA Sports. Esta serie surgió como sucesora de la serie de videojuegos FIFA en 2023, luego que no se renovara el contrato de exclusividad de licencia de FIFA con EA Sports.​ La situación se originó porque el...",
+    "fecha_lanzamiento": "2026-09-24",
+    "categoria": "Deportes",
+    "genero": "Deportivo",
+    "clasificacion": "3",
+    "desarrollador": "EA CANADA",
+    "imagen_url": "/covers/reales/4080220.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 139900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 149900,
+        "stock": 10
+      }
+    ]
+  },
+  {
+    "titulo": "Super Woden: Rally Edge",
+    "descripcion": "Un rally arcade inspirado en los clásicos de 16 bits, con etapas cortas, cronómetro y mucha velocidad.",
+    "fecha_lanzamiento": "2026-01-15",
+    "categoria": "Deportes",
+    "genero": "Deportivo",
+    "clasificacion": "3",
+    "desarrollador": "ViJuDa",
+    "imagen_url": "/covers/reales/3218630.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 51900,
+        "stock": 13
+      }
+    ]
+  },
+  {
+    "titulo": "CarX Drift Racing Online 2",
+    "descripcion": "CarX Drift Racing es un videojuego de carreras de drift desarrollado y publicado por CarX Technologies lanzado en 2014 para iOS, Android y Windows Phone, en 2017 para Windows, en 2019 para PlayStation 4, en 2020 para Xbox One, y en 2021 para Nintendo Switch. Es la primera entrega de la serie CarX.",
+    "fecha_lanzamiento": "2026-05-07",
+    "categoria": "Deportes",
+    "genero": "Deportivo",
+    "clasificacion": "3",
+    "desarrollador": "CarX Technologies, LLC",
+    "imagen_url": "/covers/reales/1826420.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 79900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "Rush Rally 3",
+    "descripcion": "Rush Rally 3 es un videojuego de carreras de rally desarrollado y publicado por Brownmonster Limited para iOS, Android, tvOS, Nintendo Switch y Windows. Fue lanzado en 2019 para iOS, Android y tvOS, y más tarde en 2022 para Windows. Es la tercera entrega de la serie Rush Rally.",
+    "fecha_lanzamiento": "2022-11-24",
+    "categoria": "Deportes",
+    "genero": "Deportivo",
+    "clasificacion": "3",
+    "desarrollador": "Brownmonster Limited",
+    "imagen_url": "/covers/reales/2020860.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 59900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "Shooters, Ready!",
+    "descripcion": "Un FPS arcade japonés en el que debes atravesar salas con rapidez y abatir objetivos con precisión para conseguir la mejor puntuación.",
+    "fecha_lanzamiento": "2025-03-27",
+    "categoria": "Deportes",
+    "genero": "Deportivo",
+    "clasificacion": "3",
+    "desarrollador": "おこめたべたべず",
+    "imagen_url": "/covers/reales/3247500.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 19900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "Sébastien Loeb Rally EVO",
+    "descripcion": "Un simulador de rally que recrea la carrera del legendario Sébastien Loeb con coches y etapas oficiales.",
+    "fecha_lanzamiento": "2016-01-29",
+    "categoria": "Deportes",
+    "genero": "Deportivo",
+    "clasificacion": "3",
+    "desarrollador": "Milestone S.r.l.",
+    "imagen_url": "/covers/reales/355060.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 19900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "#DRIVE Rally",
+    "descripcion": "Un rally arcade inspirado en los años 90 con coches icónicos, copiloto y tramos llenos de velocidad.",
+    "fecha_lanzamiento": "2025-04-16",
+    "categoria": "Deportes",
+    "genero": "Deportivo",
+    "clasificacion": "3",
+    "desarrollador": "Pixel Perfect Dude",
+    "imagen_url": "/covers/reales/2494780.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 43900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "River City Super Sports Challenge ~All Stars Special~",
+    "descripcion": "Un frenético juego de deportes de equipo con personajes de River City, pruebas variadas y humor arcade.",
+    "fecha_lanzamiento": "2015-12-17",
+    "categoria": "Deportes",
+    "genero": "Deportivo",
+    "clasificacion": "3",
+    "desarrollador": "Arc System Works",
+    "imagen_url": "/covers/reales/326340.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 79900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "Golden Lap",
+    "descripcion": "Un simulador de Fórmula 1 en miniatura donde diseñas coches, gestionas escuderías y compites por el campeonato.",
+    "fecha_lanzamiento": "2024-09-26",
+    "categoria": "Deportes",
+    "genero": "Deportivo",
+    "clasificacion": "3",
+    "desarrollador": "Funselektor",
+    "imagen_url": "/covers/reales/2052040.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 41900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "Victory Heat Rally",
+    "descripcion": "Un rally arcade de estilo pixel art con conducción rápida, derrapes y etapas llenas de obstáculos.",
+    "fecha_lanzamiento": "2024-10-03",
+    "categoria": "Deportes",
+    "genero": "Deportivo",
+    "clasificacion": "3",
+    "desarrollador": "Skydevilpalm",
+    "imagen_url": "/covers/reales/1594060.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 79900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "Driving Rogue",
+    "descripcion": "Un roguelite de conducción en el que cada viaje cambia el mapa, los rivales y los eventos de la ruta.",
+    "fecha_lanzamiento": "2026-09-17",
+    "categoria": "Deportes",
+    "genero": "Deportivo",
+    "clasificacion": "3",
+    "desarrollador": "Gravity Works",
+    "imagen_url": "/covers/reales/3088700.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 39900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "First Person Tennis - The Real Tennis Simulator",
+    "descripcion": "Un simulador de tenis en primera persona con movimiento, saques y partidos contra la IA u otros jugadores.",
+    "fecha_lanzamiento": "2019-04-11",
+    "categoria": "Deportes",
+    "genero": "Deportivo",
+    "clasificacion": "3",
+    "desarrollador": "Mikori Games",
+    "imagen_url": "/covers/reales/454140.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 99900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "Grand Mountain Adventure: Wonderlands",
+    "descripcion": "Un juego de esquí y snowboard en mundo abierto con estaciones, saltos y desafíos por la montaña.",
+    "fecha_lanzamiento": "2022-03-10",
+    "categoria": "Deportes",
+    "genero": "Deportivo",
+    "clasificacion": "3",
+    "desarrollador": "Toppluva AB",
+    "imagen_url": "/covers/reales/1247360.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 79900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "Rush Rally Origins",
+    "descripcion": "Rush Rally Origins es un videojuego de carreras de rally desarrollado y publicado por Brownmonster Limited para Android, iOS, Nintendo Switch, Windows, Xbox One, Xbox Series X/S. Es la cuarta entrega de la serie Rush Rally.",
+    "fecha_lanzamiento": "2022-04-13",
+    "categoria": "Deportes",
+    "genero": "Deportivo",
+    "clasificacion": "3",
+    "desarrollador": "Brownmonster Limited",
+    "imagen_url": "/covers/reales/1728660.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 59900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "WORKS: Motorsport Factory",
+    "descripcion": "Gestiona una fábrica de coches de competición: diseña, produce y prueba vehículos para conquistar el campeonato.",
+    "fecha_lanzamiento": "2026-11-05",
+    "categoria": "Deportes",
+    "genero": "Deportivo",
+    "clasificacion": "3",
+    "desarrollador": "River Rock Games",
+    "imagen_url": "/covers/reales/5119400.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 79900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "World of Outlaws: Dirt Racing 24 Gold Edition",
+    "descripcion": "Carreras de sprint cars sobre tierra con los pilotos y circuitos de la serie World of Outlaws.",
+    "fecha_lanzamiento": "2025-02-05",
+    "categoria": "Deportes",
+    "genero": "Deportivo",
+    "clasificacion": "3",
+    "desarrollador": "Monster Games",
+    "imagen_url": "/covers/reales/3281130.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 159900,
+        "stock": 13
+      }
+    ]
+  },
+  {
+    "titulo": "Bloody Rally Show",
+    "descripcion": "Un rally arcade sangriento donde atropellar peatones y sobrevivir es tan importante como cruzar la meta.",
+    "fecha_lanzamiento": "2020-02-19",
+    "categoria": "Deportes",
+    "genero": "Deportivo",
+    "clasificacion": "3",
+    "desarrollador": "Kodo Linija",
+    "imagen_url": "/covers/reales/926860.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 39900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "Rally Mechanic Simulator",
+    "descripcion": "Un simulador de taller de rally: repara, tunea y prepara coches de competición antes de cada carrera.",
+    "fecha_lanzamiento": "2025-01-22",
+    "categoria": "Deportes",
+    "genero": "Deportivo",
+    "clasificacion": "3",
+    "desarrollador": "Play2Chill S.A.",
+    "imagen_url": "/covers/reales/1588090.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 71900,
+        "stock": 13
+      }
+    ]
+  },
+  {
+    "titulo": "Stikbold! A Dodgeball Adventure DELUXE",
+    "descripcion": "Un arcade deportivo en el que lanzas bolas, esquivas rivales y compites en partidas locales y online.",
+    "fecha_lanzamiento": "2016-04-01",
+    "categoria": "Deportes",
+    "genero": "Deportivo",
+    "clasificacion": "3",
+    "desarrollador": "Game Swing",
+    "imagen_url": "/covers/reales/429330.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 19900,
+        "stock": 13
+      }
+    ]
+  },
+  {
+    "titulo": "PISTA Motorsport",
+    "descripcion": "Un simulador de carreras de GT y turismos con gestión de equipo, estrategia de carrera y coches licenciados.",
+    "fecha_lanzamiento": "2024-08-28",
+    "categoria": "Deportes",
+    "genero": "Deportivo",
+    "clasificacion": "3",
+    "desarrollador": "REG Simulations",
+    "imagen_url": "/covers/reales/2434120.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 59900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "Mount & Blade II: Bannerlord",
+    "descripcion": "Mount & Blade II: Bannerlord es un videojuego de rol de acción y estrategia desarrollado por TaleWorlds Entertainment. Es una precuela de Mount & Blade: Warband, un paquete de expansión independiente para el juego de 2008 Mount & Blade.",
+    "fecha_lanzamiento": "2022-10-25",
+    "categoria": "Estrategia",
+    "genero": "Rol",
+    "clasificacion": "7",
+    "desarrollador": "TaleWorlds Entertainment",
+    "imagen_url": "/covers/reales/261550.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 199900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 209900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 209900,
+        "stock": 7
+      }
+    ]
+  },
+  {
+    "titulo": "RimWorld",
+    "descripcion": "RimWorld es un videojuego de construcción y gestión desarrollado por Ludeon Studios. Inicialmente se lanzó una alpha para Linux, Mac OS X y Windows el 4 de noviembre de 2013. Posteriormente, fue publicado en Steam como juego de acceso anticipado el 15 de julio de 2016.",
+    "fecha_lanzamiento": "2018-10-17",
+    "categoria": "Estrategia",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Ludeon Studios",
+    "imagen_url": "/covers/reales/294100.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 139900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 149900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 149900,
+        "stock": 17
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 149900,
+        "stock": 4
+      }
+    ]
+  },
+  {
+    "titulo": "Stellaris",
+    "descripcion": "Stellaris es un videojuego de gran estrategia 4X desarrollado y publicado por Paradox Interactive. El juego gira en torno a la exploración del espacio, la gestión de un imperio, la diplomacia y la guerra con otras civilizaciones interplanetarias.",
+    "fecha_lanzamiento": "2016-05-09",
+    "categoria": "Estrategia",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Paradox Development Studio",
+    "imagen_url": "/covers/reales/281990.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 59900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 69900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 69900,
+        "stock": 7
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 69900,
+        "stock": 14
+      }
+    ]
+  },
+  {
+    "titulo": "Bodycam",
+    "descripcion": "Un shooter táctico en primera persona con gráficos hiperrealistas y combates cuerpo a cuerpo en entornos urbanos.",
+    "fecha_lanzamiento": "2024-06-07",
+    "categoria": "Estrategia",
+    "genero": "Shooter",
+    "clasificacion": "7",
+    "desarrollador": "Reissad",
+    "imagen_url": "/covers/reales/2406770.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 132900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 142900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 142900,
+        "stock": 7
+      }
+    ]
+  },
+  {
+    "titulo": "Moon Sweepers",
+    "descripcion": "Un shooter de ciencia ficción en el que limpias sectores de una base lunar hostil llena de enemigos.",
+    "fecha_lanzamiento": "2026-10-23",
+    "categoria": "Estrategia",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "DragDrop Games",
+    "imagen_url": "/covers/reales/5335510.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 35900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 45900,
+        "stock": 20
+      }
+    ]
+  },
+  {
+    "titulo": "Door Kickers: Action Squad",
+    "descripcion": "Un táctico de acción lateral en el que diriges a un equipo de asalto para liberar rehenes y neutralizar amenazas.",
+    "fecha_lanzamiento": "2018-09-10",
+    "categoria": "Estrategia",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "PixelShard",
+    "imagen_url": "/covers/reales/686200.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 19900,
+        "stock": 3
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 29900,
+        "stock": 10
+      }
+    ]
+  },
+  {
+    "titulo": "Crown and Adventure",
+    "descripcion": "Una estrategia de gestión medieval en la que expandes tu reino, reclutas tropas y defiendes tus tierras.",
+    "fecha_lanzamiento": "2025-10-22",
+    "categoria": "Estrategia",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "C3D Games",
+    "imagen_url": "/covers/reales/3098140.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 79900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "Solar Expanse - Space Exploration Manager",
+    "descripcion": "Un gestor de exploración espacial donde envías naves, estudias sistemas y construyes una colonia entre estrellas.",
+    "fecha_lanzamiento": "2026-04-09",
+    "categoria": "Estrategia",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "SpaceOps",
+    "imagen_url": "/covers/reales/1369700.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 71900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "Walk of Life",
+    "descripcion": "Un simulador de vida competitivo para hasta seis jugadores: elige roles y estilos extravagantes para intentar vivir mejor que tus amigos.",
+    "fecha_lanzamiento": "2026-04-30",
+    "categoria": "Estrategia",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Porcelain Fortress",
+    "imagen_url": "/covers/reales/1910150.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 79900,
+        "stock": 13
+      }
+    ]
+  },
+  {
+    "titulo": "The Lord of the Rings: Adventure Card Game - Definitive Edition",
+    "descripcion": "Un juego de cartas ambientado en la Tierra Media que adapta la trilogía de El Señor de los Anillos.",
+    "fecha_lanzamiento": "2019-08-29",
+    "categoria": "Estrategia",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Arcakane Zone",
+    "imagen_url": "/covers/reales/509580.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 79900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "Jagged Alliance - Back in Action",
+    "descripcion": "Jagged Alliance es un juego de rol táctico lanzado en 1994 para MS-DOS y en 2009 para Nintendo DS. Es el primer juego de la serie Jagged Alliance, y fue seguido por Jagged Alliance: Deadly Games (1995) y de Jagged Alliance 2 (1999).",
+    "fecha_lanzamiento": "2012-02-08",
+    "categoria": "Estrategia",
+    "genero": "Simulación",
+    "clasificacion": "16",
+    "desarrollador": "Coreplay GmbH",
+    "imagen_url": "/covers/reales/57740.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 79900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "Alien Shooter TD",
+    "descripcion": "Una defensa de torres con criaturas alienígenas, armas mejorables y oleadas cada vez más difíciles.",
+    "fecha_lanzamiento": "2017-01-13",
+    "categoria": "Estrategia",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Sigma Team Inc.",
+    "imagen_url": "/covers/reales/541230.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 39900,
+        "stock": 13
+      }
+    ]
+  },
+  {
+    "titulo": "Monster Girls and the Mysterious Adventure 2",
+    "descripcion": "Una aventura de roles con chicas monstruo, combate por turnos y una historia llena de misterio.",
+    "fecha_lanzamiento": "2022-08-26",
+    "categoria": "Estrategia",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "NEKOTOKAGE GAMES",
+    "imagen_url": "/covers/reales/1895860.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 99900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "M.A.X.: Mechanized Assault & Exploration",
+    "descripcion": "Un clásico de estrategia por turnos con mechs, colonias y guerras tácticas en un futuro distante.",
+    "fecha_lanzamiento": "2017-04-07",
+    "categoria": "Estrategia",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Interplay Entertainment Corp.",
+    "imagen_url": "/covers/reales/615250.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 39900,
+        "stock": 13
+      }
+    ]
+  },
+  {
+    "titulo": "Book Shooter",
+    "descripcion": "Un shooter arcade de ritmo rápido con estilo de cómic y niveles llenos de enemigos.",
+    "fecha_lanzamiento": "2025-08-22",
+    "categoria": "Estrategia",
+    "genero": "Shooter",
+    "clasificacion": "7",
+    "desarrollador": "SOS GameLab.",
+    "imagen_url": "/covers/reales/3551370.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 27900,
+        "stock": 13
+      }
+    ]
+  },
+  {
+    "titulo": "Karagon (Survival Robot Riding FPS)",
+    "descripcion": "Un shooter en primera persona en el que montas robots, sobrevives a oleadas y exploras un mundo mecánico.",
+    "fecha_lanzamiento": "2023-04-17",
+    "categoria": "Estrategia",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Tbjbu2 Originals",
+    "imagen_url": "/covers/reales/1818610.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 27900,
+        "stock": 13
+      }
+    ]
+  },
+  {
+    "titulo": "99 Games: Puzzle, Action, Strategy, Simulation, Casual, Roguelike, Shooter, RPG & More",
+    "descripcion": "Una colección de minijuegos de géneros muy variados: puzles, acción, estrategia y mucho más.",
+    "fecha_lanzamiento": "2026-03-24",
+    "categoria": "Estrategia",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Chongqing Xishou Technology Co., Ltd",
+    "imagen_url": "/covers/reales/3148210.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 19900,
+        "stock": 13
+      }
+    ]
+  },
+  {
+    "titulo": "Just Skill Shooter",
+    "descripcion": "Un shooter de precisión donde la puntería y la velocidad de reacción lo son todo.",
+    "fecha_lanzamiento": "2023-05-31",
+    "categoria": "Estrategia",
+    "genero": "Shooter",
+    "clasificacion": "7",
+    "desarrollador": "Gamesforgames",
+    "imagen_url": "/covers/reales/2417160.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 39900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "Just skill shooter 2",
+    "descripcion": "La continuación del shooter de precisión, con nuevos escenarios y desafíos de puntería.",
+    "fecha_lanzamiento": "2024-01-04",
+    "categoria": "Estrategia",
+    "genero": "Shooter",
+    "clasificacion": "7",
+    "desarrollador": "Gamesforgames",
+    "imagen_url": "/covers/reales/2684300.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 39900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "Space Shooter 24",
+    "descripcion": "Un shooter espacial arcade con naves, power-ups y oleadas de enemigos en distintos sectores de la galaxia.",
+    "fecha_lanzamiento": "2023-10-05",
+    "categoria": "Estrategia",
+    "genero": "Shooter",
+    "clasificacion": "7",
+    "desarrollador": "Yusuf Islam Seyhan",
+    "imagen_url": "/covers/reales/2611780.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 19900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "Cyberpunk 2077",
+    "descripcion": "Cyberpunk 2077 es un videojuego de rol de acción de disparos en primera persona desarrollado por CD Projekt RED y publicado por CD Projekt que se lanzó para Microsoft Windows, GNU/Linux, PlayStation 4 y Xbox One el 10 de diciembre de 2020, posteriormente en PlayStation 5, Xbox Series X|S y Google Stadia el 15 de febrero de 2022 y final...",
+    "fecha_lanzamiento": "2020-12-09",
+    "categoria": "RPG",
+    "genero": "Rol",
+    "clasificacion": "16",
+    "desarrollador": "CD PROJEKT RED",
+    "imagen_url": "/covers/reales/1091500.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 239900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 249900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 249900,
+        "stock": 17
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 249900,
+        "stock": 4
+      }
+    ]
+  },
+  {
+    "titulo": "Stardew Valley",
+    "descripcion": "Stardew Valley es un videojuego indie de simulación de granja desarrollado por Eric \"ConcernedApe\" Barone y publicado por Chucklefish Games (actualmente por ConcernedApe). El juego se lanzó en primer lugar para Windows el 26 de febrero de 2016, y luego para los sistemas operativos OS X y Linux.",
+    "fecha_lanzamiento": "2016-02-26",
+    "categoria": "RPG",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "ConcernedApe",
+    "imagen_url": "/covers/reales/413150.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 59900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 69900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 69900,
+        "stock": 7
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 69900,
+        "stock": 14
+      }
+    ]
+  },
+  {
+    "titulo": "The Witcher 3: Wild Hunt — Remastered",
+    "descripcion": "La versión remasterizada de la epopeya de Geralt de Rivia: caza monstruos, explora campos y decide el destino de los reinos.",
+    "fecha_lanzamiento": "2015-05-18",
+    "categoria": "RPG",
+    "genero": "Rol",
+    "clasificacion": "16",
+    "desarrollador": "CD PROJEKT RED",
+    "imagen_url": "/covers/reales/292030.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 199900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 209900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 209900,
+        "stock": 7
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 209900,
+        "stock": 14
+      }
+    ]
+  },
+  {
+    "titulo": "Project Zomboid",
+    "descripcion": "Project Zomboid es un videojuego de supervivencia isométrico de mundo abierto desarrollado por el estudio independiente británico y canadiense The Indie Stone.",
+    "fecha_lanzamiento": "2013-11-08",
+    "categoria": "RPG",
+    "genero": "Rol",
+    "clasificacion": "7",
+    "desarrollador": "The Indie Stone",
+    "imagen_url": "/covers/reales/108600.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 99900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 109900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 109900,
+        "stock": 17
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 109900,
+        "stock": 4
+      }
+    ]
+  },
+  {
+    "titulo": "The Elder Scrolls V: Skyrim Special Edition",
+    "descripcion": "The Elder Scrolls V: Skyrim es un videojuego de rol de acción de mundo abierto desarrollado por Bethesda Game Studios y publicado por Bethesda Softworks. Es la quinta entrega de la serie de fantasía The Elder Scrolls, posterior a Oblivion y predecesor de Online.",
+    "fecha_lanzamiento": "2016-10-27",
+    "categoria": "RPG",
+    "genero": "Rol",
+    "clasificacion": "16",
+    "desarrollador": "Bethesda Game Studios",
+    "imagen_url": "/covers/reales/489830.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 65900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 75900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 75900,
+        "stock": 7
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 75900,
+        "stock": 14
+      }
+    ]
+  },
+  {
+    "titulo": "FINAL FANTASY XIV Online",
+    "descripcion": "Un MMORPG de fantasía con clases, misiones, ciudades y grandes incursiones en el mundo de Eorzea.",
+    "fecha_lanzamiento": "2014-02-18",
+    "categoria": "RPG",
+    "genero": "Rol",
+    "clasificacion": "12",
+    "desarrollador": "Square Enix",
+    "imagen_url": "/covers/reales/39210.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 79900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 89900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 89900,
+        "stock": 7
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 89900,
+        "stock": 14
+      }
+    ]
+  },
+  {
+    "titulo": "Dragon's Dogma 2",
+    "descripcion": "Dragon's Dogma 2​ es un videojuego de rol de acción de 2024 desarrollado y publicado por Capcom. Se trata de la secuela de Dragon's Dogma (2012) y fue lanzado para PlayStation 5, Windows y Xbox Series X/S el 22 de marzo de 2024.",
+    "fecha_lanzamiento": "2024-03-21",
+    "categoria": "RPG",
+    "genero": "Rol",
+    "clasificacion": "16",
+    "desarrollador": "CAPCOM Co., Ltd.",
+    "imagen_url": "/covers/reales/2054970.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 159900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 169900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 169900,
+        "stock": 7
+      }
+    ]
+  },
+  {
+    "titulo": "Fallout 76",
+    "descripcion": "Fallout 76 es un videojuego de rol de acción de mundo abierto desarrollado por Bethesda Game Studios y distribuido por Bethesda Softworks.",
+    "fecha_lanzamiento": "2020-04-14",
+    "categoria": "RPG",
+    "genero": "Rol",
+    "clasificacion": "16",
+    "desarrollador": "Bethesda Game Studios",
+    "imagen_url": "/covers/reales/1151340.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 78900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 88900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 88900,
+        "stock": 17
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 88900,
+        "stock": 4
+      }
+    ]
+  },
+  {
+    "titulo": "Tom Clancy’s The Division® 2",
+    "descripcion": "Un RPG de acción en mundo abierto en una Nueva York postapocalíptica, con misiones, botín y combate táctico.",
+    "fecha_lanzamiento": "2023-01-12",
+    "categoria": "RPG",
+    "genero": "Rol",
+    "clasificacion": "16",
+    "desarrollador": "Ubisoft",
+    "imagen_url": "/covers/reales/2221490.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 119900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 129900,
+        "stock": 20
+      }
+    ]
+  },
+  {
+    "titulo": "RuneScape: Dragonwilds",
+    "descripcion": "RuneScape: Dragonwilds es un videojuego de supervivencia de mundo abierto. Es una serie derivada del MMORPG RuneScape, ambientado en el mismo mundo de fantasía de Gielinor, en un continente específico llamado Ashenfall. Fue desarrollado por Jagex y se lanzó en acceso anticipado para Windows el 15 de abril de 2025.",
+    "fecha_lanzamiento": "2026-09-15",
+    "categoria": "RPG",
+    "genero": "Rol",
+    "clasificacion": "7",
+    "desarrollador": "Jagex Ltd",
+    "imagen_url": "/covers/reales/1374490.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 119900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 129900,
+        "stock": 20
+      }
+    ]
+  },
+  {
+    "titulo": "FINAL FANTASY VII REBIRTH",
+    "descripcion": "Final Fantasy VII Rebirth es un juego rol de acción, \"juego por turnos y acción tiempo real\", desarrollado y publicado por Square Enix. Es una secuela de Final Fantasy VII Remake (2020) y el segundo de una trilogía planificada de juegos que pretenden recrear el juego lanzado para PlayStation en 1997, Final Fantasy VII.",
+    "fecha_lanzamiento": "2025-01-23",
+    "categoria": "RPG",
+    "genero": "Rol",
+    "clasificacion": "12",
+    "desarrollador": "Square Enix",
+    "imagen_url": "/covers/reales/2909400.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 29900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 39900,
+        "stock": 10
+      }
+    ]
+  },
+  {
+    "titulo": "The Blood of Dawnwalker",
+    "descripcion": "The Blood of Dawnwalker (traducción literal: La sangre de Dawnwalker), es un videojuego de rol de acción desarrollado por Rebel Wolves y publicado por Bandai Namco Entertainment. Está ambientado en la Edad Media en el Sudeste de Europa del siglo XIV. El juego, titulado fantasía oscura, fue anunciado en enero de 2025.",
+    "fecha_lanzamiento": "2026-09-02",
+    "categoria": "RPG",
+    "genero": "Rol",
+    "clasificacion": "16",
+    "desarrollador": "Rebel Wolves",
+    "imagen_url": "/covers/reales/3751260.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 223900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 233900,
+        "stock": 10
+      }
+    ]
+  },
+  {
+    "titulo": "Disney Dreamlight Valley",
+    "descripcion": "Disney Dreamlight Valley es un videojuego de 2023 de simulación de vida y aventura desarrollado por Gameloft Montreal y publicado por Gameloft.​ El juego lleva a los jugadores a un valle mágico poblado por varios personajes de Disney y Disney/Pixar que previamente sufrieron una maldición que les hizo perder los recuerdos de sus vidas e...",
+    "fecha_lanzamiento": "2023-12-05",
+    "categoria": "RPG",
+    "genero": "Rol",
+    "clasificacion": "7",
+    "desarrollador": "Gameloft",
+    "imagen_url": "/covers/reales/1401590.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 95900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 105900,
+        "stock": 20
+      }
+    ]
+  },
+  {
+    "titulo": "CONTROL Resonant",
+    "descripcion": "Una aventura de acción sobrenatural en el edificio Oldest House, con poderes psíquicos y combate vertical.",
+    "fecha_lanzamiento": "2026-09-24",
+    "categoria": "RPG",
+    "genero": "Rol",
+    "clasificacion": "7",
+    "desarrollador": "Remedy Entertainment",
+    "imagen_url": "/covers/reales/3669870.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 223900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 233900,
+        "stock": 20
+      }
+    ]
+  },
+  {
+    "titulo": "Queen's Domain",
+    "descripcion": "Una estrategia de gestión y conquista en la que construyes tu reino, reclutas ejércitos y desafías a otros reinos.",
+    "fecha_lanzamiento": "2026-10-30",
+    "categoria": "RPG",
+    "genero": "Rol",
+    "clasificacion": "7",
+    "desarrollador": "Freshly Baked Games LLC",
+    "imagen_url": "/covers/reales/1799840.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 79900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 89900,
+        "stock": 10
+      }
+    ]
+  },
+  {
+    "titulo": "Minecraft Dungeons II",
+    "descripcion": "Minecraft Dungeons II es un videojuego de rol de acción que se lanzó el 29 de septiembre de 2026 para Windows, Xbox Series X|S Nintendo Switch, Nintendo Switch 2 y PlayStation 5.​ Fue desarrollado por Mojang y, cuya conversión a las consolas, fue realizada por Double Eleven. Se puede jugar solo o en línea con hasta cuatro jugadores.​",
+    "fecha_lanzamiento": "2026-09-29",
+    "categoria": "RPG",
+    "genero": "Rol",
+    "clasificacion": "7",
+    "desarrollador": "Mojang Studios",
+    "imagen_url": "/covers/reales/1912410.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 119900,
+        "stock": 13
+      }
+    ]
+  },
+  {
+    "titulo": "Esoteric Ebb",
+    "descripcion": "Un RPG de detectives en una ciudad mágica donde resolverás casos combinando pistas, diálogos y hechizos.",
+    "fecha_lanzamiento": "2026-03-03",
+    "categoria": "RPG",
+    "genero": "Rol",
+    "clasificacion": "7",
+    "desarrollador": "Christoffer Bodegård",
+    "imagen_url": "/covers/reales/2057760.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 63900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "Castlevania: Belmont's Curse",
+    "descripcion": "Castlevania: Belmont's Curse es un videojuego de acción y aventura / metroidvania desarrollado por Evil Empire y publicado por Konami para sistemas Windows, Nintendo Switch, PlayStation 5, y Xbox Series X/S. Es la vigesimosexta entrega principal de la franquicia Castlevania.",
+    "fecha_lanzamiento": "2026-10-14",
+    "categoria": "RPG",
+    "genero": "Plataformas",
+    "clasificacion": "12",
+    "desarrollador": "KONAMI",
+    "imagen_url": "/covers/reales/4231820.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 119900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "FINAL FANTASY RESONANCE",
+    "descripcion": "Una nueva entrega de la saga Final Fantasy con batallas estratégicas, mundos fantásticos y una historia épica.",
+    "fecha_lanzamiento": "2026-10-22",
+    "categoria": "RPG",
+    "genero": "Rol",
+    "clasificacion": "7",
+    "desarrollador": "Square Enix",
+    "imagen_url": "/covers/reales/3259780.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 199900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "Keep Driving",
+    "descripcion": "Un RPG de viaje por carretera en el que conoces personajes, gestionas recursos y vives aventuras en cada parada.",
+    "fecha_lanzamiento": "2025-02-06",
+    "categoria": "RPG",
+    "genero": "Rol",
+    "clasificacion": "7",
+    "desarrollador": "YCJY Games",
+    "imagen_url": "/covers/reales/2756920.jpg",
+    "es_extra": false,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 71900,
+        "stock": 3
+      }
+    ]
+  },
+  {
+    "titulo": "Garry's Mod",
+    "descripcion": "Garry's Mod (comúnmente abreviado como GMod) es un videojuego sandbox desarrollado por Facepunch Studios y publicado por Valve en 2006. El juego base no tiene objetivos establecidos, y ofrece al jugador un mapa o mundo donde generar objetos, armas de fuego, vehículos o NPCs y manipularlos libremente.",
+    "fecha_lanzamiento": "2006-11-29",
+    "categoria": "Extra",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Facepunch Studios",
+    "imagen_url": "/covers/reales/4000.jpg",
+    "es_extra": true,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 19900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 29900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 29900,
+        "stock": 17
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 29900,
+        "stock": 4
+      }
+    ]
+  },
+  {
+    "titulo": "Euro Truck Simulator 2",
+    "descripcion": "Euro Truck Simulator 2 (abreviado como ETS2) es un videojuego de simulación de camiones desarrollado y publicado por SCS Software el 18 de octubre de 2012 para Microsoft Windows, Mac OS y Linux. Es una secuela directa del videojuego de 2008 Euro Truck Simulator y es el segundo de la serie.",
+    "fecha_lanzamiento": "2012-10-12",
+    "categoria": "Extra",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "SCS Software",
+    "imagen_url": "/covers/reales/227300.jpg",
+    "es_extra": true,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 79900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 89900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 89900,
+        "stock": 17
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 89900,
+        "stock": 4
+      }
+    ]
+  },
+  {
+    "titulo": "WARDOGS",
+    "descripcion": "Un shooter táctico ambientado en un futuro distópico donde comandas escuadrones de soldados y perros de guerra.",
+    "fecha_lanzamiento": "2026-09-10",
+    "categoria": "Extra",
+    "genero": "Shooter",
+    "clasificacion": "7",
+    "desarrollador": "BULKHEAD",
+    "imagen_url": "/covers/reales/1867240.jpg",
+    "es_extra": true,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 159900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 169900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 169900,
+        "stock": 17
+      }
+    ]
+  },
+  {
+    "titulo": "American Truck Simulator",
+    "descripcion": "American Truck Simulator (o abreviadamente ATS) es un videojuego de simulación de camiones. Fue revelado en la Electronic Entertainment Expo 2015 (E3 2015), con un anuncio previo en septiembre de 2013. El juego fue lanzado el 2 de febrero de 2016 y ha vendido más de 280 000 copias desde abril de 2016.​",
+    "fecha_lanzamiento": "2016-02-02",
+    "categoria": "Extra",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "SCS Software",
+    "imagen_url": "/covers/reales/270880.jpg",
+    "es_extra": true,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 79900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 89900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 89900,
+        "stock": 17
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 89900,
+        "stock": 4
+      }
+    ]
+  },
+  {
+    "titulo": "DARK SOULS™: REMASTERED",
+    "descripcion": "La primera entrega de la saga Dark Souls vuelve en alta definición: explora Lordran, domina su exigente combate y descubre sus secretos.",
+    "fecha_lanzamiento": "2018-05-23",
+    "categoria": "Extra",
+    "genero": "Rol",
+    "clasificacion": "7",
+    "desarrollador": "QLOC",
+    "imagen_url": "/covers/reales/570940.jpg",
+    "es_extra": true,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 79900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 89900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 89900,
+        "stock": 17
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 89900,
+        "stock": 4
+      }
+    ]
+  },
+  {
+    "titulo": "How to Fish",
+    "descripcion": "Un simulador de pesca tranquilo en el que eliges cañas, cebos y lagos para capturar la mejor especie.",
+    "fecha_lanzamiento": "2026-08-20",
+    "categoria": "Extra",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Dazed Games",
+    "imagen_url": "/covers/reales/4001890.jpg",
+    "es_extra": true,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 31900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 41900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 41900,
+        "stock": 7
+      }
+    ]
+  },
+  {
+    "titulo": "Farming Simulator 25",
+    "descripcion": "El simulador agrícola más completo: cultiva campos, cría animales y gestiona maquinaria en grandes granjas.",
+    "fecha_lanzamiento": "2024-11-12",
+    "categoria": "Extra",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "GIANTS Software",
+    "imagen_url": "/covers/reales/2300320.jpg",
+    "es_extra": true,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 99900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 109900,
+        "stock": 10
+      },
+      {
+        "plataforma": "Xbox Series X",
+        "precio": 109900,
+        "stock": 17
+      }
+    ]
+  },
+  {
+    "titulo": "007 First Light",
+    "descripcion": "007 First Light es un videojuego de acción y aventura desarrollado y publicado por IO Interactive bajo la licencia de Amazon MGM Studios, Metro-Goldwyn-Mayer y Eon Productions.",
+    "fecha_lanzamiento": "2026-05-26",
+    "categoria": "Extra",
+    "genero": "Mundo abierto",
+    "clasificacion": "7",
+    "desarrollador": "IO Interactive A/S",
+    "imagen_url": "/covers/reales/3768760.jpg",
+    "es_extra": true,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 139900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 149900,
+        "stock": 10
+      }
+    ]
+  },
+  {
+    "titulo": "KovaaK's",
+    "descripcion": "Un entrenador de puntería con escenarios y desafíos diseñados para mejorar tu precisión en shooters.",
+    "fecha_lanzamiento": "2018-04-03",
+    "categoria": "Extra",
+    "genero": "Shooter",
+    "clasificacion": "7",
+    "desarrollador": "KovaaK Games",
+    "imagen_url": "/covers/reales/824270.jpg",
+    "es_extra": true,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 39900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 49900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 49900,
+        "stock": 7
+      }
+    ]
+  },
+  {
+    "titulo": "Marvel's Spider-Man 2",
+    "descripcion": "Peter Parker y Miles Morales se unen para proteger Nueva York de nuevos villanos y simbiontes.",
+    "fecha_lanzamiento": "2025-01-30",
+    "categoria": "Extra",
+    "genero": "Mundo abierto",
+    "clasificacion": "7",
+    "desarrollador": "Insomniac Games",
+    "imagen_url": "/covers/reales/2651280.jpg",
+    "es_extra": true,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 160900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 170900,
+        "stock": 10
+      }
+    ]
+  },
+  {
+    "titulo": "VA-11 Hall-A: Cyberpunk Bartender Action",
+    "descripcion": "Una novela visual cyberpunk en la que preparas cócteles y escuchas las historias de los clientes de un bar nocturno.",
+    "fecha_lanzamiento": "2016-06-21",
+    "categoria": "Extra",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Sukeban Games",
+    "imagen_url": "/covers/reales/447530.jpg",
+    "es_extra": true,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 59900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 69900,
+        "stock": 20
+      },
+      {
+        "plataforma": "Nintendo Switch",
+        "precio": 69900,
+        "stock": 7
+      }
+    ]
+  },
+  {
+    "titulo": "DOOM: The Dark Ages",
+    "descripcion": "La precuela de DOOM con combate brutal, armas pesadas y hordas de demonios en un mundo medieval futurista.",
+    "fecha_lanzamiento": "2025-05-14",
+    "categoria": "Extra",
+    "genero": "Shooter",
+    "clasificacion": "7",
+    "desarrollador": "id Software",
+    "imagen_url": "/covers/reales/3017860.jpg",
+    "es_extra": true,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 99900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 109900,
+        "stock": 10
+      }
+    ]
+  },
+  {
+    "titulo": "Assassin's Creed Black Flag Resynced",
+    "descripcion": "Assassin's Creed Black Flag Resynced es un videojuego de acción y aventura de 2026 desarrollado principalmente por Ubisoft Singapur y publicado por Ubisoft.",
+    "fecha_lanzamiento": "2026-07-09",
+    "categoria": "Extra",
+    "genero": "Mundo abierto",
+    "clasificacion": "7",
+    "desarrollador": "Ubisoft Singapore",
+    "imagen_url": "/covers/reales/3751950.jpg",
+    "es_extra": true,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 239900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 249900,
+        "stock": 20
+      }
+    ]
+  },
+  {
+    "titulo": "Microsoft Flight Simulator 2024",
+    "descripcion": "Microsoft Flight Simulator 2024 es un videojuego de simulación de vuelos desarrollado por Asobo Studios, y distribuido por Xbox Game Studios.",
+    "fecha_lanzamiento": "2024-11-19",
+    "categoria": "Extra",
+    "genero": "Simulación",
+    "clasificacion": "7",
+    "desarrollador": "Asobo Studio",
+    "imagen_url": "/covers/reales/2537590.jpg",
+    "es_extra": true,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 195900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 205900,
+        "stock": 20
+      }
+    ]
+  },
+  {
+    "titulo": "Grounded 2",
+    "descripcion": "Una aventura de supervivencia en miniatura donde construye tu base entre hierbas y insectos gigantes.",
+    "fecha_lanzamiento": "2025-07-29",
+    "categoria": "Extra",
+    "genero": "Mundo abierto",
+    "clasificacion": "7",
+    "desarrollador": "Obsidian Entertainment",
+    "imagen_url": "/covers/reales/2661300.jpg",
+    "es_extra": true,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 95900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 105900,
+        "stock": 10
+      }
+    ]
+  },
+  {
+    "titulo": "Red Dead Redemption",
+    "descripcion": "Red Dead Redemption es un videojuego de acción-aventura de mundo abierto desarrollado por Rockstar San Diego y publicado por Rockstar Games. Un sucesor del Red Dead Revolver de 2004, es el segundo juego de la serie Red Dead. Red Dead Redemption se establece durante el declive de la frontera estadounidense en el año 1911.",
+    "fecha_lanzamiento": "2024-10-29",
+    "categoria": "Extra",
+    "genero": "Mundo abierto",
+    "clasificacion": "7",
+    "desarrollador": "Rockstar Games",
+    "imagen_url": "/covers/reales/2668510.jpg",
+    "es_extra": true,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 199900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 209900,
+        "stock": 20
+      }
+    ]
+  },
+  {
+    "titulo": "SILENT HILL f",
+    "descripcion": "Una nueva historia de terror psicológico en el Silent Hill de los años 60, con niebla, puzles y criaturas perturbadoras.",
+    "fecha_lanzamiento": "2025-09-24",
+    "categoria": "Extra",
+    "genero": "Mundo abierto",
+    "clasificacion": "7",
+    "desarrollador": "NeoBards Entertainment Ltd.",
+    "imagen_url": "/covers/reales/2947440.jpg",
+    "es_extra": true,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 77900,
+        "stock": 3
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 87900,
+        "stock": 10
+      }
+    ]
+  },
+  {
+    "titulo": "MOUSE: P.I. For Hire",
+    "descripcion": "Un shooter de estilo cómic negro en el que un detective ratón investiga casos en una ciudad llena de crimen y humor.",
+    "fecha_lanzamiento": "2026-04-16",
+    "categoria": "Extra",
+    "genero": "Shooter",
+    "clasificacion": "7",
+    "desarrollador": "Fumi Games",
+    "imagen_url": "/covers/reales/2416450.jpg",
+    "es_extra": true,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 119900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 129900,
+        "stock": 20
+      }
+    ]
+  },
+  {
+    "titulo": "Call of Duty®: Modern Warfare® 4",
+    "descripcion": "Call of Duty es una serie de videojuegos de disparos en primera persona, de estilo bélico, desarrollada principal e inicialmente por Infinity Ward, Treyarch, Sledgehammer Games y en menor proporción Raven Software y distribuida por Activision. La franquicia comenzó para computadora personal y posteriormente fue...",
+    "fecha_lanzamiento": "2026-10-22",
+    "categoria": "Extra",
+    "genero": "Shooter",
+    "clasificacion": "7",
+    "desarrollador": "Infinity Ward",
+    "imagen_url": "/covers/reales/4435490.jpg",
+    "es_extra": true,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 237900,
+        "stock": 13
+      },
+      {
+        "plataforma": "PlayStation 5",
+        "precio": 247900,
+        "stock": 20
+      }
+    ]
+  },
+  {
+    "titulo": "Clive Barker's Hellraiser: Revival",
+    "descripcion": "Clive Barker's Hellraiser: Revival es un videojuego de acción y Survival horror en primera persona desarrollado y publicado por Saber Interactive. Basado en la franquicia Hellraiser, se lanzó para Nintendo Switch 2, PlayStation 5, Windows y Xbox Series X y Series S el 8 de octubre de 2026.",
+    "fecha_lanzamiento": "2026-10-08",
+    "categoria": "Extra",
+    "genero": "Shooter",
+    "clasificacion": "7",
+    "desarrollador": "Saber Interactive",
+    "imagen_url": "/covers/reales/1551980.jpg",
+    "es_extra": true,
+    "ofertas": [
+      {
+        "plataforma": "PC",
+        "precio": 119900,
+        "stock": 3
+      }
+    ]
+  }
+]

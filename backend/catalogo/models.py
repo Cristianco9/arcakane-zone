@@ -207,6 +207,7 @@ class Videojuego(models.Model):
     """
 
     titulo = models.CharField(max_length=200)
+    desarrollador = models.CharField(max_length=150, blank=True, default="")
     descripcion = models.TextField(blank=True)
     portada = models.ImageField(upload_to="portadas/", null=True, blank=True)
     imagen_url = models.URLField(

@@ -6,6 +6,7 @@ import pytest
 from django.core.management import call_command
 from rest_framework.test import APIClient
 
+from catalogo.catalogo_real import juegos_reales
 from catalogo.management.commands.seed_catalogo import (
     MINIMO_POR_CATEGORIA,
     MINIMO_VIDEOJUEGOS,
@@ -121,7 +122,7 @@ def test_seed_cubre_categorias_creadas_fuera_del_seed():
 
 
 def test_seed_repone_un_titulo_eliminado():
-    titulo = "Asalto al amanecer"
+    titulo = juegos_reales()[0]["titulo"]
     _sembrar()
     juego = Videojuego.objects.get(titulo=titulo)
     juego.ofertas.all().delete()  # FK protegida: primero las ofertas.
@@ -134,3 +135,18 @@ def test_seed_repone_un_titulo_eliminado():
         Categoria.objects.get(nombre="Acción").videojuegos.count()
         >= MINIMO_POR_CATEGORIA
     )
+
+
+def test_el_catalogo_sembrado_es_realista():
+    _sembrar()
+
+    for datos in juegos_reales():
+        juego = Videojuego.objects.get(titulo=datos["titulo"])
+        assert juego.descripcion == datos["descripcion"]
+        assert juego.descripcion.strip()
+        assert juego.desarrollador == datos["desarrollador"]
+        assert juego.imagen_url.startswith("/covers/reales/")
+        for oferta in datos["ofertas"]:
+            fila = juego.ofertas.get(plataforma__nombre=oferta["plataforma"])
+            assert fila.precio_vigente >= 19900
+            assert fila.stock > 0

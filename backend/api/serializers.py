@@ -241,6 +241,7 @@ class VideojuegoSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "titulo",
+            "desarrollador",
             "descripcion",
             "portada",
             "imagen_url",
