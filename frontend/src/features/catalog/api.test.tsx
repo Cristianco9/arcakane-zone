@@ -3,6 +3,7 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { http, HttpResponse } from "msw";
 import type { ReactNode } from "react";
 import { describe, expect, it } from "vitest";
+import { paginado, videojuegosApi } from "../../test/handlers";
 import { server } from "../../test/server";
 import { useCatalogCategories, useCatalogProducts } from "./api";
 
@@ -41,5 +42,32 @@ describe("catalog API", () => {
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(result.current.data).toBeUndefined();
+  });
+
+  it("carga todos los juegos de todas las páginas y usa imagen_url", async () => {
+    const muchos = Array.from({ length: 120 }, (_, indice) => ({
+      ...videojuegosApi[indice % videojuegosApi.length],
+      id: indice + 1,
+      titulo: `Videojuego ${indice + 1}`,
+      imagen_url: `https://ejemplo.test/portada-${indice + 1}.png`,
+      portada: "https://ejemplo.test/portada-antigua.png",
+    }));
+    server.use(
+      http.get("/api/v1/catalogo/videojuegos/", ({ request }) =>
+        HttpResponse.json(paginado(muchos, request)),
+      ),
+    );
+
+    const { result } = renderHook(() => useCatalogProducts(), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    expect(result.current.data).toHaveLength(120);
+    expect(result.current.data?.[0]?.cover).toBe(
+      "https://ejemplo.test/portada-1.png",
+    );
+    expect(result.current.data?.[119]?.cover).toBe(
+      "https://ejemplo.test/portada-120.png",
+    );
   });
 });
