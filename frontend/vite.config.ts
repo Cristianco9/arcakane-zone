@@ -17,6 +17,9 @@ export default defineConfig({
       "/api": {
         target: apiProxyTarget,
         changeOrigin: true,
+        // El backend con SECURE_SSL_REDIRECT=True solo confía en proxies
+        // que marcan el esquema original, igual que Nginx en producción.
+        headers: { "X-Forwarded-Proto": "https" },
       },
     },
   },
