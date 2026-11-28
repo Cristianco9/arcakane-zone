@@ -6,10 +6,26 @@ from django.utils.dateparse import parse_date, parse_datetime
 
 
 def es_administrador(usuario) -> bool:
-    """``True`` para staff de Django o para el rol de negocio ``administrador``."""
+    """Regla única de administrador usada por toda la API.
+
+    Pasan el rol de negocio ``administrador``, ``is_staff`` e ``is_superuser``.
+    Así ``TieneRol`` y las comprobaciones antiguas aplican exactamente la misma
+    regla (decisión AZ-S2-BE-07).
+    """
     if not usuario or not usuario.is_authenticated:
         return False
-    return bool(usuario.is_staff or getattr(usuario, "es_administrador", False))
+    return bool(
+        usuario.is_staff
+        or getattr(usuario, "is_superuser", False)
+        or getattr(usuario, "es_administrador", False)
+    )
+
+
+def tiene_rol(usuario, *codigos) -> bool:
+    """``True`` si el usuario autenticado tiene cualquiera de los códigos."""
+    if not usuario or not usuario.is_authenticated or not codigos:
+        return False
+    return usuario.roles.filter(codigo__in=codigos).exists()
 
 
 def parse_bool(valor, default=None):

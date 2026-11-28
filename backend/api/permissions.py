@@ -1,7 +1,79 @@
 """Permisos reutilizables de la API."""
+from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 
-from .utils import es_administrador
+from .rbac import AUTENTICADO, PUBLICO, REGLAS, ROL_SOPORTE, regla_de_accion
+from .utils import es_administrador, tiene_rol
+
+
+class TieneRol(BasePermission):
+    """Permite el acceso según los roles declarados en ``api/rbac.py``.
+
+    ``roles_permitidos`` admite una lista (todos los métodos) o un mapa por
+    método HTTP y/o acción de ViewSet. Los centinelas ``PUBLICO`` y
+    ``AUTENTICADO`` declaran políticas sin roles. Anónimo sin sesión responde
+    401 ``no_autenticado``; autenticado sin el rol responde 403
+    ``permiso_denegado``. El rol ``administrador``, ``is_staff`` e
+    ``is_superuser`` pasan siempre porque usan la misma regla que
+    ``api.utils.es_administrador``.
+    """
+
+    message = "No tienes permiso para realizar esta operación."
+    roles_permitidos = ()
+
+    def _regla_para(self, request, view):
+        reglas = self.roles_permitidos
+        if isinstance(reglas, str):
+            return reglas
+        if isinstance(reglas, dict):
+            accion = getattr(view, "action", None)
+            regla_accion = regla_de_accion(reglas, accion, request.method)
+            if regla_accion is not None:
+                return regla_accion
+            metodo = request.method.upper()
+            if metodo in reglas:
+                return reglas[metodo]
+            return reglas.get("*", ())
+        return reglas
+
+    def has_permission(self, request, view):
+        regla = self._regla_para(request, view)
+        if regla == PUBLICO:
+            return True
+
+        usuario = request.user
+        if not usuario or not usuario.is_authenticated:
+            raise NotAuthenticated("Se requiere autenticación para realizar esta operación.")
+
+        if regla == AUTENTICADO:
+            return True
+        if es_administrador(usuario):
+            return True
+
+        codigos = tuple(regla or ())
+        if codigos and tiene_rol(usuario, *codigos):
+            return True
+        raise PermissionDenied(self.message)
+
+
+class TieneRolCatalogo(TieneRol):
+    roles_permitidos = REGLAS["catalogo"]
+
+
+class TieneRolInventario(TieneRol):
+    roles_permitidos = REGLAS["inventario"]
+
+
+class TieneRolContacto(TieneRol):
+    roles_permitidos = REGLAS["contactos"]
+
+
+class TieneRolReporte(TieneRol):
+    roles_permitidos = REGLAS["reportes"]
+
+
+class TieneRolReporteInventario(TieneRol):
+    roles_permitidos = REGLAS["reporte_inventario"]
 
 
 class EsAdministrador(BasePermission):
@@ -55,6 +127,7 @@ class PermisoContacto(BasePermission):
         return bool(request.user and request.user.is_authenticated)
 
     def has_object_permission(self, request, view, obj):
+        gestiona = es_administrador(request.user) or tiene_rol(request.user, ROL_SOPORTE)
         if request.method in SAFE_METHODS:
-            return es_administrador(request.user) or obj.usuario_id == request.user.id
-        return es_administrador(request.user)
+            return gestiona or obj.usuario_id == request.user.id
+        return gestiona

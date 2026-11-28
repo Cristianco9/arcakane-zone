@@ -6,15 +6,15 @@ from rest_framework.views import APIView
 from soporte.models import Contacto
 
 from ..exceptions import respuesta_exitosa
-from ..permissions import PermisoContacto
+from ..permissions import PermisoContacto, TieneRolContacto
 from ..serializers import ContactoSerializer, SolicitudInformacionSerializer
 from ..throttling import AnonimoRateThrottle, ContactoRateThrottle, UsuarioRateThrottle
-from ..utils import es_administrador
+from ..utils import es_administrador, tiene_rol
 
 
 class ContactoViewSet(viewsets.ModelViewSet):
     serializer_class = ContactoSerializer
-    permission_classes = [PermisoContacto]
+    permission_classes = [TieneRolContacto, PermisoContacto]
     http_method_names = ["get", "post", "put", "patch", "delete", "head", "options"]
 
     def get_throttles(self):
@@ -30,7 +30,7 @@ class ContactoViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         queryset = Contacto.objects.select_related("usuario")
-        if es_administrador(self.request.user):
+        if es_administrador(self.request.user) or tiene_rol(self.request.user, "soporte"):
             return queryset
         if self.request.user.is_authenticated:
             return queryset.filter(usuario=self.request.user)
