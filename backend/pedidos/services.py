@@ -224,9 +224,11 @@ def quitar_item(usuario, detalle_id: int) -> tuple[bool, str]:
 
 @transaction.atomic
 def cancelar_pedido(pedido: Pedido) -> tuple[bool, str]:
-    """Cancela un pedido pendiente. Solo opera sobre el propio pedido del usuario."""
-    if pedido.estado_id != "pendiente":
+    """Cancela un pedido pendiente revalidando su fila bajo bloqueo."""
+    bloqueado = Pedido.objects.select_for_update().get(pk=pedido.pk)
+    if bloqueado.estado_id != "pendiente":
         return False, "Solo se pueden cancelar pedidos en estado pendiente."
+    bloqueado.estado_id = "cancelado"
+    bloqueado.save(update_fields=["estado"])
     pedido.estado_id = "cancelado"
-    pedido.save(update_fields=["estado"])
     return True, f"Pedido #{pedido.pk} cancelado correctamente."
