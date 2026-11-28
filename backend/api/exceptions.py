@@ -38,6 +38,40 @@ class ErrorDeNegocio(APIException):
         self.extra = extra or {}
 
 
+class PedidoYaPagado(ErrorDeNegocio):
+    """El pedido ya se pagó: no admite un segundo cobro."""
+
+    default_code = "pedido_ya_pagado"
+    default_detail = (
+        "El pedido ya está pagado; solo se pueden pagar pedidos pendientes."
+    )
+
+
+class PedidoNoPagable(ErrorDeNegocio):
+    """El pedido está en un estado distinto de pendiente o pagado."""
+
+    default_code = "pedido_no_pagable"
+    default_detail = (
+        "El pedido no está en un estado pagable; solo se pueden pagar pedidos pendientes."
+    )
+
+
+class PedidoNoCancelable(ErrorDeNegocio):
+    """Solo se cancelan pedidos pendientes."""
+
+    default_code = "pedido_no_cancelable"
+    default_detail = "Solo se pueden cancelar pedidos en estado pendiente."
+
+
+class ClaveIdempotenciaEnUso(ErrorDeNegocio):
+    """La clave de idempotencia ya está ligada a otro pedido del usuario."""
+
+    default_code = "clave_idempotencia_en_uso"
+    default_detail = (
+        "Esa clave de idempotencia ya se usó en otro pedido; usa una clave nueva."
+    )
+
+
 def respuesta_exitosa(
     data: Any = None,
     message: str | None = None,
