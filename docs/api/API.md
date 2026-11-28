@@ -408,25 +408,51 @@ hay— y la lista aditiva `intentos_pago` con todos los intentos.
 |---|---|---|
 | `GET` | `/api/v1/pagos/` | Pagos propios; admin ve todos |
 | `GET` | `/api/v1/pagos/{id}/` | Detalle |
-| `POST` | `/api/v1/pagos/` | `{ "pedido": 1 }`; procesa el pago simulado |
+| `POST` | `/api/v1/pagos/` | `{ "pedido": 1 }`; cabecera opcional `Idempotency-Key` |
 | `GET` | `/api/v1/ventas/` | Solo administrador; filtros `desde`, `hasta`, `cliente` |
 
-Antes de cobrar se revalida el carrito **sin modificarlo**. Si el precio, el
-stock, la publicación o el estado activo del título cambiaron desde la última
-consulta de `/carrito/`, la respuesta es `409 Conflict` con
-`error.details.ajustes` (misma forma que las `advertencias` del carrito) y
-`error.details.errores` con los mensajes legibles. No se crea ningún
-`IntentoPago`: el cliente debe volver a `GET /carrito/` para ver los precios
-sincronizados y reintentar el pago.
+`POST /pagos/` responde `201 Created` cuando el cobro se aprueba (descuenta el
+stock y escribe su movimiento) y `402 Payment Required` con
+`error.code = pago_rechazado` cuando la pasarela simulada lo deniega: el pedido
+sigue pendiente, no hay descuento de stock y el intento se devuelve en
+`error.details`. Antes de cobrar se revalida el carrito **sin modificarlo**
+dentro de la misma transacción; si el precio, el stock, la publicación o el
+estado activo del título cambiaron desde la última consulta de `/carrito/`, la
+respuesta es `409 Conflict` con `error.details.ajustes` (misma forma que las
+`advertencias` del carrito) y `error.details.errores` con los mensajes legibles,
+sin crear `IntentoPago`. El cliente debe volver a `GET /carrito/` para ver los
+precios sincronizados y reintentar.
 
-Un pago rechazado devuelve `402 Payment Required` con el registro del intento en
-`error.details`. El pedido permanece pendiente y el pago puede reintentarse; un
-rechazo ya no bloquea los intentos posteriores. Con varios intentos para el
-mismo pedido, `POST /pagos/` devuelve el último (el aprobado cuando el pago se
-completó): `monto` conserva su nombre histórico y se mapea desde
-`IntentoPago.importe`, mientras el pedido expone el aprobado en `pago` y todos
-en `intentos_pago`. Los textos de `estado` (`aprobado`, `rechazado`,
-`pendiente`) también provienen del `codigo` del catálogo.
+El `POST` de pagos no devuelve `200` (el `200` queda para transiciones como la
+cancelación de pedidos): responde `201`, `402`, `409` o `400` según el caso.
+Otros `409` del cobro usan códigos estables: `pedido_ya_pagado` (ya cobrado),
+`pedido_no_pagable` (cancelado u otro estado), `clave_idempotencia_en_uso`
+(clave usada en otro pedido) y `conflicto` (sin unidades, mensaje «Sin stock
+suficiente…»). Las entradas inválidas, incluida una `Idempotency-Key` vacía o
+demasiado larga, responden `400` con `error.code = datos_invalidos`.
+
+**`Idempotency-Key` (opcional).** Cadena no vacía de hasta 200 caracteres
+contando el prefijo `u<id>:` que la liga al usuario autenticado; la misma clave
+solo vale para un pedido. Repetir clave y pedido devuelve la respuesta
+**original** (mismo código y mismo cuerpo, reconstruidos desde el
+`IntentoPago`) sin crear intento, venta ni movimiento, y añade la cabecera
+`Idempotent-Replayed: true`. Repetir la clave en otro pedido da el `409`
+`clave_idempotencia_en_uso`. La clave se consume con el resultado: para
+reintentar tras un `402`, envía una clave nueva u omítela; cada reintento crea
+un `IntentoPago` NUEVO con referencia única y un intento aprobado nunca se
+modifica. Sin clave no hay repetición: un pedido ya pagado responde el `409`
+`pedido_ya_pagado`.
+
+Con varios intentos para el mismo pedido, `POST /pagos/` devuelve el último (el
+aprobado cuando el pago se completó): `monto` conserva su nombre histórico y se
+mapea desde `IntentoPago.importe`, mientras el pedido expone el aprobado en
+`pago` y todos en `intentos_pago`. Los textos de `estado` (`aprobado`,
+`rechazado`, `pendiente`) también provienen del `codigo` del catálogo. El cobro
+y la cancelación toman el bloqueo de la fila del pedido: si llegan a la vez,
+gana el primero y el otro recibe `409` sin efectos. Intento, venta, estado,
+stock y movimientos se escriben en una sola transacción. Las pruebas de
+concurrencia requieren PostgreSQL: `select_for_update` no bloquea en SQLite y
+se omiten explícitamente en otros motores.
 
 ### Inventario (solo administrador)
 
