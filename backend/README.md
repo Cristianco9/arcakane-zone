@@ -193,21 +193,42 @@ python manage.py runserver
 
 ## Pruebas
 
-La suite usa `arkane_zone/settings_test.py`, que cambia la base de datos a SQLite en memoria y usa hashing rápido de contraseñas.
+La suite usa `arkane_zone/settings_test.py`, que por defecto cambia la base de datos a SQLite en memoria y usa hashing rápido de contraseñas.
 
 ```bash
 # Dependencias de desarrollo y pruebas
 pip install -r requirements-dev.txt
 
 SECRET_KEY=test-key DATABASE_URL=sqlite:///db.sqlite3 DEBUG=True pytest
+
+# Lo mismo que ejecuta la CI (pytest + cobertura + lint + chequeos de Django)
+pytest -c pytest.ini --cov --cov-report=term-missing --cov-report=html
+ruff check .                                   # solo check, nunca ruff format
+python manage.py makemigrations --check --dry-run
 ```
 
-Estado verificado de la suite: **1871 pruebas**, todas pasan. Incluye pruebas de
+Para correr la suite completa contra PostgreSQL, define `TEST_DATABASE_URL`
+(si no está, se mantiene el SQLite en memoria):
+
+```bash
+docker run --rm --name arkane-ci-pg -e POSTGRES_DB=arkane_ci \
+  -e POSTGRES_USER=arkane -e POSTGRES_PASSWORD=arkane \
+  -p 55432:5432 postgres:16.4-alpine
+# En otra terminal:
+TEST_DATABASE_URL=postgres://arkane:arkane@localhost:55432/arkane_ci \
+DATABASE_URL=postgres://arkane:arkane@localhost:55432/arkane_ci \
+pytest -c pytest.ini -q
+```
+
+Estado verificado de la suite: **1940 pruebas**, todas pasan. Incluye pruebas de
 la API REST (`tests/test_api_*.py`), la matriz RBAC, la administración de
 usuarios/roles por API y las pruebas originales de la interfaz HTML.
 
 `settings_test.py` fuerza `DEBUG=True`, desactiva las redirecciones HTTPS y usa
-SQLite en memoria, por lo que la suite es independiente del entorno.
+SQLite en memoria por defecto, por lo que la suite local es independiente del
+entorno. El CI (`backend-ci.yml`, ver el README raíz) añade una pasada en
+PostgreSQL, donde solo se omiten con `skipif` explícito las dos pruebas de
+`EXPLAIN QUERY PLAN`, específicas de SQLite.
 
 ## Rutas principales
 

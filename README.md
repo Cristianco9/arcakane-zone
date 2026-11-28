@@ -222,12 +222,63 @@ En producción los logs de la API son JSON en `stdout` (`LOG_LEVEL=INFO` por
 defecto) e incluyen `X-Request-ID`, método, ruta, estado, duración, IP y usuario.
 La clave se devuelve en cada respuesta y se registra también en los errores
 `500`. `backend/build.sh` ejecuta `python manage.py check --deploy` antes de
-desplegar y el workflow de CI `.github/workflows/backend.yml` ejecuta `pytest` y
-ese mismo check con `DEBUG=False` y una clave sintética válida.
+desplegar; el workflow `.github/workflows/backend-ci.yml` ejecuta la suite,
+lint, cobertura y los chequeos de despliegue descritos abajo.
 
 Los valores de `.env.example` son ficticios y solo ilustran el formato. En producción usa secretos reales gestionados fuera del repositorio.
 
 Las variables marcadas como obligatorias usan la sintaxis `${VAR:?mensaje}` de Compose: si falta alguna, `docker compose` falla antes de crear contenedores con un mensaje claro.
+
+## Flujo de trabajo y CI
+
+Flujo: abre un PR desde tu rama → CI en verde → revisión y aprobación de otro
+integrante → fusión a `main`. `.github/workflows/backend-ci.yml` se dispara en
+`push` y `pull_request` hacia `main`, con `permissions: contents: read`,
+concurrencia que cancela ejecuciones obsoletas de la misma rama y
+`timeout-minutes` por job. Usa Python **3.12.9** (el del `Dockerfile`;
+`render.yaml` fija 3.12.0) y trabaja desde `backend/`.
+
+| Job | Qué ejecuta |
+|---|---|
+| `tests` | `ruff check .` (sin `ruff format`), suite en SQLite con cobertura (`coverage.xml` y `htmlcov/` se suben como artefacto `cobertura-backend` aunque falle) y `makemigrations --check --dry-run`. |
+| `tests-postgres` | Servicio `postgres:16` con healthcheck; `check --deploy --fail-level WARNING` con variables tipo producción (clave aleatoria generada en el job) y la **suite completa** contra PostgreSQL. Las dos pruebas de `EXPLAIN QUERY PLAN` se omiten con `skipif` explícito porque solo aplican a SQLite. |
+
+Para reproducirlo localmente:
+
+```bash
+cd backend
+python -m pytest -c pytest.ini --cov --cov-report=term-missing --cov-report=html
+ruff check .
+python manage.py makemigrations --check --dry-run
+SECRET_KEY=<clave-larga-aleatoria> DEBUG=False ALLOWED_HOSTS=localhost \
+  DATABASE_URL=sqlite:///db.sqlite3 python manage.py check --deploy --fail-level WARNING
+```
+
+Con Docker, para la parte de PostgreSQL (el puerto 55432 está aislado del
+Compose):
+
+```bash
+docker run --rm --name arkane-ci-pg -e POSTGRES_DB=arkane_ci \
+  -e POSTGRES_USER=arkane -e POSTGRES_PASSWORD=arkane \
+  -p 55432:5432 postgres:16.4-alpine
+# En otra terminal, desde backend/:
+TEST_DATABASE_URL=postgres://arkane:arkane@localhost:55432/arkane_ci \
+DATABASE_URL=postgres://arkane:arkane@localhost:55432/arkane_ci \
+python -m pytest -c pytest.ini -q
+# Elimina el contenedor al terminar: docker rm -f arkane-ci-pg
+```
+
+El umbral de cobertura es **70 %** (`fail_under` en `backend/pyproject.toml`);
+la cobertura real de los módulos críticos (`api`, `pagos`, `inventario`,
+`pedidos`, `cuentas`) ronda el **89 %**. El objetivo es subir ese umbral con
+pruebas nuevas, no con pruebas artificiales. Para ver el reporte, descarga el
+artefacto `cobertura-backend` de la ejecución del workflow y abre
+`htmlcov/index.html`.
+
+Configuración en GitHub (la hace el dueño del repo, no el código): **Settings →
+Branches → regla de protección para `main`**; exigir que pasen los checks
+`tests` y `tests-postgres`, requerir al menos una aprobación de revisión y
+descartar aprobaciones obsoletas.
 
 ## Comandos útiles
 
