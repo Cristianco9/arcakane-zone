@@ -379,6 +379,32 @@ python manage.py runserver
 
 Disponible en <http://127.0.0.1:8000/>. Instrucciones detalladas en [`backend/README.md`](backend/README.md).
 
+### Pruebas de concurrencia de pagos
+
+La suite completa usa `backend/pytest.ini` (SQLite en memoria):
+
+```bash
+cd backend
+python -m pytest -c pytest.ini
+```
+
+`tests/test_pagos_concurrencia.py` se omite en SQLite porque
+`select_for_update` no bloquea: para ejecutarla de verdad necesitas PostgreSQL.
+Levanta un contenedor temporal en un puerto aislado, apunta un módulo de
+settings que herede de `arkane_zone.settings_test` y sobrescriba `DATABASES`
+con ese Postgres, y ejecuta:
+
+```bash
+DATABASE_URL=postgres://arkane:arkane@127.0.0.1:55432/arkane_concurrencia \
+DJANGO_SETTINGS_MODULE=concurrencia_settings \
+python -m pytest -c pytest.ini tests/test_pagos_concurrencia.py -q
+```
+
+Cada hilo abre y cierra su propia conexión y la sincronización usa
+`threading.Barrier` (sin `sleep`). Elimina el contenedor temporal al terminar.
+El resto de la suite (idempotencia, revalidación, inmutabilidad, reintento,
+cancelación y stock justo) corre en SQLite sin servicios externos.
+
 ### Frontend
 
 ```bash

@@ -4,10 +4,9 @@ from rest_framework.exceptions import NotFound, ValidationError
 from rest_framework.permissions import IsAuthenticated
 
 from pagos.models import IntentoPago, Venta
-from pagos.services import procesar_pago_simulado
-from pedidos.services import revalidar_carrito
+from pagos.services import clave_idempotencia_para, procesar_pago
 
-from ..exceptions import ErrorDeNegocio, respuesta_error, respuesta_exitosa
+from ..exceptions import respuesta_error, respuesta_exitosa
 from ..permissions import EsAdministrador
 from ..serializers import PagoCreateSerializer, PagoSerializer, VentaSerializer
 from ..utils import es_administrador, parse_fecha
@@ -41,48 +40,30 @@ class PagoViewSet(
 
         if not es_administrador(request.user) and pedido.cliente_id != request.user.id:
             raise NotFound("El pedido no existe.")
-        if pedido.estado_id != "pendiente":
-            raise ErrorDeNegocio("El pedido no está en estado pendiente.")
 
-        ajustes = revalidar_carrito(pedido, sincronizar=False)
-        if ajustes:
-            raise ErrorDeNegocio(
-                "El carrito cambió desde la última consulta. "
-                "Vuelve a GET /carrito/ para confirmar los ajustes antes de pagar.",
-                extra={
-                    "ajustes": ajustes,
-                    "errores": [ajuste["mensaje"] for ajuste in ajustes],
-                },
-            )
-
-        exito, mensaje = procesar_pago_simulado(pedido)
-        # Con varios intentos, el cliente ve siempre el último (el aprobado
-        # cuando el pago se completó; el rechazo si la pasarela lo denegó).
-        pago = (
-            IntentoPago.objects.select_related("pedido", "pedido__cliente")
-            .filter(pedido=pedido)
-            .order_by("-creado_en", "-pk")
-            .first()
+        clave = clave_idempotencia_para(
+            request.user.id, request.headers.get("Idempotency-Key")
         )
+        resultado = procesar_pago(pedido, clave_idempotencia=clave)
+        datos = PagoSerializer(resultado.intento, context={"request": request}).data
 
-        if pago is None:
-            # La operación se bloqueó antes de registrar el intento de pago.
-            raise ErrorDeNegocio(mensaje)
-
-        if not exito:
-            # Existe el registro: la pasarela simulada rechazó el pago (402).
-            return respuesta_error(
+        if not resultado.exito:
+            respuesta = respuesta_error(
                 "pago_rechazado",
-                mensaje,
-                detalles=PagoSerializer(pago, context={"request": request}).data,
+                resultado.mensaje,
+                detalles=datos,
                 status_code=status.HTTP_402_PAYMENT_REQUIRED,
             )
+        else:
+            respuesta = respuesta_exitosa(
+                datos,
+                message=resultado.mensaje,
+                status_code=status.HTTP_201_CREATED,
+            )
 
-        return respuesta_exitosa(
-            PagoSerializer(pago, context={"request": request}).data,
-            message=mensaje,
-            status_code=status.HTTP_201_CREATED,
-        )
+        if resultado.repetido:
+            respuesta["Idempotent-Replayed"] = "true"
+        return respuesta
 
 
 class VentaViewSet(viewsets.ReadOnlyModelViewSet):

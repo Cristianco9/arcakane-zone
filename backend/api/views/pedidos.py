@@ -9,7 +9,7 @@ from pagos.models import IntentoPago
 from pedidos.models import Pedido
 from pedidos.services import cancelar_pedido
 
-from ..exceptions import ErrorDeNegocio, respuesta_exitosa
+from ..exceptions import PedidoNoCancelable, respuesta_exitosa
 from ..serializers import PedidoEstadoSerializer, PedidoSerializer, codigos_estado_pedido
 from ..utils import es_administrador
 
@@ -92,7 +92,7 @@ class PedidoViewSet(viewsets.ReadOnlyModelViewSet):
     def _cancelar(self, pedido):
         exito, mensaje = cancelar_pedido(pedido)
         if not exito:
-            raise ErrorDeNegocio(mensaje)
+            raise PedidoNoCancelable(mensaje)
         pedido.refresh_from_db()
         pedido = self.get_queryset().get(pk=pedido.pk)
         serializer = self.get_serializer(pedido)
