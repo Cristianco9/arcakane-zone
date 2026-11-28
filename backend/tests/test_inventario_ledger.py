@@ -346,6 +346,13 @@ def _plan_de_consulta(consulta):
         return " ".join(str(fila[3]) for fila in cursor.fetchall())
 
 
+@pytest.mark.skipif(
+    connection.vendor != "sqlite",
+    reason=(
+        "EXPLAIN QUERY PLAN y los nombres de índice son específicos de SQLite; "
+        "PostgreSQL usa otro planificador."
+    ),
+)
 @pytest.mark.django_db
 def test_el_historial_por_oferta_usa_el_indice_compuesto(oferta, tipo_salida):
     """(oferta, -fecha_hora) resuelve el historial sin escanear la tabla."""
@@ -354,6 +361,13 @@ def test_el_historial_por_oferta_usa_el_indice_compuesto(oferta, tipo_salida):
     assert "inventario_oferta_fecha_idx" in _plan_de_consulta(consulta)
 
 
+@pytest.mark.skipif(
+    connection.vendor != "sqlite",
+    reason=(
+        "EXPLAIN QUERY PLAN y los nombres de índice son específicos de SQLite; "
+        "PostgreSQL usa otro planificador."
+    ),
+)
 @pytest.mark.django_db
 def test_el_historial_por_tipo_usa_el_indice_compuesto(oferta, tipo_salida):
     """(tipo_movimiento, -fecha_hora) resuelve consultas por tipo y fecha."""

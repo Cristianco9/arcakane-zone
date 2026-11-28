@@ -1,0 +1,32 @@
+[tool.coverage.run]
+# Módulos del proyecto (no dependencias de terceros).
+source = [
+    "api",
+    "arkane_zone",
+    "catalogo",
+    "cuentas",
+    "inventario",
+    "pagos",
+    "pedidos",
+    "soporte",
+]
+# Las migraciones y los tests.py vacíos de andamiaje no aportan cobertura útil.
+omit = ["*/migrations/*", "*/tests.py"]
+
+[tool.coverage.report]
+# Objetivo inicial: 70 %. La cobertura real de los módulos críticos ronda el
+# 89 %; subir el umbral debe venir de pruebas nuevas, no de pruebas artificiales.
+fail_under = 70
+show_missing = true
+
+[tool.ruff]
+target-version = "py312"
+exclude = ["**/migrations/**"]
+
+[tool.ruff.lint]
+# E4/E7/E9: errores de sintaxis y construcciones peligrosas; F: pyflakes.
+# F401/F405/F841 se ignoran de forma documentada: hay imports de andamiaje,
+# un `import *` deliberado en settings_test y variables sin uso en pruebas de
+# migración. Limpiarlos corresponde a otro issue, no a este CI.
+select = ["E4", "E7", "E9", "F"]
+ignore = ["F401", "F405", "F841"]
